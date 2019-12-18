@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="基本使用 11234567891011121314151617181920212223#coding&#x3D;utf-8import multiprocessingimport os		# 获取pid用import time		# 延时用# 子进程要执行的函数def child_proc(name):	print(f&#39;child process &amp;#123;name&amp;#125; pid: &amp;#123;os">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[python 并行3] 进程">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2018&#x2F;11&#x2F;13&#x2F;python-%E5%B9%B6%E8%A1%8C3-%E8%BF%9B%E7%A8%8B&#x2F;index.html">
+<meta property="og:site_name" content="枫の故事">
+<meta property="og:description" content="基本使用 11234567891011121314151617181920212223#coding&#x3D;utf-8import multiprocessingimport os		# 获取pid用import time		# 延时用# 子进程要执行的函数def child_proc(name):	print(f&#39;child process &amp;#123;name&amp;#125; pid: &amp;#123;os">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-11-13T12:04:12.000Z">
+<meta property="article:modified_time" content="2019-12-18T08:25:24.322Z">
+<meta property="article:author" content="dejiang">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2018/11/13/python-%E5%B9%B6%E8%A1%8C3-%E8%BF%9B%E7%A8%8B/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>[python 并行3] 进程 | 枫の故事</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫の故事</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">纸上得来终觉浅，绝知此事要恭行</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<!--
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+-->
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/13/python-%E5%B9%B6%E8%A1%8C3-%E8%BF%9B%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="dejiang">
+      <meta itemprop="description" content="你根本不知道你什么都不知道">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫の故事">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [python 并行3] 进程
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-11-13 20:04:12" itemprop="dateCreated datePublished" datetime="2018-11-13T20:04:12+08:00">2018-11-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-12-18 16:25:24" itemprop="dateModified" datetime="2019-12-18T16:25:24+08:00">2019-12-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/python/" itemprop="url" rel="index">
+                    <span itemprop="name">python</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="基本使用-1"><a href="#基本使用-1" class="headerlink" title="基本使用 1"></a>基本使用 <sup>1</sup></h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#coding=utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> multiprocessing</span><br><span class="line"><span class="keyword">import</span> os		<span class="comment"># 获取pid用</span></span><br><span class="line"><span class="keyword">import</span> time		<span class="comment"># 延时用</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 子进程要执行的函数</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">child_proc</span><span class="params">(name)</span>:</span></span><br><span class="line">	print(<span class="string">f'child process <span class="subst">&#123;name&#125;</span> pid: <span class="subst">&#123;os.getpid()&#125;</span>'</span>)</span><br><span class="line">	time.sleep(<span class="number">3</span>)</span><br><span class="line">	print(<span class="string">f'<span class="subst">&#123;name&#125;</span> finish'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 主进程，必须在主模块中执行</span></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">	print(<span class="string">f'parent process <span class="subst">&#123;os.getpid()&#125;</span> is running'</span>)</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 生成子进程</span></span><br><span class="line">	p1 = multiprocessing.Process(target = child_proc, args = (<span class="string">'child-1'</span>,))</span><br><span class="line">	p2 = multiprocessing.Process(target = child_proc, args = (<span class="string">'child-2'</span>,))</span><br><span class="line">	p1.start()</span><br><span class="line">	p2.start()</span><br><span class="line"></span><br><span class="line">	print(<span class="string">f'parent process <span class="subst">&#123;os.getpid()&#125;</span> is end'</span>)</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><del>输出</del></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">parent process 20114 is running</span><br><span class="line">parent process 20114 is end</span><br><span class="line">child process child-1 pid: 20115</span><br><span class="line">child process child-2 pid: 20116</span><br><span class="line">child-1 finish</span><br><span class="line">child-2 finish</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意!</strong> Python官方文档提到为何必须要使用<code>if __name__ = &#39;__main__&#39;</code>，由于该包的所有功能都需要将主模块导入到子模块中，但是IDLE无法将<code>__main__</code>模块导入子模块，所以只能在文件中编辑好程序执行<br><strong>更多</strong>：<a href="https://docs.python.org/3/library/multiprocessing.html?highlight=multiprocessing#module-multiprocessing" target="_blank" rel="noopener">multiprocessing — Process-based parallelism</a></p>
+<hr>
+<h1 id="multiprocessing模块"><a href="#multiprocessing模块" class="headerlink" title="multiprocessing模块"></a>multiprocessing模块</h1><p><strong>注</strong>：根据查看<code>multiprocessing</code>模块声明，第一行注释显示<code># Package analogous to &#39;threading.py&#39; but using processes</code>，可以发现进程的操作与线程相似 <em>（甚至多进程的模块直接就是线程模块改过来的）</em></p>
+<p><strong>函数声明</strong>： class multiprocessing.<strong>Process</strong>(group=None, target=None, name=None, args=(), kwargs={}, <em>, daemon=None)<br>*（group: 官方预留的参数）</em><br>target: 子线程要执行的函数<br>name: 给子线程命名<br>args: 传递参数到要执行的函数中 <em>（类型为元组）</em><br>daemon: 将线程设置为后台线程 <sup>2</sup></p>
+<blockquote>
+<p>Thread类包含的方法：</p>
+<ul>
+<li><strong>start</strong>(): 开始进程，它会安排在单独的控制进程中使该对象的<code>run()</code>方法被调用 <em>(invoked)</em>  <em>（如果多次调用，会发生错误<code>AssertionError</code>）</em></li>
+<li><strong>run</strong>(): 你可以在子类中重写这个方法，标准的<code>run()</code>方法会在构造器传递了<code>target</code>参数后调用它</li>
+<li><strong>join</strong>(timeout=None): 阻塞当前进程，直到等待调用了<code>join()</code>的进程结束，或到达设置的超时<code>timeout</code>的参数为止</li>
+<li><strong>name</strong>: 进程名</li>
+<li><strong>is_alive</strong>(): 判断进程是否在运行</li>
+<li><strong>daemon</strong>: 是否为后台进程的属性值</li>
+<li><strong>pid</strong>: 返回进程的id</li>
+<li><strong>terminate</strong>(): 结束进程</li>
+<li>（在Unix上，使用<code>SIGTERM</code>信号量完成；在windows上使用TerminateProcess()）*<br><em>（请注意，不会执行退出处理程序和最后的子句等。请注意，进程的后代进程不会被终止 - 它们将简单地变成孤立的。）</em><br><em>（注：如果在关联进程使用管道或队列时使用此方法，则管道或队列可能会损坏，并可能被其他进程无法使用。 类似地，如果进程已获得锁或信号量等，则终止它可能导致其他进程死锁。）</em></li>
+<li><strong>kill</strong>(): 杀掉进程，与terminate()相同，但在Unix中使用<code>SIGKILL</code>信号量</li>
+<li><strong>close</strong>(): 关闭进程对象，释放所有与之相关的资源。如果是还在运行，会raised错误<code>ValueError</code>，第一次调用会返回成功，其它调用会raise错误<code>ValueError</code></li>
+<li><strong>exitcode</strong>: 子进程的退出码。如果不是被terminate终止的，将会是<code>None</code>；如果被信号量<code>N</code>终止的，将会返回-N</li>
+<li><strong>authkey</strong>: 进程的身份钥匙（1字节字符串）。当<code>multipriocessing</code>在主进程中被初始化时，会使用<code>os.urandom()</code>标记一个随机字符串。当一个进程对象被创建时，它将会从父进程继承这个身份钥匙，虽然它可能会被改为其它字节字符串</li>
+<li><strong>sentinel</strong>: （哨兵）当进程结束时，一个数值的系统对象处理将变为<code>ready</code>。如果你想立即要等待几个事件，你能用这个值使用<code>multiprocessing.connection.wait()</code>，否则调用<code>join()</code>更简单。</li>
+</ul>
+</blockquote>
+<hr>
+<h1 id="Pool进程池"><a href="#Pool进程池" class="headerlink" title="Pool进程池"></a>Pool进程池</h1><p>如果进程太多，超过了CPU核数，会导致进程之间的来回切换，影响性能。可以通过创建进程池，把进程加入到里面，如果池中进程没满，就会创建一个进程来执行请求；如果池中进程达到规定的最大值，那么请求会等待<br><strong>函数声明</strong>： class multiprocessing.pool.<strong>Pool</strong>([processes[, initializer[, initargs[, maxtasksperchild[, context]]]]])<br>processes: 指定池中进程数量，如果不指定，则为<code>None</code>，默认就会使用<code>os.cpu_count()</code><br>initializer: 如果不是<code>None</code>，每个进程在开始时都会调用<code>initializer(*initargs)</code><br>maxtasksperchild: 工作进程在退出和替换新的工作进程之前，可以完成的任务数量，以释放资源。默认为<code>None</code>，表示工作进程和这个池的生存时间一样长<br>context: 用来指定工作进程的上下文</p>
+<p>下面有2种方法添加进程到进程池中，分别是<code>apply_async</code>和<code>apply</code></p>
+<h2 id="apply-async"><a href="#apply-async" class="headerlink" title="apply_async"></a>apply_async</h2><p><code>apply_async()</code>用来同步执行进程，允许多个进程同时进入池；是异步非阻塞的<br><strong>函数声明</strong>:  apply_async(func[, args[, kwds[, callback[, error_callback]]]])<br>callback: 如果指定了回调，那么它应该是一个可调用的，它接受一个参数</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#coding=utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> multiprocessing</span><br><span class="line"><span class="keyword">import</span> time		<span class="comment"># 延时用</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 子进程要执行的函数</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">child_proc</span><span class="params">(index)</span>:</span></span><br><span class="line">	print(<span class="string">f'<span class="subst">&#123;index&#125;</span> process is running'</span>)</span><br><span class="line">	time.sleep(<span class="number">3</span>)</span><br><span class="line">	print(<span class="string">f'<span class="subst">&#123;index&#125;</span> process is end'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 主进程，必须在主模块中执行</span></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">	print(<span class="string">f'all process start'</span>)</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 生成进程池</span></span><br><span class="line">	p = multiprocessing.Pool()</span><br><span class="line">	<span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">5</span>):</span><br><span class="line">		p.apply_async(func = child_proc, args = (i,))</span><br><span class="line">	p.close()</span><br><span class="line">	p.join()	<span class="comment"># 注! 如果不执行此句，将会直接退出主进程</span></span><br><span class="line"></span><br><span class="line">	print(<span class="string">f'all process done!'</span>)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><del>输出</del></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">all process start</span><br><span class="line">0 process is running</span><br><span class="line">1 process is running</span><br><span class="line">2 process is running</span><br><span class="line">3 process is running</span><br><span class="line">4 process is running</span><br><span class="line">0 process is end</span><br><span class="line">3 process is end</span><br><span class="line">2 process is end</span><br><span class="line">4 process is end</span><br><span class="line">1 process is end</span><br><span class="line">all process done!</span><br></pre></td></tr></table></figure>
+
+<h2 id="apply"><a href="#apply" class="headerlink" title="apply"></a>apply</h2><p><code>apply()</code>: 只允许一个进程进入池，在一个进程结束后，另一个才能进入；是阻塞的<br><strong>函数声明</strong>:   apply(func[, args[, kwds]])</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">p.apply(func = child_proc, args = (i,))	<span class="comment"># 将上面代码中的apply_async换成apply即可</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><del>输出</del></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">all process start</span><br><span class="line">0 process is running</span><br><span class="line">0 process is end</span><br><span class="line">1 process is running</span><br><span class="line">1 process is end</span><br><span class="line">2 process is running</span><br><span class="line">2 process is end</span><br><span class="line">3 process is running</span><br><span class="line">3 process is end</span><br><span class="line">4 process is running</span><br><span class="line">4 process is end</span><br><span class="line">all process done!</span><br></pre></td></tr></table></figure>
+<p><del>分析：对比apply_async和apply的输出，可以发现，apply_async是同步执行的，而apply是一个一个进入池中执行的</del></p>
+<hr>
+<h1 id="数据共享"><a href="#数据共享" class="headerlink" title="数据共享"></a>数据共享</h1><p><a href="https://blog.csdn.net/lechunluo3/article/details/79005910" target="_blank" rel="noopener">参考：Python多进程编程-进程间共享数据</a><br><em>（<code>Pipe</code>、<code>Queue</code>都有一定的数据共享功能，但他们会阻塞进程）</em><br><code>Queue</code>：采用共享队列的内存的方式共享数据<br><strong>注意</strong>：存在<code>queue.Queue</code>、<code>multiprocessing.Queue</code>两种队列<br>queue.Queue：是进程内非阻塞队列，各进程私有<br>multiprocessing.Queue：是跨进程通信队列，各个子进程共有</p>
+<p><strong>共享内存</strong>：使用multiprocessing的<code>Value</code>、<code>Array</code>类，实现共享内存的方式共享数据<br><strong>共享进程</strong>：使用multiprocessing的<code>Manager</code>类，实现共享进程的方式共享数据</p>
+<h2 id="获取返回值（仅主进程获有数据）"><a href="#获取返回值（仅主进程获有数据）" class="headerlink" title="获取返回值（仅主进程获有数据）"></a>获取返回值（仅主进程获有数据）</h2><p>针对进程池实现的方式，可以直接通过获取进程对象的返回值</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#coding=utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> multiprocessing</span><br><span class="line"></span><br><span class="line"><span class="comment"># 子进程要执行的函数</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">child_proc</span><span class="params">(x, y)</span>:</span></span><br><span class="line">	<span class="keyword">return</span> x + y</span><br><span class="line"></span><br><span class="line"><span class="comment"># 主进程，必须在主模块中执行</span></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">	<span class="comment"># 生成进程池</span></span><br><span class="line">	p = multiprocessing.Pool()</span><br><span class="line">	z = p.apply(func = child_proc, args = (<span class="number">1</span>, <span class="number">2</span>))</span><br><span class="line">	print(z)</span><br></pre></td></tr></table></figure>
+
+<h2 id="Queue"><a href="#Queue" class="headerlink" title="Queue"></a>Queue</h2><p>使用multiprocessing的<code>Queue</code>类，实现进程之间的数据共享</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#coding=utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> multiprocessing <span class="keyword">import</span> Process, Queue</span><br><span class="line"></span><br><span class="line"><span class="comment"># 子进程要执行的函数</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">child_proc</span><span class="params">(queue)</span>:</span></span><br><span class="line">	num = queue.get()</span><br><span class="line">	num += <span class="number">10</span></span><br><span class="line">	queue.put(num)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 主进程，必须在主模块中执行</span></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">	<span class="comment"># 创建共享数据</span></span><br><span class="line">	queue = Queue()</span><br><span class="line">	queue.put(<span class="number">1000</span>)</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 创建进程</span></span><br><span class="line">	p1 = Process(target = child_proc, args = (queue,))</span><br><span class="line">	p2 = Process(target = child_proc, args = (queue,))</span><br><span class="line">	p1.start()</span><br><span class="line">	p2.start()</span><br><span class="line">	p1.join()</span><br><span class="line">	p2.join()</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 打印结果</span></span><br><span class="line">	print(queue.get())</span><br></pre></td></tr></table></figure>
+
+<h2 id="Value、Array"><a href="#Value、Array" class="headerlink" title="Value、Array"></a>Value、Array</h2><p>共享内存有2个结构 - <code>Value</code>、<code>Array</code>，它们内部都实现了锁机制，因此是多进程安全的</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#coding=utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> multiprocessing <span class="keyword">import</span> Process, Value, Array</span><br><span class="line"></span><br><span class="line"><span class="comment"># 子进程要执行的函数</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">child_proc</span><span class="params">(num, li)</span>:</span></span><br><span class="line">	num.value += <span class="number">100</span></span><br><span class="line">	<span class="keyword">for</span> i <span class="keyword">in</span> range(len(li)):</span><br><span class="line">		li[i] += <span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 主进程，必须在主模块中执行</span></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">	<span class="comment"># 创建共享数据</span></span><br><span class="line">	num = Value(<span class="string">'d'</span>, <span class="number">0.0</span>)</span><br><span class="line">	li = Array(<span class="string">'i'</span>, range(<span class="number">10</span>))</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 创建进程</span></span><br><span class="line">	p1 = Process(target = child_proc, args = (num, li))</span><br><span class="line">	p2 = Process(target = child_proc, args = (num, li))</span><br><span class="line">	p1.start()</span><br><span class="line">	p2.start()</span><br><span class="line">	p1.join()</span><br><span class="line">	p2.join()</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 打印结果</span></span><br><span class="line">	print(num.value)</span><br><span class="line">	<span class="keyword">for</span> x <span class="keyword">in</span> li:</span><br><span class="line">		print(x)</span><br></pre></td></tr></table></figure>
+
+<p><strong>附</strong>：<code>Value</code>、<code>Array</code>都需要设置其中存放值的类型。d：double；i：int；c：char等<br><strong>详细</strong>：转到multiprocessing.<strong>sharedctypes</strong>可以查看到各种类型的字符串定义</p>
+<h2 id="Manager"><a href="#Manager" class="headerlink" title="Manager"></a>Manager</h2><p><em>（上面的共享内存通过Value和Array结构实现，这些值在主进程中管理，很分散）</em><br>Manager通过共享内存来实现共享数据，支持的数据类型很多<br><strong>详细</strong>：<a href="https://docs.python.org/3/library/multiprocessing.html?highlight=managers#module-multiprocessing.managers" target="_blank" rel="noopener">multiprocessing.managers</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#coding=utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> multiprocessing <span class="keyword">import</span> Process, Manager</span><br><span class="line"></span><br><span class="line"><span class="comment"># 子进程要执行的函数</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">child_proc</span><span class="params">(dict1, list1)</span>:</span></span><br><span class="line">	dict1[<span class="string">'yourname'</span>] += <span class="string">' snow'</span></span><br><span class="line">	list1[<span class="number">3</span>] += <span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 主进程，必须在主模块中执行</span></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">	<span class="comment"># 创建共享数据</span></span><br><span class="line">	manager = Manager()</span><br><span class="line">	dict1 = manager.dict()</span><br><span class="line">	list1 = manager.list(range(<span class="number">4</span>))</span><br><span class="line"></span><br><span class="line">	dict1[<span class="string">'yourname'</span>] = <span class="string">'youmux'</span></span><br><span class="line">	list1[<span class="number">3</span>] = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">	<span class="comment"># 创建进程</span></span><br><span class="line">	p1 = Process(target = child_proc, args = (dict1, list1))</span><br><span class="line">	p2 = Process(target = child_proc, args = (dict1, list1))</span><br><span class="line">	p1.start()</span><br><span class="line">	p2.start()</span><br><span class="line">	p1.join()</span><br><span class="line">	p2.join()</span><br><span class="line"></span><br><span class="line">	<span class="comment"># 打印结果</span></span><br><span class="line">	print(dict1[<span class="string">'yourname'</span>])</span><br><span class="line">	<span class="keyword">for</span> x <span class="keyword">in</span> list1:</span><br><span class="line">		print(x)</span><br></pre></td></tr></table></figure>
+
+
+<hr>
+<p>1.参考书籍: 参考书籍：《Python并行编程手册》</p>
+<p>2.后台线程: 后台线程在主线程停止后就直接停止运行。他们资源（如打开的文件，数据库事务等）可能不会被正确的释放。如果你想要你的线程优美的停止，让他们不要变为后台和使用一个合适的信号机制如事件<code>Event</code></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/10/07/python-%E5%B9%B6%E8%A1%8C2-%E7%BA%BF%E7%A8%8B/" rel="prev" title="[python 并行2] 线程">
+      <i class="fa fa-chevron-left"></i> [python 并行2] 线程
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/11/28/python-%E5%B9%B6%E8%A1%8C4-%E5%BC%82%E6%AD%A5/" rel="next" title="[python 并行4] 异步">
+      [python 并行4] 异步 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#基本使用-1"><span class="nav-number">1.</span> <span class="nav-text">基本使用 1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#multiprocessing模块"><span class="nav-number">2.</span> <span class="nav-text">multiprocessing模块</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Pool进程池"><span class="nav-number">3.</span> <span class="nav-text">Pool进程池</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#apply-async"><span class="nav-number">3.1.</span> <span class="nav-text">apply_async</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#apply"><span class="nav-number">3.2.</span> <span class="nav-text">apply</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#数据共享"><span class="nav-number">4.</span> <span class="nav-text">数据共享</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#获取返回值（仅主进程获有数据）"><span class="nav-number">4.1.</span> <span class="nav-text">获取返回值（仅主进程获有数据）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Queue"><span class="nav-number">4.2.</span> <span class="nav-text">Queue</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Value、Array"><span class="nav-number">4.3.</span> <span class="nav-text">Value、Array</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Manager"><span class="nav-number">4.4.</span> <span class="nav-text">Manager</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="dejiang"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">dejiang</p>
+  <div class="site-description" itemprop="description">你根本不知道你什么都不知道</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wwstory" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wwstory" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:1018472917@qq.com" title="E-Mail → mailto:1018472917@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-qq"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.cnblogs.com/maplesnow" title="cnblogs → https:&#x2F;&#x2F;www.cnblogs.com&#x2F;maplesnow" rel="noopener" target="_blank"><i class="fa fa-fw fa-cnblogs"></i>cnblogs</a>
+      </span>
+  </div>
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+
+
+
+      </div>
+
+      <!-- music player -->
+      <div>
+        
+          <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=298 height=52 src="//music.163.com/outchain/player?type=0&id=431226116&auto=0&height=32"></iframe>
+        
+      </div>
+
+    </div>
+  </aside>
+
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">dejiang</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.1.1
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.6.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

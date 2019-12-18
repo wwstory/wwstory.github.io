@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="基本使用python线程使用的两个模块为： _thread  (不推荐再使用)、 threading （查看threading的源码可以发现，threading实际是对_thread进一步的封装，官方将其称为 Low-level threading API，下面简单尝试使用_thread） 调用start_new_thread()函数生成新线程函数声明：_thread.start_new_thre">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[python 并行2] 线程">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2018&#x2F;10&#x2F;07&#x2F;python-%E5%B9%B6%E8%A1%8C2-%E7%BA%BF%E7%A8%8B&#x2F;index.html">
+<meta property="og:site_name" content="枫の故事">
+<meta property="og:description" content="基本使用python线程使用的两个模块为： _thread  (不推荐再使用)、 threading （查看threading的源码可以发现，threading实际是对_thread进一步的封装，官方将其称为 Low-level threading API，下面简单尝试使用_thread） 调用start_new_thread()函数生成新线程函数声明：_thread.start_new_thre">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-10-07T15:29:48.000Z">
+<meta property="article:modified_time" content="2019-12-18T08:25:24.990Z">
+<meta property="article:author" content="dejiang">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2018/10/07/python-%E5%B9%B6%E8%A1%8C2-%E7%BA%BF%E7%A8%8B/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>[python 并行2] 线程 | 枫の故事</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫の故事</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">纸上得来终觉浅，绝知此事要恭行</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<!--
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+-->
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/10/07/python-%E5%B9%B6%E8%A1%8C2-%E7%BA%BF%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="dejiang">
+      <meta itemprop="description" content="你根本不知道你什么都不知道">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫の故事">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [python 并行2] 线程
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-10-07 23:29:48" itemprop="dateCreated datePublished" datetime="2018-10-07T23:29:48+08:00">2018-10-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-12-18 16:25:24" itemprop="dateModified" datetime="2019-12-18T16:25:24+08:00">2019-12-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/python/" itemprop="url" rel="index">
+                    <span itemprop="name">python</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h1><p>python线程使用的两个模块为： <del><code>_thread</code>  <em>(不推荐再使用)</em></del>、 <code>threading</code><br> <em>（查看threading的源码可以发现，threading实际是对_thread进一步的封装，官方将其称为 <em>Low-level threading API</em>，下面简单尝试使用_thread）</em></p>
+<p><del>调用start_new_thread()函数生成新线程<br><strong>函数声明</strong>：_thread.start_new_thread(function, args[, kwargs])<br>function: 子线程所执行的函数<br>args: 传递的参数，参数类型必须是<strong>元组</strong><br>kwargs:可选参数</del></p>
+<p><strong>示例：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!usr/bin/env python</span></span><br><span class="line"><span class="comment">#coding=utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> _thread</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">func</span><span class="params">(t_name)</span>:</span></span><br><span class="line">    time.sleep(<span class="number">1</span>)</span><br><span class="line">    print(t_name, <span class="string">'end'</span>)</span><br><span class="line"></span><br><span class="line">_thread.start_new_thread(func, (<span class="string">'my_thread_1'</span>,))    <span class="comment"># 传递的参数必须是元组类型</span></span><br><span class="line">print(<span class="string">'main thread end'</span>)</span><br><span class="line">time.sleep(<span class="number">2</span>)   <span class="comment"># 暂停一下等待子线程，避免主线程结束后直接退出，看不到子线程的输出</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><del>输出</del></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">main thread end</span><br><span class="line">my_thread_1 end</span><br></pre></td></tr></table></figure>
+
+<p><strong>更多</strong>：<a href="https://docs.python.org/3/library/_thread.html" target="_blank" rel="noopener">_thread — Low-level threading API</a></p>
+<h2 id="threading模块"><a href="#threading模块" class="headerlink" title="threading模块"></a>threading模块</h2><p><strong>需要 import threading</strong><br>threading模块提供了比_thread模块更加高级别的方法，如下：</p>
+<blockquote>
+<ul>
+<li>threading.<strong>active_count</strong>(): 返回当前运行的线程数量</li>
+<li>threading.<strong>current_thread</strong>(): 返回当前运行的线程对象</li>
+<li>threading.<strong>get_ident</strong>(): 返回当前运行的线程标识码</li>
+<li>threading.<strong>enumerate</strong>(): 获取运作着的线程对象的列表（包含设置了daemon属性的后台线程）</li>
+<li>threading.<strong>main_thread</strong>(): 获取主线程对象</li>
+</ul>
+</blockquote>
+<p>threading模块包含Thread类来处理线程<br><strong>函数声明</strong>：class threading.<strong>Thread</strong>(group=None, target=None, name=None, args=(), kwargs={}, <em>, daemon=None)<br>*（group: 官方预留的参数）</em><br>target: 子线程要执行的函数<br>name: 给子线程命名<br>args: 传递参数到要执行的函数中 <em>（类型为元组）</em><br>daemon: 将线程设置为后台线程 <sup>1</sup></p>
+<blockquote>
+<p>Thread类包含的方法：</p>
+<ul>
+<li><strong>start</strong>(): 开始线程，它会安排在单独的控制线程中使该对象的<code>run()</code>方法被调用 <em>(invoked)</em> <sup>2</sup> <em>（如果多次调用，会raise <code>RuntimeError</code>）</em></li>
+<li><strong>run</strong>(): 你可以在子类中重写这个方法，标准的<code>run()</code>方法会在构造器传递了<code>target</code>参数后调用它</li>
+<li><strong>join</strong>(timeout=None): 阻塞当前线程，直到等待调用了<code>join()</code>的线程结束，或到达设置的超时<code>timeout</code>的参数为止 <em>（如果尝试加入当前线程 <sup>3</sup>，因为会发生死锁，<code>join()</code>会raise <code>RuntimeError</code>。在线程启动前调用<code>join()</code>也会报相同的错误）</em></li>
+<li><strong>name</strong>: 线程名</li>
+<li><strong>ident</strong>: 线程标识码 <em>（如果线程未<code>start()</code>，则为<code>None</code>。实测线程结束后，ident值还存在）</em></li>
+<li><strong>is_alive</strong>(): 判断线程是否在运行</li>
+<li><strong>daemon</strong>: 是否为后台线程的属性值</li>
+<li><strong>isDaemon</strong>(): 判断是否为后台线程</li>
+</ul>
+</blockquote>
+<p><strong>更多</strong>：<a href="https://docs.python.org/3/library/threading.html" target="_blank" rel="noopener">threading — Thread-based parallelism</a></p>
+<h3 id="函数形式"><a href="#函数形式" class="headerlink" title="函数形式"></a>函数形式</h3><p>使用threading.<strong>Thread</strong>类实例化对象，再调用<code>start()</code>方法运行</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!usr/bin/env python</span></span><br><span class="line"><span class="comment">#coding=utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">func</span><span class="params">()</span>:</span></span><br><span class="line">    print(threading.current_thread().name, <span class="string">' start'</span>)</span><br><span class="line">    time.sleep(<span class="number">1</span>)</span><br><span class="line">    print(threading.current_thread().name, <span class="string">' end'</span>)</span><br><span class="line"></span><br><span class="line">t1 = threading.Thread(target=func)   <span class="comment"># 创建线程</span></span><br><span class="line">t2 = threading.Thread(target=func)</span><br><span class="line"></span><br><span class="line">t1.start()   <span class="comment"># 开始线程</span></span><br><span class="line">t2.start()</span><br><span class="line"></span><br><span class="line"><span class="comment"># t1.join()    # 等待该线程结束后，再往下执行</span></span><br><span class="line"><span class="comment"># t2.join()</span></span><br><span class="line"></span><br><span class="line">print(<span class="string">'main thread end'</span>)    <span class="comment"># 使用threading模块Thread类的线程，程序需要等待全部线程执行完后才退出</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><del>输出</del></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Thread-1  start</span><br><span class="line">Thread-2  start</span><br><span class="line">main thread end</span><br><span class="line">Thread-1  end</span><br><span class="line">Thread-2  end</span><br></pre></td></tr></table></figure>
+
+<h3 id="继承类的形式"><a href="#继承类的形式" class="headerlink" title="继承类的形式"></a>继承类的形式</h3><p>通过继承threading.Thread类，可以重写<code>run()</code>方法，再实例化该类，调用<code>start()</code>方法运行<br><em>（继承Thread类，并不是非要重写<code>run()</code>）</em></p>
+<p><strong>示例：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!usr/bin/env python</span></span><br><span class="line"><span class="comment">#coding=utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyThread</span><span class="params">(threading.Thread)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name)</span>:</span></span><br><span class="line">        threading.Thread.__init__(self)</span><br><span class="line">        self.name = name</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></span><br><span class="line">        print(self.name + <span class="string">' start'</span>)</span><br><span class="line">        time.sleep(<span class="number">1</span>)</span><br><span class="line">        print(self.name + <span class="string">' end'</span>)</span><br><span class="line"></span><br><span class="line">t1 = MyThread(<span class="string">'thread1'</span>)</span><br><span class="line">t2 = MyThread(<span class="string">'thread2'</span>)</span><br><span class="line"></span><br><span class="line">t1.start()</span><br><span class="line">t2.start()</span><br><span class="line"></span><br><span class="line"><span class="comment"># t1.join()</span></span><br><span class="line"><span class="comment"># t2.join()</span></span><br><span class="line"></span><br><span class="line">print(<span class="string">'main thread end'</span>)</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><del>输出</del></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">thread1 start</span><br><span class="line">thread2 start</span><br><span class="line">main thread end</span><br><span class="line">thread1 end</span><br><span class="line">thread2 end</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h1 id="线程同步"><a href="#线程同步" class="headerlink" title="线程同步"></a>线程同步</h1><p>当属于并发线程的多个操作尝试访问共享内存，并且至少有一个操作能修改数据的状态时，这时如果没有恰当的同步机制，可能会发生意外情况或bug。使用<code>锁</code>可以解决此问题。<br>当一个线程想要访问共享内存的某一部分区域时，它必须再使用前获取到该部分的锁。并在操作完后，要释放掉之前获取到的锁。</p>
+<p><strong>注意!</strong> 要避免<code>死锁</code> <sup>4</sup>的情况发生</p>
+<h2 id="使用Lock实现线程同步"><a href="#使用Lock实现线程同步" class="headerlink" title="使用Lock实现线程同步"></a>使用Lock实现线程同步</h2><p>使用threading.Lock()实例化Lock锁对象<br>在共享资源操作的部分，调用Lock的方法<code>acquire()</code>获取锁<br>结束操作后，调用Lock的方法<code>release()</code>释放锁，以便于其它线程使用该资源</p>
+<p><em>（函数声明：<br><strong>acquire</strong>(blocking=True, timeout=-1)<br>获取锁，并阻塞其它线程访问这部分资源<br>blocking[ <sup>5</sup>: 设置为False的线程不会被阻塞 *（并且<code>timeout</code>设置为默认值-1时，失去同步效果。设置为非-1值时，被设置为True的线程阻塞，则False立即返回。这2种情况都会提示错误信息）</em><br>timeout: 设置等待的超时值，-1为无限等待，超时后无视阻塞<br>返回值为<code>True</code>成功获取锁定，<code>False</code>反之（例如超时到期）<br><strong>release</strong>()<br>在未锁的资源上调用释放锁方法，会引发<code>RuntimeError</code>）*</p>
+<p><strong>示例：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!usr/bin/env python</span></span><br><span class="line"><span class="comment">#coding=utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">lock = threading.Lock()     <span class="comment"># 创建Lock锁</span></span><br><span class="line">num = <span class="number">0</span>     <span class="comment"># 累加这个变量，观察不同步的情况出现</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">func</span><span class="params">()</span>:</span></span><br><span class="line">    lock.acquire()  <span class="comment"># 获取锁</span></span><br><span class="line">    <span class="keyword">global</span> num</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1000000</span>):    <span class="comment"># 如果未出现不同步，是由于运算太快，加大循环值</span></span><br><span class="line">        num += <span class="number">1</span></span><br><span class="line">    lock.release()  <span class="comment"># 释放锁</span></span><br><span class="line"></span><br><span class="line">t1 = threading.Thread(target=func)</span><br><span class="line">t2 = threading.Thread(target=func)</span><br><span class="line"></span><br><span class="line">t1.start()</span><br><span class="line">t2.start()</span><br><span class="line"></span><br><span class="line">t1.join()</span><br><span class="line">t2.join()</span><br><span class="line"></span><br><span class="line">print(num)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">有锁情况下，输出：</span><br><span class="line">2000000</span><br><span class="line"></span><br><span class="line">无锁情况下，不同步，输出：</span><br><span class="line">第一次输出：</span><br><span class="line">1253312</span><br><span class="line">第二次输出：</span><br><span class="line">1227567</span><br><span class="line">第三次输出：</span><br><span class="line">1309097</span><br><span class="line">&lt;&#x2F;pre&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>注!</strong> 书中并不提倡使用锁来解决，因为可能会导致死锁情况发生，也会对代码的可读性产生影响，调试困难</p>
+<h2 id="使用RLock实现线程同步"><a href="#使用RLock实现线程同步" class="headerlink" title="使用RLock实现线程同步"></a>使用RLock实现线程同步</h2><p>可重入锁（reentrant lock）<br>操作方式同Lock锁</p>
+<p><strong>与Lock的区别</strong>：RLock在 <strong>同一个线程中</strong>可以多次<code>acquire()</code>获取锁而不发生阻塞 <em>（这是为了解决一些特殊场景的使用）</em></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 部分代码</span></span><br><span class="line">lock = threading.RLock()     <span class="comment"># 创建RLock锁</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">func</span><span class="params">()</span>:</span></span><br><span class="line">    lock.acquire()  <span class="comment"># 获取锁</span></span><br><span class="line">    lock.acquire()</span><br><span class="line">    <span class="keyword">global</span> num</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1000000</span>):</span><br><span class="line">        num += <span class="number">1</span></span><br><span class="line">    lock.release()  <span class="comment"># 释放锁</span></span><br><span class="line">    lock.release()</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意!</strong> acquire()需要成对使用</p>
+<h2 id="使用信号量实现线程同步"><a href="#使用信号量实现线程同步" class="headerlink" title="使用信号量实现线程同步"></a>使用信号量实现线程同步</h2><p><strong>信号量</strong>的提出，首次用在操作系统中。它是一个操作系统管理的抽象数据类型，用于同步多个线程对共享资源与数据的访问<br><em>（本质上，信号量是由一个内部变量构成的，它标识出了对其所关联的资源的并发访问量）</em></p>
+<p>使用threading.<strong>Semaphore</strong>()创建对象<br>在线程模块中，信号量的操作基于<code>acquire()</code>与<code>release()</code></p>
+<p>当一个线程想使用一个资源，它需要调用<code>acquire()</code>，会判断信号量内部变量值_value，如果为0则阻塞线程，并且进行timeout超时处理，如果_value不为0，线程运行 <em>（由于信号量的初始值为非负数，故设计中不存在负数情况的代码）</em><br>当一个线程使用完一个资源后，它需要调用<code>release()</code>，该操作会增加信号量的内部变量值，并通知等待的线程<br><em>（ <strong>注!</strong> 书中的描述和threading模块的源码不符，重新按源码的理解写）</em></p>
+<p><strong>注意!</strong> <code>acquire()</code>和<code>release()</code>并不需要放在某段代码的前后，来锁住某段资源</p>
+<p><strong>示例：</strong></p>
+<p><em>（由于书中给的示例代码，感觉很符合理解信号量的特点，这里也采用生产者和消费者的关系编写代码）</em></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!usr/bin/env python</span></span><br><span class="line"><span class="comment">#coding=utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"></span><br><span class="line"><span class="comment"># 可选参数为内部变量_value赋初值，默认为1</span></span><br><span class="line"><span class="comment"># 如果赋的值小于0，会raise ValueError异常</span></span><br><span class="line">sem = threading.Semaphore(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">producer</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">global</span> item</span><br><span class="line">    time.sleep(<span class="number">1</span>)</span><br><span class="line">    item = random.randint(<span class="number">0</span>, <span class="number">1000</span>)</span><br><span class="line">    print(<span class="string">'producer: produced'</span>, item)</span><br><span class="line">    sem.release()   <span class="comment"># 释放信号量，将内部_value加1，并通知其它等待的线程</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">consumer</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">'consumer is waiting'</span>)</span><br><span class="line">    sem.acquire()   <span class="comment"># 获取信号量，值等于0则阻塞线程，否则内部_value减1，并继续运行</span></span><br><span class="line">    print(<span class="string">'consumer: sonsumed'</span>, item)</span><br><span class="line"></span><br><span class="line">t1 = threading.Thread(target=producer)</span><br><span class="line">t2 = threading.Thread(target=consumer)</span><br><span class="line"></span><br><span class="line">t1.start()</span><br><span class="line">t2.start()</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><del>输出</del></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">consumer is waiting</span><br><span class="line">producer: produced 295</span><br><span class="line">consumer: sonsumed  295</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><em><del>分析：多执行几次，逻辑上可以发现消费者总需要等待生产者生产出产品后，才能消费</del></em></p>
+</blockquote>
+<p>可以看出信号量很适合这样的场景，下面可以测试，生产者可以多生产几个，消费者再消费</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;</span><span class="bash">&gt;&gt; import threading</span></span><br><span class="line"><span class="meta">&gt;</span><span class="bash">&gt;&gt; sem = threading.Semaphore()</span></span><br><span class="line"><span class="meta">&gt;</span><span class="bash">&gt;&gt; sem.acquire()    <span class="comment"># 获取初始化的信号量</span></span></span><br><span class="line">True</span><br><span class="line"><span class="meta">&gt;</span><span class="bash">&gt;&gt; sem.release()    <span class="comment"># 信号量+1</span></span></span><br><span class="line"><span class="meta">&gt;</span><span class="bash">&gt;&gt; sem.release()    <span class="comment"># 信号量+1</span></span></span><br><span class="line"><span class="meta">&gt;</span><span class="bash">&gt;&gt; sem.release()    <span class="comment"># 信号量+1</span></span></span><br><span class="line"><span class="meta">&gt;</span><span class="bash">&gt;&gt; sem.acquire()    <span class="comment"># 信号量-1</span></span></span><br><span class="line">True</span><br><span class="line"><span class="meta">&gt;</span><span class="bash">&gt;&gt; sem.acquire()    <span class="comment"># 信号量-1</span></span></span><br><span class="line">True</span><br><span class="line"><span class="meta">&gt;</span><span class="bash">&gt;&gt; sem.acquire()    <span class="comment"># 信号量-1</span></span></span><br><span class="line">True</span><br><span class="line"><span class="meta">&gt;</span><span class="bash">&gt;&gt; sem.acquire()    <span class="comment"># 由于信号量=0</span></span></span><br><span class="line">    # 所以陷入了阻塞</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用条件实现线程同步"><a href="#使用条件实现线程同步" class="headerlink" title="使用条件实现线程同步"></a>使用条件实现线程同步</h2><p>使用threading.<strong>Condition</strong>()创建对象</p>
+<p>查看Condition的源码，发现可以传入一个锁作为初始化参数。如果不传，默认会赋值<code>RLock</code>锁来进行后续的锁的操作 <em>（<code>acquire()</code>、<code>release()</code>）</em></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Condition类的初始化部分源码</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, lock=None)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> lock <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            lock = RLock()</span><br><span class="line">        self._lock = lock</span><br><span class="line">        <span class="comment"># Export the lock's acquire() and release() methods</span></span><br><span class="line">        self.acquire = lock.acquire</span><br><span class="line">        self.release = lock.release</span><br><span class="line">        ...</span><br></pre></td></tr></table></figure>
+
+<p><strong>示例：</strong></p>
+<p><em>（下例还是使用生产者和消费者的关系编写示例代码，用items作为存储容器，以满了(10个)就不能再生产作为条件，以没了(0个)就不能再消费作为条件）</em></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!usr/bin/env python</span></span><br><span class="line"><span class="comment">#coding=utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">condition = threading.Condition()   <span class="comment"># 创建条件</span></span><br><span class="line">items = []      <span class="comment"># 作为产品的存储容器，设达到10个为满了，就不能再生产了</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">producer</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">global</span> items</span><br><span class="line">    condition.acquire()     <span class="comment"># 获取锁</span></span><br><span class="line">    <span class="keyword">if</span> len(items) == <span class="number">10</span>:</span><br><span class="line">        print(<span class="string">'producer: stop produce'</span>)</span><br><span class="line">        condition.wait()    <span class="comment"># 等待(items达到10，等待消费者消费)</span></span><br><span class="line">    items.append(<span class="string">''</span>)</span><br><span class="line">    print(<span class="string">'producer: produced'</span>, len(items))</span><br><span class="line">    condition.notify()      <span class="comment"># 通知等待的线程</span></span><br><span class="line">    condition.release()     <span class="comment"># 释放锁</span></span><br><span class="line">    </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">consumer</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">global</span> items</span><br><span class="line">    condition.acquire()     <span class="comment"># 获取锁</span></span><br><span class="line">    <span class="keyword">if</span> len(items) == <span class="number">0</span>:</span><br><span class="line">        print(<span class="string">'consumer: waiting'</span>)</span><br><span class="line">        condition.wait()    <span class="comment"># 等待(items为0，等待生产者生产)</span></span><br><span class="line">    items.pop()       <span class="comment"># 注! 注释掉这行，会发现，等待wait()在接收到通知notify()后，并没有再次判断条件，直接就接着运行了</span></span><br><span class="line">    print(<span class="string">'consumer: sonsumed'</span>, len(items))</span><br><span class="line">    condition.notify()      <span class="comment"># 通知等待的线程</span></span><br><span class="line">    condition.release()     <span class="comment"># 释放锁</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># producer_loop()和consumer_loop()用来多次循环运行，为了达到items为0或10的情况</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">producer_loop</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">20</span>):</span><br><span class="line">        time.sleep(<span class="number">1</span>)</span><br><span class="line">        producer()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">consumer_loop</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">20</span>):</span><br><span class="line">        time.sleep(<span class="number">4</span>)</span><br><span class="line">        consumer()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">t1 = threading.Thread(target=producer_loop)</span><br><span class="line">t2 = threading.Thread(target=consumer_loop)</span><br><span class="line"></span><br><span class="line">t1.start()</span><br><span class="line">t2.start()</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><del>输出</del></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">producer: produced 1</span><br><span class="line">producer: produced 2</span><br><span class="line">producer: produced 3</span><br><span class="line">consumer: sonsumed 2</span><br><span class="line">producer: produced 3</span><br><span class="line">producer: produced 4</span><br><span class="line">producer: produced 5</span><br><span class="line">producer: produced 6</span><br><span class="line">consumer: sonsumed 5</span><br><span class="line">producer: produced 6</span><br><span class="line">producer: produced 7</span><br><span class="line">producer: produced 8</span><br><span class="line">producer: produced 9</span><br><span class="line">consumer: sonsumed 8</span><br><span class="line">producer: produced 9</span><br><span class="line">producer: produced 10</span><br><span class="line">producer: stop produce</span><br><span class="line">consumer: sonsumed 9</span><br><span class="line">producer: produced 10</span><br><span class="line">producer: stop produce</span><br><span class="line">consumer: sonsumed 9</span><br><span class="line">producer: produced 10</span><br><span class="line">producer: stop produce</span><br><span class="line">consumer: sonsumed 9</span><br><span class="line">producer: produced 10</span><br><span class="line">producer: stop produce</span><br><span class="line">consumer: sonsumed 9</span><br><span class="line">producer: produced 10</span><br><span class="line">producer: stop produce</span><br><span class="line">consumer: sonsumed 9</span><br><span class="line">producer: produced 10</span><br><span class="line">producer: stop produce</span><br><span class="line">consumer: sonsumed 9</span><br><span class="line">producer: produced 10</span><br><span class="line">producer: stop produce</span><br><span class="line">consumer: sonsumed 9</span><br><span class="line">producer: produced 10</span><br><span class="line">consumer: sonsumed 9</span><br><span class="line">consumer: sonsumed 8</span><br><span class="line">consumer: sonsumed 7</span><br><span class="line">consumer: sonsumed 6</span><br><span class="line">consumer: sonsumed 5</span><br><span class="line">consumer: sonsumed 4</span><br><span class="line">consumer: sonsumed 3</span><br><span class="line">consumer: sonsumed 2</span><br><span class="line">consumer: sonsumed 1</span><br><span class="line">consumer: sonsumed 0</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><em><del>分析：观察可以发现，生产者生产满了10个就会进入等待<code>wait()</code>，直到消费者通知<code>notify()</code></del><br><del>为了观察消费者消费到0个的情况，可以将生产者和消费者循环的等待时间做调整</del></em></p>
+</blockquote>
+<h2 id="使用事件实现线程同步"><a href="#使用事件实现线程同步" class="headerlink" title="使用事件实现线程同步"></a>使用事件实现线程同步</h2><p>查看Event类的源码，发现内部使用的是条件<code>Condition</code>类实现，并传入了<code>Lock</code>锁。事件通过对内部的<strong>标志_flag</strong>进行管理来实现线程同步<br>使用<code>set()</code>方法可以将标志设为True<br>使用<code>clear()</code>方法将其重置为False<br>使用<code>wait()</code>方法阻塞线程</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Event类的初始化源码</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        self._cond = Condition(Lock())</span><br><span class="line">        self._flag = <span class="literal">False</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意!</strong> 并不存在<code>set()</code>和<code>clear()</code>放在某段代码的前后，来锁住某段资源</p>
+<p><strong>示例：</strong><br><em>（还是采用生产者和消费者的关系编写，生产者做完工作，调用<code>set()</code>设置<code>_flag</code>标志，并通知<code>wait()</code>等待的消费者线程运行；再使用<code>clear()</code>清除<code>_flag</code>标志，以便后面的消费者能正确的进入等待。这个过程类似于事件的触发）</em></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!usr/bin/env python</span></span><br><span class="line"><span class="comment">#coding=utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"></span><br><span class="line">event = threading.Event()   <span class="comment"># 创建事件</span></span><br><span class="line">items = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>] <span class="comment"># 设置个初值，便于后面注释event.clear()后的测试(可以发现,消费者不等待了)</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">producer</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">global</span> items</span><br><span class="line">    print(<span class="string">'producer: start'</span>)</span><br><span class="line">    items.append(random.randint(<span class="number">0</span>,<span class="number">100</span>))</span><br><span class="line">    event.set()     <span class="comment"># 将内部标志_flag设为True,并通知所有等待的线程(类似于触发事件)</span></span><br><span class="line">    print(<span class="string">'producer: notify'</span>)</span><br><span class="line">    event.clear()   <span class="comment"># 将内部标志_flag设为False(只有清除了_flag,消费者下一次的wait()操作才会正常进入等待)(clear()操作也可以交给消费者调用，不过为了简化消费者的操作，让消费者只需要等待通知即可)</span></span><br><span class="line">    print(<span class="string">'producer: end'</span>)</span><br><span class="line">    </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">consumer</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">global</span> items</span><br><span class="line">    print(<span class="string">'consumer: waiting'</span>)</span><br><span class="line">    event.wait()    <span class="comment"># 等待(等待生产者通知,根据_flag标志判断是否进入等待)</span></span><br><span class="line">    print(<span class="string">'consumer:'</span>, items.pop())</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># producer_loop()和consumer_loop()用来多次循环运行</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">producer_loop</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">3</span>):</span><br><span class="line">        time.sleep(<span class="number">1</span>)</span><br><span class="line">        producer()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">consumer_loop</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>: <span class="comment"># 消费者有wait()等待，就不用线程休眠了，以免错过生产者的set()通知</span></span><br><span class="line">        consumer()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">t1 = threading.Thread(target=producer_loop)</span><br><span class="line">t2 = threading.Thread(target=consumer_loop)</span><br><span class="line"></span><br><span class="line">t1.start()</span><br><span class="line">t2.start()</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><del>输出</del></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">consumer: waiting</span><br><span class="line">producer: start</span><br><span class="line">producer: notify</span><br><span class="line">consumer: 57</span><br><span class="line">consumer: waiting</span><br><span class="line">producer: end</span><br><span class="line">producer: start</span><br><span class="line">producer: notify</span><br><span class="line">consumer: 10</span><br><span class="line">producer: end</span><br><span class="line">consumer: waiting</span><br><span class="line">producer: start</span><br><span class="line">producer: notify</span><br><span class="line">consumer: 24</span><br><span class="line">producer: end</span><br><span class="line">consumer: waiting</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><del>如果注释掉代码中的<code># event.clear()</code>一行，会出现如下输出</del></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">consumer: waiting</span><br><span class="line">producer: start</span><br><span class="line">producer: notify</span><br><span class="line">consumer: 19</span><br><span class="line">producer: end</span><br><span class="line">consumer: waiting</span><br><span class="line">consumer: 3</span><br><span class="line">consumer: waiting</span><br><span class="line">consumer: 2</span><br><span class="line">consumer: waiting</span><br><span class="line">consumer: 1</span><br><span class="line">consumer: waiting</span><br><span class="line">Exception in thread Thread-2:</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File &quot;D:\app\Python\Python37\lib\threading.py&quot;, line 917, in _bootstrap_inner</span><br><span class="line">    self.run()</span><br><span class="line">  File &quot;D:\app\Python\Python37\lib\threading.py&quot;, line 865, in run</span><br><span class="line">    self._target(*self._args, **self._kwargs)</span><br><span class="line">  File &quot;g:&#x2F;tmp&#x2F;code.py&quot;, line 35, in consumer_loop</span><br><span class="line">    consumer()</span><br><span class="line">  File &quot;g:&#x2F;tmp&#x2F;code.py&quot;, line 24, in consumer</span><br><span class="line">    print(&#39;consumer:&#39;, items.pop())</span><br><span class="line">IndexError: pop from empty list</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>producer: start</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">producer: notify</span><br><span class="line">producer: end</span><br><span class="line">producer: start</span><br><span class="line">producer: notify</span><br><span class="line">producer: end</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><em><del>分析：会发现，消费者没有等待(打印出的consumer: waiting，只是给自己的提示，实际没有等待)，直接进行了列表的<code>pop()</code>操作，直到后面列表为空再弹出时报错为止</del></em></p>
+</blockquote>
+<hr>
+<h1 id="附：其它"><a href="#附：其它" class="headerlink" title="附：其它"></a>附：其它</h1><h2 id="使用with语句-6"><a href="#使用with语句-6" class="headerlink" title="使用with语句 6"></a>使用with语句 <sup>6</sup></h2><p><em>（由于没有理解部分，这一部分基本就是书中原文）</em></p>
+<p><strong>with</strong>: 是Python 2.5中引入的。当有两个相关的操作需要对一个代码块承兑执行时，with语句的作用就彰显出来了。它可以再自动精确的分配或释放资源 <em>（因此也被称为上下文管理器）</em>。如线程模块中，使用到<code>acquire()</code>和<code>release()</code>方法的地方，都可以采用<code>with</code>语句块，如下：</p>
+<blockquote>
+<ul>
+<li>Lock</li>
+<li>RLock</li>
+<li>条件</li>
+<li>信号量 <em>（感觉这用了<code>with</code>就不太灵活了）</em></li>
+</ul>
+</blockquote>
+<p><strong>示例：</strong><br><em>（会测试上述列表中的with操作）</em></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!usr/bin/env python</span></span><br><span class="line"><span class="comment">#coding=utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">func_with</span><span class="params">(statement)</span>:</span></span><br><span class="line">    <span class="keyword">with</span> statement: <span class="comment"># 会自动进行acquire()和release()</span></span><br><span class="line">        print(<span class="string">'//todo1'</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">func_not_with</span><span class="params">(statement)</span>:</span></span><br><span class="line">    statement.acquire()</span><br><span class="line">    <span class="keyword">try</span>:    <span class="comment"># 为了避免出现异常，导致没有release()释放</span></span><br><span class="line">        print(<span class="string">'//todo2'</span>)</span><br><span class="line">    <span class="keyword">finally</span>:</span><br><span class="line">        statement.release()</span><br><span class="line"></span><br><span class="line">lock = threading.Lock()</span><br><span class="line">rlock = threading.RLock()</span><br><span class="line">condition = threading.Condition()</span><br><span class="line">sem = threading.Semaphore(<span class="number">1</span>)    <span class="comment"># 采用with，需要初始至少有一个信号量值（因为需要先acquire()）</span></span><br><span class="line"></span><br><span class="line">li = [lock, rlock, condition, sem]</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> statement <span class="keyword">in</span> li:</span><br><span class="line">    t1 = threading.Thread(target=func_with, args=(statement,))</span><br><span class="line">    t2 = threading.Thread(target=func_not_with, args=(statement,))</span><br><span class="line"></span><br><span class="line">    t1.start()</span><br><span class="line">    t2.start()</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用队列实现线程通信"><a href="#使用队列实现线程通信" class="headerlink" title="使用队列实现线程通信"></a>使用队列实现线程通信</h2><p>虽然python线程模块提供了很多同步原语 <em>（<code>锁</code>、<code>信号量</code>、<code>条件</code>、<code>事件</code>）</em>，但有时候，在使用场景中，可能采用队列模块会是个最佳选择。它使得线程编程变得更加容易和安全</p>
+<p>使用队列<code>Queue</code>的方式处理，尽管它不属于<code>threading</code>模块，但查看其源码，发现队列的功能实现有用到<code>threading</code>模块</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"># Queue的初始化源码</span><br><span class="line">    def __init__(self, maxsize&#x3D;0):</span><br><span class="line">        self.maxsize &#x3D; maxsize</span><br><span class="line">        self._init(maxsize)</span><br><span class="line"></span><br><span class="line">        # mutex must be held whenever the queue is mutating.  All methods</span><br><span class="line">        # that acquire mutex must release it before returning.  mutex</span><br><span class="line">        # is shared between the three conditions, so acquiring and</span><br><span class="line">        # releasing the conditions also acquires and releases mutex.</span><br><span class="line">        self.mutex &#x3D; threading.Lock()</span><br><span class="line"></span><br><span class="line">        # Notify not_empty whenever an item is added to the queue; a</span><br><span class="line">        # thread waiting to get is notified then.</span><br><span class="line">        self.not_empty &#x3D; threading.Condition(self.mutex)</span><br><span class="line"></span><br><span class="line">        # Notify not_full whenever an item is removed from the queue;</span><br><span class="line">        # a thread waiting to put is notified then.</span><br><span class="line">        self.not_full &#x3D; threading.Condition(self.mutex)</span><br><span class="line"></span><br><span class="line">        # Notify all_tasks_done whenever the number of unfinished tasks</span><br><span class="line">        # drops to zero; thread waiting to join() is notified to resume</span><br><span class="line">        self.all_tasks_done &#x3D; threading.Condition(self.mutex)</span><br><span class="line">        self.unfinished_tasks &#x3D; 0</span><br></pre></td></tr></table></figure>
+
+<p><code>Queue</code>会用到如下方法：</p>
+<blockquote>
+<ul>
+<li><strong>put</strong>(): 添加一个项目到队列</li>
+<li><strong>get</strong>(): 从队列中取出一个项目</li>
+<li><strong>task_done</strong>(): 每处理完一个项目，需要调用该方法</li>
+<li><strong>join</strong>(): 阻塞线程，等待全部的任务完成</li>
+</ul>
+</blockquote>
+<blockquote>
+<p><em>附：查看源代码，分析可得Queue内部的操作是这样的：（这段可以不用看）</em></p>
+<ul>
+<li><em>调用<code>put()</code> -&gt; with队列满(条件锁<code>not_full</code>) -&gt; 能阻塞？(参数block) &amp; 能超时？(参数timeout) &amp; 需要等待？(条件锁<code>not_full.wait()</code>) -&gt; 添加数据(内部方法<code>_put()</code>) -&gt; 任务计数加1(内部计数变量<code>unfinished_tasks += 1</code>) -&gt; 发起队列非空的通知(条件锁<code>not_empty.notify()</code>)</em></li>
+<li><em>调用<code>get()</code> -&gt; with队列空(条件锁<code>not_empty</code>) -&gt; 能阻塞？(参数block) &amp; 能超时？(参数timeout) &amp; 需要等待？(条件锁<code>not_empty.wait()</code>) -&gt; 取出数据(内部方法<code>_get()</code>) -&gt; 发起队列非满的通知(条件锁<code>not_full.notify()</code>) （ <strong>注意!</strong> <code>get()</code>与<code>put()</code>操作相比并没有对任务计数操作，需要通过后面<code>task_done()</code>完成任务方法来减少任务数）</em></li>
+<li>*调用<code>task_done()</code> -&gt; with任务完成(条件锁<code>all_tasks_done</code>) -&gt; 判断全部任务完成了？是的话发起通知(条件锁<code>all_tasks_done.notify_all()</code>) -&gt; 任务计数减1(内部计数变量<code>unfinished_tasks -= 1</code>) *</li>
+<li><em>调用<code>join()</code> -&gt; with任务完成(条件锁<code>all_tasks_done</code>) -&gt; 循环未完成的任务计数变量(内部计数变量<code>unfinished_tasks</code>) -&gt; 还有没完成的任务，等待(条件锁<code>all_tasks_done.wait()</code> | 全部完成，退出循环，解除线程阻塞)</em></li>
+</ul>
+</blockquote>
+<p><strong>示例：</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!usr/bin/env python</span></span><br><span class="line"><span class="comment">#coding=utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"><span class="keyword">from</span> queue <span class="keyword">import</span> Queue</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"></span><br><span class="line">queue = Queue()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">producer</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">5</span>):</span><br><span class="line">        item = random.randint(<span class="number">0</span>, <span class="number">100</span>)</span><br><span class="line">        queue.put(item)</span><br><span class="line">        print(<span class="string">'producer:'</span>, <span class="string">'put'</span>, item)</span><br><span class="line">        time.sleep(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">consumer</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        item = queue.get()</span><br><span class="line">        print(<span class="string">'consumer:'</span>, <span class="string">'get'</span>, item)</span><br><span class="line">        queue.task_done()</span><br><span class="line"></span><br><span class="line">t1 = threading.Thread(target=producer)</span><br><span class="line">t2 = threading.Thread(target=consumer)</span><br><span class="line"></span><br><span class="line">t1.start()</span><br><span class="line">t2.start()</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><del>输出</del></p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">producer: put 47</span><br><span class="line">consumer: get 47</span><br><span class="line">producer: put 71</span><br><span class="line">consumer: get 71</span><br><span class="line">producer: put 99</span><br><span class="line">consumer: get 99</span><br><span class="line">producer: put 30</span><br><span class="line">consumer: get 30</span><br><span class="line">producer: put 75</span><br><span class="line">consumer: get 75</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>1.后台线程: 后台线程在主线程停止后就直接停止运行。他们资源（如打开的文件，数据库事务等）可能不会被正确的释放。如果你想要你的线程优美的停止，让他们不要变为后台和使用一个合适的信号机制如事件<code>Event</code></p>
+<p>2.nvoke: 官方文档中使用invoke一词，我并没有更好的翻译，因为其它语言中invoke反射是一种技术手段，但Google的翻译中，将此解释为调用 <em>（是我想多了）</em></p>
+<p>3.加入线程: 加入线程？不理解如何能加入线程，并且官方文档说会死锁。实测，创建2个线程互相join()，虽然陷入死循环，但并没抛出错误    // TODO: 不知理解有偏差没有</p>
+<p>4.死锁: 多个对象，互持对方所需资源的锁，导致都无法访问</p>
+<p>5.blocking: 锁的acquire()方法的参数，有点难理解，文中所写是结合官方文档和实测的结果描述所得。不过一般，我们都不用改变它的默认值    // TODO: 没有从源码分析（找不到源码）</p>
+<p>6.参考书籍：《Python并行编程手册》</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/10/05/python-%E5%B9%B6%E8%A1%8C1-%E7%AE%80%E4%BB%8B/" rel="prev" title="[python 并行1] 简介">
+      <i class="fa fa-chevron-left"></i> [python 并行1] 简介
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/11/13/python-%E5%B9%B6%E8%A1%8C3-%E8%BF%9B%E7%A8%8B/" rel="next" title="[python 并行3] 进程">
+      [python 并行3] 进程 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#基本使用"><span class="nav-number">1.</span> <span class="nav-text">基本使用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#threading模块"><span class="nav-number">1.1.</span> <span class="nav-text">threading模块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#函数形式"><span class="nav-number">1.1.1.</span> <span class="nav-text">函数形式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#继承类的形式"><span class="nav-number">1.1.2.</span> <span class="nav-text">继承类的形式</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#线程同步"><span class="nav-number">2.</span> <span class="nav-text">线程同步</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#使用Lock实现线程同步"><span class="nav-number">2.1.</span> <span class="nav-text">使用Lock实现线程同步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用RLock实现线程同步"><span class="nav-number">2.2.</span> <span class="nav-text">使用RLock实现线程同步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用信号量实现线程同步"><span class="nav-number">2.3.</span> <span class="nav-text">使用信号量实现线程同步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用条件实现线程同步"><span class="nav-number">2.4.</span> <span class="nav-text">使用条件实现线程同步</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用事件实现线程同步"><span class="nav-number">2.5.</span> <span class="nav-text">使用事件实现线程同步</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#附：其它"><span class="nav-number">3.</span> <span class="nav-text">附：其它</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#使用with语句-6"><span class="nav-number">3.1.</span> <span class="nav-text">使用with语句 6</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用队列实现线程通信"><span class="nav-number">3.2.</span> <span class="nav-text">使用队列实现线程通信</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="dejiang"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">dejiang</p>
+  <div class="site-description" itemprop="description">你根本不知道你什么都不知道</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wwstory" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wwstory" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:1018472917@qq.com" title="E-Mail → mailto:1018472917@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-qq"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.cnblogs.com/maplesnow" title="cnblogs → https:&#x2F;&#x2F;www.cnblogs.com&#x2F;maplesnow" rel="noopener" target="_blank"><i class="fa fa-fw fa-cnblogs"></i>cnblogs</a>
+      </span>
+  </div>
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+
+
+
+      </div>
+
+      <!-- music player -->
+      <div>
+        
+          <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=298 height=52 src="//music.163.com/outchain/player?type=0&id=431226116&auto=0&height=32"></iframe>
+        
+      </div>
+
+    </div>
+  </aside>
+
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">dejiang</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v4.1.1
+  </div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.6.0
+  </div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

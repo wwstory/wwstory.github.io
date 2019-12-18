@@ -44,17 +44,19 @@
   };
 </script>
 
-  <meta name="description" content="你根本不知道你什么都不知道">
-<meta property="og:type" content="website">
-<meta property="og:title" content="枫の故事">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;archives&#x2F;2019&#x2F;12&#x2F;index.html">
+  <meta name="description" content="用途SpEL的特性：  使用bean的ID来引用bean。 调用方法和访问对象的属性。 进行运算。 正则表达式匹配。 集合操作。  可用来在依赖注入以外的地方。例如：Spring Security支持使用SpEL表达式定义安全限制规则。 运算符   运算符类型 运算符    算术运算 +  -  *  &#x2F;  %  ^   比较运算 &lt;  &gt;  &#x3D;&#x3D;  &lt;&#x3D;  &gt;&#x3D;  lt">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[spring] SpEL">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;10&#x2F;06&#x2F;spring-SpEL&#x2F;index.html">
 <meta property="og:site_name" content="枫の故事">
-<meta property="og:description" content="你根本不知道你什么都不知道">
+<meta property="og:description" content="用途SpEL的特性：  使用bean的ID来引用bean。 调用方法和访问对象的属性。 进行运算。 正则表达式匹配。 集合操作。  可用来在依赖注入以外的地方。例如：Spring Security支持使用SpEL表达式定义安全限制规则。 运算符   运算符类型 运算符    算术运算 +  -  *  &#x2F;  %  ^   比较运算 &lt;  &gt;  &#x3D;&#x3D;  &lt;&#x3D;  &gt;&#x3D;  lt">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-10-06T14:13:00.000Z">
+<meta property="article:modified_time" content="2019-12-18T09:02:11.198Z">
 <meta property="article:author" content="dejiang">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://yoursite.com/archives/2019/12/">
+<link rel="canonical" href="http://yoursite.com/2019/10/06/spring-SpEL/">
 
 
 <script id="page-configurations">
@@ -62,13 +64,13 @@
   CONFIG.page = {
     sidebar: "",
     isHome: false,
-    isPost: false,
+    isPost: true,
     isPage: false,
-    isArchive: true
+    isArchive: false
   };
 </script>
 
-  <title>归档 | 枫の故事</title>
+  <title>[spring] SpEL | 枫の故事</title>
   
 
 
@@ -175,69 +177,148 @@
           <div class="content">
             
 
+  <div class="posts-expand">
+      
   
   
-  
-  <div class="post-block">
-    <div class="posts-collapse">
-      <div class="collection-title">
-        <span class="collection-header">嗯..! 目前共计 21 篇日志。 继续努力。</span>
-      </div>
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/06/spring-SpEL/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="dejiang">
+      <meta itemprop="description" content="你根本不知道你什么都不知道">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫の故事">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [spring] SpEL
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-10-06 22:13:00" itemprop="dateCreated datePublished" datetime="2019-10-06T22:13:00+08:00">2019-10-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-12-18 17:02:11" itemprop="dateModified" datetime="2019-12-18T17:02:11+08:00">2019-12-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/java/" itemprop="url" rel="index">
+                    <span itemprop="name">java</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/java/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-    <div class="collection-year">
-      <h1 class="collection-header">2019</h1>
+        <h1 id="用途"><a href="#用途" class="headerlink" title="用途"></a>用途</h1><p>SpEL的特性：</p>
+<ul>
+<li>使用bean的<code>ID</code>来引用bean。</li>
+<li>调用方法和访问对象的属性。</li>
+<li>进行运算。</li>
+<li>正则表达式匹配。</li>
+<li>集合操作。</li>
+</ul>
+<p>可用来在依赖注入以外的地方。例如：<code>Spring Security</code>支持使用SpEL表达式定义安全限制规则。</p>
+<h1 id="运算符"><a href="#运算符" class="headerlink" title="运算符"></a>运算符</h1><table>
+<thead>
+<tr>
+<th>运算符类型</th>
+<th>运算符</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>算术运算</td>
+<td>+  -  *  /  %  ^</td>
+</tr>
+<tr>
+<td>比较运算</td>
+<td>&lt;  &gt;  ==  &lt;=  &gt;=  lt  gt  eq  le  ge</td>
+</tr>
+<tr>
+<td>逻辑运算</td>
+<td>and  or  not  `</td>
+</tr>
+<tr>
+<td>条件运算</td>
+<td>?:</td>
+</tr>
+<tr>
+<td>正则表达式</td>
+<td>matches</td>
+</tr>
+<tr>
+<td>查询运算</td>
+<td>.?[]  .^[]  .$[]</td>
+</tr>
+<tr>
+<td>投影运算</td>
+<td>.![]</td>
+</tr>
+</tbody></table>
+
     </div>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+    
+    
+    
 
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2019-12-18T17:04:12+08:00"
-              content="2019-12-18">
-          12-18
-        </time>
-      </div>
+      <footer class="post-footer">
 
-      <h2 class="post-title">
-          <a class="post-title-link" href="/2019/12/18/problem-flask-api-vue-%E8%B7%A8%E5%9F%9F%E9%97%AE%E9%A2%98/" itemprop="url">
-            <span itemprop="name">[problem] flask api + vue 跨域问题</span>
-          </a>
-      </h2>
-
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2019-12-18T16:34:04+08:00"
-              content="2019-12-18">
-          12-18
-        </time>
-      </div>
-
-      <h2 class="post-title">
-          <a class="post-title-link" href="/2019/12/18/spring-%E5%AD%A6%E4%B9%A05-MVC%E6%9B%B4%E5%A4%9A/" itemprop="url">
-            <span itemprop="name">[spring 学习5] MVC更多</span>
-          </a>
-      </h2>
-
-    </header>
-  </article>
+        
 
 
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/10/06/spring-%E5%AD%A6%E4%B9%A02-%E8%A3%85%E9%85%8D/" rel="prev" title="[spring 学习2] 装配">
+      <i class="fa fa-chevron-left"></i> [spring 学习2] 装配
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/10/14/mybatis-mybatis%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B/" rel="next" title="[mybatis] mybatis快速开始">
+      [mybatis] mybatis快速开始 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
   </div>
-  
-  
-  
-
-  
-
 
 
           </div>
@@ -266,6 +347,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#用途"><span class="nav-number">1.</span> <span class="nav-text">用途</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#运算符"><span class="nav-number">2.</span> <span class="nav-text">运算符</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
