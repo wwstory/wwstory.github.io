@@ -44,15 +44,15 @@
   };
 </script>
 
-  <meta name="description" content="你根本不知道你什么都不知道">
+  <meta name="description" content="个人信息 姓名：dejiangsong 硕士：西南大学 本科：兰州理工大学 电话：136****211 邮件：1018472917@qq.com Github：wwstory.github.io  技能    	&#x2F;&#x2F; 基于准备好的dom，初始化echarts实例 	var myChart &#x3D; echarts.init(document.getElementById(&#39;echarts256">
 <meta property="og:type" content="website">
 <meta property="og:title" content="about">
 <meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;about&#x2F;index.html">
 <meta property="og:site_name" content="枫の故事">
-<meta property="og:description" content="你根本不知道你什么都不知道">
+<meta property="og:description" content="个人信息 姓名：dejiangsong 硕士：西南大学 本科：兰州理工大学 电话：136****211 邮件：1018472917@qq.com Github：wwstory.github.io  技能    	&#x2F;&#x2F; 基于准备好的dom，初始化echarts实例 	var myChart &#x3D; echarts.init(document.getElementById(&#39;echarts256">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2019-12-16T16:00:00.000Z">
-<meta property="article:modified_time" content="2019-12-17T17:41:58.000Z">
+<meta property="article:modified_time" content="2019-12-20T05:41:59.000Z">
 <meta property="article:author" content="dejiang">
 <meta name="twitter:card" content="summary">
 
@@ -201,7 +201,456 @@
       
       
       <div class="post-body">
-          
+          <h1 id="个人信息"><a href="#个人信息" class="headerlink" title="个人信息"></a>个人信息</h1><ul>
+<li>姓名：dejiangsong</li>
+<li>硕士：西南大学</li>
+<li>本科：兰州理工大学</li>
+<li>电话：136****211</li>
+<li>邮件：<a href="mailto:1018472917@qq.com">1018472917@qq.com</a></li>
+<li>Github：wwstory.github.io</li>
+</ul>
+<h1 id="技能"><a href="#技能" class="headerlink" title="技能"></a>技能</h1><div id="echarts2565" style="width: 100%;height: 400px;margin: 0 auto"></div>
+<!-- <script src="https://cdn.bootcss.com/echarts/4.3.0/echarts.min.js"></script> -->
+<script src="https://cdn.bootcss.com/echarts/4.0.0/echarts.min.js"></script>
+<script type="text/javascript">
+	// 基于准备好的dom，初始化echarts实例
+	var myChart = echarts.init(document.getElementById('echarts2565'));
+	// 指定图表的配置项和数据
+	var option = 
+{
+    title: [{
+        text: '语言',
+        x: '10%',
+        textAlign: 'center'
+    },
+    {
+        text: '算法',
+        x: '35%',
+        textAlign: 'center'
+    },
+    {
+        text: '基础',
+        x: '60%',
+        textAlign: 'center'
+    },
+    {
+        text: '底层',
+        x: '85%',
+        textAlign: 'center'
+    },
+    {
+        text: '机器学习',
+        x: '10%',
+        y: '50%',
+        textAlign: 'center'
+    },
+    {
+        text: '深度学习',
+        x: '35%',
+        y: '50%',
+        textAlign: 'center'
+    },
+    {
+        text: 'web开发',
+        x: '60%',
+        y: '50%',
+        textAlign: 'center'
+    },
+    {
+        text: 'other',
+        x: '85%',
+        y: '50%',
+        textAlign: 'center'
+    },],
+    tooltip: {
+        trigger: 'axis'
+    },
+    // legend: {
+    //     x: 'center',
+    //     data: [
+    //         '语言', 
+    //         '算法', 
+    //         '基础', 
+    //         '底层', 
+    //         '机器学习', '线性模型', '神经网络', '决策树', '支持向量机', '聚类', '贝叶斯分类器', '概率图模型', '特征选择与稀疏学习', '降维与度量学习', '集成学习', '半监督学习', '强化学习',
+    //         '深度学习', 'CNN', 'RNN', 'GAN', 'optim', 'Object Detection', 'driverless', 'face',
+    //         'web开发', 'jvm', '设计模式', 'spring', 'mysql', 'mybatis', 'Redis', 'mongodb', 'docker', '微服务', 'nginx', 'vue',
+    //         'other', 'arduino', '51', 'STM32', 'nvidia xavier', '机械', 'ros', 'qt', 'flask',
+    //         ]
+    // },
+    // 0：基本不知, 1：入门, 2：进阶, 3：应用, 4：熟练, 5：掌握
+    radar: [
+        {
+            indicator: [
+                { text: 'python', max: 5 },
+                { text: 'java', max: 5 },
+                { text: 'c/c++', max: 5 },
+                { text: 'go', max: 5 },
+                { text: 'c#', max: 5 },
+            ],
+            center: ['10%', '30%'],
+            radius: 50,
+            title: {
+                text: 'abc'
+            }
+        },
+        {
+            indicator: [
+                { text: '数学', max: 5 },
+                { text: '表', max: 5 },
+                { text: '树', max: 5 },
+                { text: '图', max: 5 },
+                { text: '分冶', max: 5 },
+                { text: '回溯', max: 5 },
+                { text: '动态规划', max: 5 },
+                { text: '贪心', max: 5 },
+            ],
+            center: ['35%', '30%'],
+            radius: 50,
+        },
+        {
+            indicator: [
+                { text: '数据结构', max: 5 },
+                { text: '计算机组成原理', max: 5 },
+                { text: '操作系统', max: 5 },
+                { text: '计算机网络', max: 5 },
+                { text: 'linux', max: 5 },
+                { text: '微机原理', max: 5 },
+                { text: '编译原理', max: 5 },
+            ],
+            center: ['60%', '30%'],
+            radius: 50
+        },
+        {
+            indicator: [
+                { text: 'c/c++库', max: 5 },
+                { text: '编译器', max: 5 },
+                { text: 'linux内核', max: 5 },
+                { text: '机器学习库', max: 5 },
+                { text: '深度学习库', max: 5 },
+                { text: 'jvm', max: 5 },
+                { text: 'python vm', max: 5 },
+            ],
+            center: ['85%', '30%'],
+            radius: 50
+        },
+        {
+            indicator: [
+                { text: '广度', max: 5 },
+                { text: '深度', max: 5 },
+                { text: '理解', max: 5 },
+                { text: '原理', max: 5 },
+                { text: '代码', max: 5 },
+                { text: '应用', max: 5 },
+            ],
+            center: ['10%', '80%'],
+            radius: 50
+        },
+        {
+            indicator: [
+                { text: '广度', max: 5 },
+                { text: '深度', max: 5 },
+                { text: '理解', max: 5 },
+                { text: '原理', max: 5 },
+                { text: '代码', max: 5 },
+                { text: '应用', max: 5 },
+            ],
+            center: ['35%', '80%'],
+            radius: 50
+        },
+        {
+            indicator: [
+                { text: '广度', max: 5 },
+                { text: '深度', max: 5 },
+                { text: '理解', max: 5 },
+                { text: '原理', max: 5 },
+                { text: '代码', max: 5 },
+                { text: '应用', max: 5 },
+            ],
+            center: ['60%', '80%'],
+            radius: 50
+        },
+        {
+            indicator: [
+                { text: '广度', max: 5 },
+                { text: '深度', max: 5 },
+                { text: '理解', max: 5 },
+                { text: '原理', max: 5 },
+                { text: '代码', max: 5 },
+                { text: '应用', max: 5 },
+            ],
+            center: ['85%', '80%'],
+            radius: 50
+        },
+    ],
+    series: [
+        {
+            type: 'radar',
+            tooltip: {
+                trigger: 'item'
+            },
+            itemStyle: { normal: { areaStyle: { type: 'default' } } },
+            data: [
+                {
+                    name: '语言',
+                    value: [4, 3, 2, 1, 2]
+                }
+            ]
+        },
+        {
+            type: 'radar',
+            radarIndex: 1,
+            tooltip: {
+                trigger: 'item'
+            },
+            itemStyle: { normal: { areaStyle: { type: 'default' } } },
+            data: [
+                {
+                    name: '算法',
+                    value: [0, 3, 2, 2, 2, 2, 2, 1]
+                }
+            ]
+        },
+        {
+            type: 'radar',
+            radarIndex: 2,
+            tooltip: {
+                trigger: 'item'
+            },
+            itemStyle: { normal: { areaStyle: { type: 'default' } } },
+            data: [
+                {
+                    name: '基础',
+                    value: [4, 0, 0, 0, 4, 3, 0]
+                }
+            ]
+        },
+        {
+            type: 'radar',
+            radarIndex: 3,
+            tooltip: {
+                trigger: 'item'
+            },
+            itemStyle: { normal: { areaStyle: { type: 'default' } } },
+            data: [
+                {
+                    name: '底层',
+                    value: [0, 0, 1, 2, 4, 2, 0],
+                }
+            ]
+        },
+        {
+            type: 'radar',
+            radarIndex: 4,
+            tooltip: {
+                trigger: 'item'
+            },
+            data: [
+                {
+                    name: '线性模型',
+                    value: [4, 4, 4, 4, 4, 5],
+                },
+                {
+                    name: '神经网络',
+                    value: [4, 4, 4, 4, 4, 5],
+                },
+                {
+                    name: '决策树',
+                    value: [3, 3, 4, 3, 0, 0],
+                },
+                {
+                    name: '支持向量机',
+                    value: [3, 2, 2, 0, 0, 0],
+                },
+                {
+                    name: '聚类',
+                    value: [3, 2, 2, 1, 0, 0],
+                },
+                {
+                    name: '贝叶斯分类器',
+                    value: [2, 2, 2, 1, 0, 0],
+                },
+                {
+                    name: '概率图模型',
+                    value: [2, 1, 1, 0, 0, 0],
+                },
+                {
+                    name: '特征选择与稀疏学习',
+                    value: [3, 2, 2, 2, 1, 0],
+                },
+                {
+                    name: '降维与度量学习',
+                    value: [3, 2, 2, 1, 0, 0],
+                },
+                {
+                    name: '集成学习',
+                    value: [3, 2, 2, 2, 0, 0],
+                },
+                {
+                    name: '半监督学习',
+                    value: [3, 2, 2, 1, 0, 0],
+                },
+                {
+                    name: '强化学习',
+                    value: [3, 2, 2, 1, 0, 0],
+                },
+            ]
+        },
+        {
+            type: 'radar',
+            radarIndex: 5,
+            tooltip: {
+                trigger: 'item'
+            },
+            data: [
+                {
+                    name: 'CNN',
+                    value: [4, 3, 3, 3, 4, 4],
+                },
+                {
+                    name: 'RNN',
+                    value: [2, 2, 3, 1, 0, 1],
+                },
+                {
+                    name: 'GAN',
+                    value: [4, 3, 3, 3, 0, 2],
+                },
+                {
+                    name: 'optim优化',
+                    value: [3, 2, 2, 2, 2, 2],
+                },
+                {
+                    name: 'Object Detection',
+                    value: [2, 2, 2, 2, 0, 0],
+                },
+                {
+                    name: 'driverless',
+                    value: [2, 1, 1, 0, 0, 0],
+                },
+                {
+                    name: 'face',
+                    value: [3, 2, 3, 2, 3, 2],
+                },
+            ]
+        },
+        {
+            type: 'radar',
+            radarIndex: 6,
+            tooltip: {
+                trigger: 'item'
+            },
+            data: [
+                {
+                    name: 'jvm',
+                    value: [2, 1, 1, 1, 0, 0],
+                },
+                {
+                    name: '设计模式',
+                    value: [2, 1, 1, 1, 0, 0],
+                },
+                {
+                    name: 'spring',
+                    value: [3, 3, 3, 2, 1, 1],
+                },
+                {
+                    name: 'mysql',
+                    value: [3, 2, 2, 1, 3, 3],
+                },
+                {
+                    name: 'mybatis',
+                    value: [2, 1, 2, 1, 0, 0],
+                },
+                {
+                    name: 'Redis',
+                    value: [3, 3, 3, 2, 2, 0],
+                },
+                {
+                    name: 'mongodb',
+                    value: [1, 1, 1, 1, 1, 0],
+                },
+                {
+                    name: 'docker',
+                    value: [1, 1, 1, 0, 0, 0],
+                },
+                {
+                    name: '微服务',
+                    value: [0, 0, 0, 0, 0, 0],
+                },
+                {
+                    name: 'nginx',
+                    value: [0, 0, 0, 0, 0, 0],
+                },
+                {
+                    name: 'vue',
+                    value: [2, 1, 2, 1, 1, 1],
+                },
+            ]
+        },
+        {
+            type: 'radar',
+            radarIndex: 7,
+            tooltip: {
+                trigger: 'item'
+            },
+            data: [
+                {
+                    name: 'arduino',
+                    value: [5, 5, 4, 4, 5, 5],
+                },
+                {
+                    name: '51',
+                    value: [4, 3, 4, 3, 3, 3],
+                },
+                {
+                    name: 'STM32',
+                    value: [2, 1, 1, 1, 1, 1],
+                },
+                {
+                    name: 'nvidia xavier',
+                    value: [2, 2, 2, 0, 1, 1],
+                },
+                {
+                    name: '机械',
+                    value: [3, 2, 2, 2, 0, 1],
+                },
+                {
+                    name: 'ros',
+                    value: [2, 2, 1, 1, 1, 1],
+                },
+                {
+                    name: 'qt',
+                    value: [2, 2, 2, 1, 1, 1],
+                },
+                {
+                    name: 'flask',
+                    value: [2, 2, 2, 1, 2, 1],
+                },
+            ]
+        },
+    ]
+};
+
+	// 使用刚指定的配置项和数据显示图表。
+	myChart.setOption(option);
+</script>
+
+
+<h1 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h1><p>本科专业为机械自动化：对编程十分感兴趣，在协会做了2年单片机和电路开发，制作了一些机器人参加过”互联网+”，”挑战杯”等比赛，获得过国奖，省奖等。零零散散的学过c，c#，java，python，android，html，css，js，mysql，unity等，用C#做过WinForm和asp.net程序。自我感觉：虽然之前做过的很多东西，现在看过于初级，但锻炼了不少代码能力。</p>
+<p>硕士到了计算机专业：花了一段时间补齐了计算机的核心知识，数据结构和计算机网络等。系统学习了java体系，熟练使用了python，平时刷刷算法题，会使用pytorch和tensorflow。研究方向是做无人驾驶，学了1年多的机器学习和深度学习，看过几本相关书籍，看了十几篇论文，理解并掌握了论文的代码逻辑，复现过几篇代码。期间帮博士师兄改了1年多论文代码的bug，学了一些人脸，文本图像跨模态检索，ORC等知识。自我感觉：知识有了一定的体系，码代码是真的熟练，对论文有理解能力。</p>
+<h1 id="项目经验"><a href="#项目经验" class="headerlink" title="项目经验"></a>项目经验</h1><p><strong>本科阶段</strong></p>
+<ul>
+<li>2015.11.1 - 2015.12.15 ： 使用RFID管理数控机床刀具。使用C#开发的WinForm程序。</li>
+<li>2016.5.1 - 2017.7.1 ： 做过几个嵌入式程序开发。使用c语言控制，采取传感器输入，控制机械部件，用于参加比赛。</li>
+<li>2017.6.1 - 2017.8.1 ： android端控制机器人的app。获取图像，使用wifi转zigbee发送控制信号，用于参加比赛。</li>
+<li>2016.10.1 - 2017.12.1 ： 基于RFID刀具在线管理系统。使用C#开发的asp.net网站，用于答辩大学生创新训练项目。</li>
+</ul>
+<p><strong>硕士阶段</strong></p>
+<ul>
+<li>2019.5.28 - 2019.9.1 ： 连接稳定性探索。美的iot部门对智能设备掉线问题，使用数据分析掉线因素，采用机器学习或深度学习的方法，预估离线原因和离线时长，尝试修复问题，或给予用户反馈。</li>
+<li>2019.7.1 - 2018.7.18 ： 会议人脸识别门禁。对参会人员识别，并提供座位号等相关信息，dlib+qt实现。</li>
+<li>2019.9.1 - ： 无人驾驶小车。从零搭建一个可用的无人驾驶的小车。</li>
+</ul>
+
       </div>
       
       
@@ -241,6 +690,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#个人信息"><span class="nav-number">1.</span> <span class="nav-text">个人信息</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#技能"><span class="nav-number">2.</span> <span class="nav-text">技能</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#简述"><span class="nav-number">3.</span> <span class="nav-text">简述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#项目经验"><span class="nav-number">4.</span> <span class="nav-text">项目经验</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -256,7 +706,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-count">23</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -394,6 +844,8 @@
 
 
 
+
+  
 
   
 
