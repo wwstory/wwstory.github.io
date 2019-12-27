@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="介绍 2除了线性、并行执行模式外，还有异步模式，它与事件编程一样，十分重要在并发的异步模式中，不同的任务在时间线上是相互交错的，而且一切都是在单一控制流（单线程）下进行的  1.asyncio (过时)基本使用1.1 使用asyncio实现事件循环管理什么是事件循环？在计算系统中，能够产生事件的实体被称为事件源（event source），而负责协商管理事件的实体被称为事件处理器（event ha">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[python 并行4] 异步">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2018&#x2F;11&#x2F;28&#x2F;python&#x2F;python-%E5%B9%B6%E8%A1%8C4-%E5%BC%82%E6%AD%A5&#x2F;index.html">
+<meta property="og:site_name" content="枫の故事">
+<meta property="og:description" content="介绍 2除了线性、并行执行模式外，还有异步模式，它与事件编程一样，十分重要在并发的异步模式中，不同的任务在时间线上是相互交错的，而且一切都是在单一控制流（单线程）下进行的  1.asyncio (过时)基本使用1.1 使用asyncio实现事件循环管理什么是事件循环？在计算系统中，能够产生事件的实体被称为事件源（event source），而负责协商管理事件的实体被称为事件处理器（event ha">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2018-11-28T15:52:37.000Z">
+<meta property="article:modified_time" content="2019-12-26T06:34:40.802Z">
+<meta property="article:author" content="dejiang">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2018/11/28/python/python-%E5%B9%B6%E8%A1%8C4-%E5%BC%82%E6%AD%A5/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>[python 并行4] 异步 | 枫の故事</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫の故事</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">纸上得来终觉浅，绝知此事要恭行</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<!--
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+-->
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/28/python/python-%E5%B9%B6%E8%A1%8C4-%E5%BC%82%E6%AD%A5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="dejiang">
+      <meta itemprop="description" content="你根本不知道你什么都不知道">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫の故事">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [python 并行4] 异步
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-11-28 23:52:37" itemprop="dateCreated datePublished" datetime="2018-11-28T23:52:37+08:00">2018-11-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-12-26 14:34:40" itemprop="dateModified" datetime="2019-12-26T14:34:40+08:00">2019-12-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/python/" itemprop="url" rel="index">
+                    <span itemprop="name">python</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="介绍-2"><a href="#介绍-2" class="headerlink" title="介绍 2"></a>介绍 <sup>2</sup></h1><p>除了<code>线性</code>、<code>并行</code>执行模式外，还有<code>异步</code>模式，它与事件编程一样，十分重要<br>在并发的异步模式中，不同的任务在时间线上是相互交错的，而且一切都是在单一控制流（单线程）下进行的</p>
+<hr>
+<h1 id="1-asyncio-过时"><a href="#1-asyncio-过时" class="headerlink" title="1.asyncio (过时)"></a>1.asyncio (过时)</h1><h2 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h2><h3 id="1-1-使用asyncio实现事件循环管理"><a href="#1-1-使用asyncio实现事件循环管理" class="headerlink" title="1.1 使用asyncio实现事件循环管理"></a>1.1 使用asyncio实现事件循环管理</h3><p>什么是事件循环？<br>在计算系统中，能够产生事件的实体被称为事件源（event source），而负责协商管理事件的实体被称为事件处理器（event handler）<br>它实现了管理计算代码中所有事件的功能：在程序执行期间事件循环不断周期反复，追踪某个数据内部发生的事件，将其纳入队列，如果主线程空闲则调用事件处理器一个一个地处理这些事件</p>
+<p><strong>注</strong>：事件循环不能使用<code>@asyncio.coroutine</code>标为协程</p>
+<p>示例1：<br>延迟3秒后执行<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">A</span><span class="params">(x)</span>:</span></span><br><span class="line">    print(x)</span><br><span class="line">    time.sleep(<span class="number">1</span>)   <span class="comment"># 使用run_forever()不能用ayncio.sleep()延时</span></span><br><span class="line">    loop.call_soon(B)</span><br><span class="line">    print(<span class="string">'c'</span>)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">B</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">'b'</span>)</span><br><span class="line">    loop.stop()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">loop = asyncio.get_event_loop()</span><br><span class="line"><span class="comment"># loop.call_soon(A, 'a')</span></span><br><span class="line">loop.call_later(<span class="number">3.0</span>, A, <span class="string">'a'</span>)</span><br><span class="line">loop.run_forever()</span><br><span class="line">loop.close()</span><br><span class="line"></span><br><span class="line">print(<span class="string">'end'</span>)</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p><del>输出：</del><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a</span><br><span class="line">c</span><br><span class="line">b	</span><br><span class="line">end</span><br></pre></td></tr></table></figure><br><del>在A()中再利用loop调用其它函数B()时，A也并不停下来，实现协程效果</del></p>
+</blockquote>
+<h3 id="1-2使用asyncio实现协程"><a href="#1-2使用asyncio实现协程" class="headerlink" title="1.2使用asyncio实现协程"></a>1.2使用asyncio实现协程</h3><p>什么是协程？<br>当程序变得冗长复杂时，将其划分成子例程的方式会使处理变得更加便利，每个子例程完成一个特定的任务<br>子例程无法独立运行，只能在主程序的要求下才能运行，主程序负责协调子例程的使用，协程就是子例程的泛化。在协程中，可以暂停执行点，同时保持干预时的本地状态，便于后续继续执行<br>协程相互交错的控制组件就是事件循环，事件循环追踪全部的协程，并安排其执行时间</p>
+<blockquote>
+<p>协程的其它重要特点：</p>
+<pre><code>1. 协程支持多个进入点，可以多次生成（yield）
+2. 协程能够执行转移至任何其它协程
+</code></pre><p>生成(yield)这个术语用于描述那些暂停并将控制流传递给另一个协程的协程，协程可以同时传递控制流和值</p>
+</blockquote>
+<p>示例2：<br>A()和B()类似并行<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="meta">@asyncio.coroutine</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">A</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">'a - start'</span>)</span><br><span class="line">    <span class="keyword">yield</span> <span class="keyword">from</span> asyncio.sleep(<span class="number">1</span>)</span><br><span class="line">    print(<span class="string">'a - end'</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">@asyncio.coroutine</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">B</span><span class="params">(x)</span>:</span></span><br><span class="line">    print(<span class="string">'b - start'</span>)</span><br><span class="line">    result = <span class="keyword">yield</span> <span class="keyword">from</span> C()</span><br><span class="line">    print(x)</span><br><span class="line">    <span class="keyword">yield</span> <span class="keyword">from</span> asyncio.sleep(<span class="number">1</span>)</span><br><span class="line">    print(<span class="string">f'b :<span class="subst">&#123;result&#125;</span>'</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">@asyncio.coroutine</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">C</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">'c - start'</span>)</span><br><span class="line">    <span class="keyword">yield</span> <span class="keyword">from</span> asyncio.sleep(<span class="number">1</span>)</span><br><span class="line">    print(<span class="string">'c - end'</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="string">'this is C return'</span></span><br><span class="line"></span><br><span class="line">loop = asyncio.get_event_loop()</span><br><span class="line"><span class="comment"># loop.run_until_complete(A())   # 只执行一个</span></span><br><span class="line"><span class="comment"># loop.run_until_complete(asyncio.wait([A(), B('d')]))  # 并发执行方法1</span></span><br><span class="line">tasks = [asyncio.Task(A()), asyncio.Task(B(<span class="string">'b - end'</span>))]</span><br><span class="line">loop.run_until_complete(asyncio.wait(tasks))            <span class="comment"># 并发执行方法2</span></span><br><span class="line">loop.close()</span><br><span class="line">print(<span class="string">'end'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 类asyncio.Task(coroutine)用于调度协程的执行</span></span><br><span class="line"><span class="comment"># asyncio.wait(tasks)将等待给定协程执行完毕</span></span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p><del>输出：</del><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">a - start</span><br><span class="line">b - start</span><br><span class="line">c - start</span><br><span class="line">a - end</span><br><span class="line">c - end</span><br><span class="line">b - end</span><br><span class="line">b :this is C return</span><br><span class="line">end</span><br></pre></td></tr></table></figure><br><del>分析：<code>asyncio.sleep()</code>期间，主线程并未等待，而是去执行<code>EventLoop</code>中可执行的<code>coroutine</code></del></p>
+</blockquote>
+<p><strong>注</strong>：<code>@asyncio.coroutine</code>把一个generator标记为<code>coroutine</code>类型，再把这个coroutine放到EventLoop中执行（实测，可以不@标记）</p>
+<h2 id="相关方法"><a href="#相关方法" class="headerlink" title="相关方法"></a>相关方法</h2><p>loop = <strong>get_event_loop</strong>() : 获得当前上下文的事件循环<br>如果close()关闭了后，重新打开需要以下操作：<br>loop = asyncio.<strong>new_event_loop</strong>() : 创建新的时间循环对象<br>asyncio.<strong>set_event_loop</strong>(loop) : 将当前上下文的时间循环设置为指定的循环</p>
+<p>loop.<strong>call_soon</strong>(callback, <em>args) : 立即调用回调对象，参数<br>loop.<strong>call_later</strong>(delay, callback, </em>args) : 延时delay秒后，调用回调对象<br>loop.<strong>call_at</strong>(when, callback, *args) : 在指定的时间调用回调对象，（when是绝对时间，可以参考loop.time()设置）</p>
+<p>loop.<strong>run_forever()</strong> : 一直执行，直到调用stop()<br>loop.<strong>run_until_complete</strong>(future) : 运行指定的协程函数（Future<sup>3</sup>）</p>
+<p>loop.<strong>time</strong>() : 获取事件循环的内部时钟<br>loop.<strong>close</strong>() : 关闭事件循环<br>loop.<strong>is_running</strong>() : 是否运行中<br>loop.<strong>is_close</strong>() : 是否关闭</p>
+<h2 id="使用示例"><a href="#使用示例" class="headerlink" title="使用示例"></a>使用示例</h2><p>示例：<br>异步网络并行访问<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="meta">@asyncio.coroutine</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">wget</span><span class="params">(host)</span>:</span></span><br><span class="line">    print(<span class="string">'wget %s...'</span> % host)</span><br><span class="line">    connect = asyncio.open_connection(host, <span class="number">80</span>)</span><br><span class="line">    reader, writer = <span class="keyword">yield</span> <span class="keyword">from</span> connect</span><br><span class="line">    header = <span class="string">'GET / HTTP/1.0\r\nHost: %s\r\n\r\n'</span> % host</span><br><span class="line">    writer.write(header.encode(<span class="string">'utf-8'</span>))</span><br><span class="line">    <span class="keyword">yield</span> <span class="keyword">from</span> writer.drain()</span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        line = <span class="keyword">yield</span> <span class="keyword">from</span> reader.readline()</span><br><span class="line">        <span class="keyword">if</span> line == <span class="string">b'\r\n'</span>:</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        print(<span class="string">'%s header &gt; %s'</span> % (host, line.decode(<span class="string">'utf-8'</span>).rstrip()))</span><br><span class="line">    <span class="comment"># Ignore the body, close the socket</span></span><br><span class="line">    writer.close()</span><br><span class="line"></span><br><span class="line">loop = asyncio.get_event_loop()</span><br><span class="line">tasks = [wget(host) <span class="keyword">for</span> host <span class="keyword">in</span> [<span class="string">'www.baidu.com'</span>, <span class="string">'www.aliyun.com'</span>, <span class="string">'www.qq.com'</span>]]</span><br><span class="line">loop.run_until_complete(asyncio.wait(tasks))</span><br><span class="line">loop.close()</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h1 id="2-async-await"><a href="#2-async-await" class="headerlink" title="2.async/await"></a>2.async/await</h1><h2 id="2-1-客户端使用"><a href="#2-1-客户端使用" class="headerlink" title="2.1 客户端使用"></a>2.1 客户端使用</h2><p>为了简化标识异步io，python3.5引入新语法<code>async</code>、<code>await</code><br>只需将2步替换：</p>
+<ol>
+<li><code>asyncio.coroutine</code> -&gt; <code>async</code></li>
+<li><code>yield from</code> -&gt; <code>await</code></li>
+</ol>
+<p>示例：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="meta">@asyncio.coroutine</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">A</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">'a'</span>)</span><br><span class="line">    <span class="keyword">yield</span> <span class="keyword">from</span> asyncio.sleep(<span class="number">1</span>)</span><br><span class="line">    print(<span class="string">'c'</span>)</span><br><span class="line"></span><br><span class="line">loop = asyncio.get_event_loop()</span><br><span class="line">tasks = [asyncio.Task(A())]</span><br><span class="line">loop.run_until_complete(asyncio.wait(tasks))            <span class="comment"># 并发执行方法2</span></span><br><span class="line">loop.close()</span><br><span class="line">print(<span class="string">'end'</span>)</span><br></pre></td></tr></table></figure><br>替换为：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">A</span><span class="params">()</span>:</span></span><br><span class="line">    print(<span class="string">'a'</span>)</span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(<span class="number">1</span>)</span><br><span class="line">    print(<span class="string">'c'</span>)</span><br><span class="line"></span><br><span class="line">loop = asyncio.get_event_loop()</span><br><span class="line">tasks = [asyncio.Task(A())]</span><br><span class="line">loop.run_until_complete(asyncio.wait(tasks))</span><br><span class="line">loop.close()</span><br><span class="line">print(<span class="string">'end'</span>)</span><br></pre></td></tr></table></figure></p>
+<h2 id="2-2-服务器端使用"><a href="#2-2-服务器端使用" class="headerlink" title="2.2 服务器端使用"></a>2.2 服务器端使用</h2><p><code>asyncio</code>可以实现单线程并发io操作，如果仅用于客户端，效果不大<br>可以用在服务器端，由于HTTP连接就是io操作，因此可以使用单线程+协程实现多用户的高并发</p>
+<p><code>asyncio</code>实现了TCP、UDP、SSL等协议，aiohttp则是基于asyncio实现的HTTP框架</p>
+<p>示例：<br>启动一个web服务，通过浏览器访问localhost:8000<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> asyncio</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> aiohttp <span class="keyword">import</span> web</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">index</span><span class="params">(request)</span>:</span></span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(<span class="number">0.5</span>)</span><br><span class="line">    <span class="keyword">return</span> web.Response(body=<span class="string">'&lt;h1&gt;Index&lt;/h1&gt;'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">hello</span><span class="params">(request)</span>:</span></span><br><span class="line">    <span class="keyword">await</span> asyncio.sleep(<span class="number">0.5</span>)</span><br><span class="line">    text = <span class="string">'&lt;h1&gt;hello, %s!&lt;/h1&gt;'</span> % request.match_info[<span class="string">'name'</span>]</span><br><span class="line">    <span class="keyword">return</span> web.Response(body=text)</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">def</span> <span class="title">init</span><span class="params">(loop)</span>:</span></span><br><span class="line">    app = web.Application(loop=loop)</span><br><span class="line">    app.router.add_route(<span class="string">'GET'</span>, <span class="string">'/'</span>, index)</span><br><span class="line">    app.router.add_route(<span class="string">'GET'</span>, <span class="string">'/hello/&#123;name&#125;'</span>, hello)</span><br><span class="line">    srv = <span class="keyword">await</span> loop.create_server(app.make_handler(), <span class="string">'127.0.0.1'</span>, <span class="number">8000</span>)</span><br><span class="line">    print(<span class="string">'Server started at http://127.0.0.1:8000...'</span>)</span><br><span class="line">    <span class="keyword">return</span> srv</span><br><span class="line"></span><br><span class="line">loop = asyncio.get_event_loop()</span><br><span class="line">loop.run_until_complete(init(loop))</span><br><span class="line">loop.run_forever()</span><br></pre></td></tr></table></figure></p>
+<hr>
+<p>1.参考书籍: 参考书籍：《Python并行编程手册》</p>
+<p>2.参考文章1: 这篇主要参考：廖雪峰 - asyncio：<a href="https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/00143208573480558080fa77514407cb23834c78c6c7309000" target="_blank" rel="noopener">https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/00143208573480558080fa77514407cb23834c78c6c7309000</a></p>
+<p>3.Future: Future：是Asyncio的一个类，与concurrent.futures.Futures非常相似，Futures类代表一个还不可用的结果，它是对尚未完成的任务的抽象表示；Python 3.2引入concurrent.futures模块，支持管理并发编程任务，如进程池和线程池、非确定性执行流、多进程、线程同步（这个目前没看出有什么特别的，池化管理不是多线程和多进程库自带吗？<del>concurrent.futures.ProcessPoolExecutor</del>）</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2018/11/13/python/python-%E5%B9%B6%E8%A1%8C3-%E8%BF%9B%E7%A8%8B/" rel="prev" title="[python 并行3] 进程">
+      <i class="fa fa-chevron-left"></i> [python 并行3] 进程
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2018/11/29/python/python-%E5%B9%B6%E8%A1%8C5-GPU/" rel="next" title="[python 并行5] GPU">
+      [python 并行5] GPU <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#介绍-2"><span class="nav-number">1.</span> <span class="nav-text">介绍 2</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-asyncio-过时"><span class="nav-number">2.</span> <span class="nav-text">1.asyncio (过时)</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本使用"><span class="nav-number">2.1.</span> <span class="nav-text">基本使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-使用asyncio实现事件循环管理"><span class="nav-number">2.1.1.</span> <span class="nav-text">1.1 使用asyncio实现事件循环管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2使用asyncio实现协程"><span class="nav-number">2.1.2.</span> <span class="nav-text">1.2使用asyncio实现协程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#相关方法"><span class="nav-number">2.2.</span> <span class="nav-text">相关方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用示例"><span class="nav-number">2.3.</span> <span class="nav-text">使用示例</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-async-await"><span class="nav-number">3.</span> <span class="nav-text">2.async&#x2F;await</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-客户端使用"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 客户端使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-服务器端使用"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 服务器端使用</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="dejiang"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">dejiang</p>
+  <div class="site-description" itemprop="description">你根本不知道你什么都不知道</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">30</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wwstory" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wwstory" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:1018472917@qq.com" title="E-Mail → mailto:1018472917@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-qq"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.cnblogs.com/maplesnow" title="cnblogs → https:&#x2F;&#x2F;www.cnblogs.com&#x2F;maplesnow" rel="noopener" target="_blank"><i class="fa fa-fw fa-cnblogs"></i>cnblogs</a>
+      </span>
+  </div>
+
+<!-- old nav -->
+<!--
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+-->
+
+
+
+      </div>
+
+      <!-- nav -->
+      <nav class="site-nav">
+        
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+      </nav>
+
+      <!-- music player -->
+      <div>
+        
+          <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=298 height=52 src="//music.163.com/outchain/player?type=0&id=431226116&auto=0&height=32"></iframe>
+        
+      </div>
+
+    </div>
+  </aside>
+
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">dejiang</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
