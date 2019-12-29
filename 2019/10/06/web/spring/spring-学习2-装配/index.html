@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="简介我们书写的程序中，各个类之间有依赖的，需要手动实例化依赖类再赋给它。既然我们都通过IoC容器自动管理Bean了，每次使用都需要自己管理这样的依赖关系过于繁琐。 于是就有了通过配置文件的方式，使其自动注入依赖的bean。 spring提供3种装配的方式：xml装配，java装配，自动装配。  相比于xml装配，推荐的是使用java装配。  通常使用自动装配，减少配置文件。 自动装配spring从">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[spring 学习2] 装配">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;10&#x2F;06&#x2F;web&#x2F;spring&#x2F;spring-%E5%AD%A6%E4%B9%A02-%E8%A3%85%E9%85%8D&#x2F;index.html">
+<meta property="og:site_name" content="枫の故事">
+<meta property="og:description" content="简介我们书写的程序中，各个类之间有依赖的，需要手动实例化依赖类再赋给它。既然我们都通过IoC容器自动管理Bean了，每次使用都需要自己管理这样的依赖关系过于繁琐。 于是就有了通过配置文件的方式，使其自动注入依赖的bean。 spring提供3种装配的方式：xml装配，java装配，自动装配。  相比于xml装配，推荐的是使用java装配。  通常使用自动装配，减少配置文件。 自动装配spring从">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-10-06T12:50:00.000Z">
+<meta property="article:modified_time" content="2019-12-26T06:34:40.802Z">
+<meta property="article:author" content="dejiang">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2019/10/06/web/spring/spring-%E5%AD%A6%E4%B9%A02-%E8%A3%85%E9%85%8D/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>[spring 学习2] 装配 | 枫の故事</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫の故事</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">纸上得来终觉浅，绝知此事要恭行</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<!--
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+-->
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/06/web/spring/spring-%E5%AD%A6%E4%B9%A02-%E8%A3%85%E9%85%8D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="dejiang">
+      <meta itemprop="description" content="你根本不知道你什么都不知道">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫の故事">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [spring 学习2] 装配
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-10-06 20:50:00" itemprop="dateCreated datePublished" datetime="2019-10-06T20:50:00+08:00">2019-10-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-12-26 14:34:40" itemprop="dateModified" datetime="2019-12-26T14:34:40+08:00">2019-12-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/java/" itemprop="url" rel="index">
+                    <span itemprop="name">java</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/java/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>我们书写的程序中，各个类之间有依赖的，需要手动实例化依赖类再赋给它。既然我们都通过IoC容器自动管理Bean了，每次使用都需要自己管理这样的依赖关系过于繁琐。</p>
+<p>于是就有了通过配置文件的方式，使其自动注入依赖的bean。</p>
+<p>spring提供3种装配的方式：<code>xml装配</code>，<code>java装配</code>，<code>自动装配</code>。</p>
+<blockquote>
+<p>相比于<code>xml装配</code>，推荐的是使用<code>java装配</code>。</p>
+</blockquote>
+<p>通常使用<code>自动装配</code>，减少配置文件。</p>
+<h1 id="自动装配"><a href="#自动装配" class="headerlink" title="自动装配"></a>自动装配</h1><p>spring从2个角度实现自动装配：</p>
+<ul>
+<li><code>组件扫描</code>：spring会自动发现应用上下文中所创建的bean。</li>
+<li><code>自动装配</code>：spring自动将满足的bean装配。</li>
+</ul>
+<h2 id="项目结构"><a href="#项目结构" class="headerlink" title="项目结构"></a>项目结构</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── build.gradle</span><br><span class="line">└── src&#x2F;</span><br><span class="line">    ├── main&#x2F;</span><br><span class="line">    │   ├── java&#x2F;</span><br><span class="line">    │   │   └── com&#x2F;</span><br><span class="line">    │   │       └── yww&#x2F;</span><br><span class="line">    │   │           ├── Main.java</span><br><span class="line">    │   │           ├── Message.java</span><br><span class="line">    │   │           ├── ReaderConfig.java</span><br><span class="line">    │   │           └── Reader.java</span><br><span class="line">    │   └── resources&#x2F;</span><br><span class="line">    │       └── beans.xml</span><br><span class="line">    └── test&#x2F;</span><br><span class="line">        ├── java&#x2F;</span><br><span class="line">        │   └── com&#x2F;</span><br><span class="line">        │       └── yww&#x2F;</span><br><span class="line">        │           └── MainTest.java</span><br><span class="line">        └── resources&#x2F;</span><br></pre></td></tr></table></figure>
+<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><p><code>build.gradle</code>项目构建配置。</p>
+<blockquote>
+<p>注释的部分是使用插件并直接<code>gradle run</code>命令运行项目。<code>jar{}</code>部分的配置，可以打包成一个用<code>java</code>命令运行的<code>jar</code>包。（注意需要指定好主类的全名）</p>
+</blockquote>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">plugins &#123;</span><br><span class="line">    id <span class="string">'java'</span></span><br><span class="line">    <span class="comment">// id 'application'</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// mainClassName = 'com.yww.Main'</span></span><br><span class="line"><span class="keyword">group</span> <span class="string">'com.yww'</span></span><br><span class="line">version <span class="string">'1.0-SNAPSHOT'</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">sourceCompatibility</span> = <span class="number">1.8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">repositories</span> &#123;</span><br><span class="line">    mavenCentral()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">ext&#123;</span><br><span class="line">    springVersion = <span class="string">'5.2.0.RELEASE'</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">dependencies</span> &#123;</span><br><span class="line">    <span class="keyword">compile</span> <span class="string">"org.springframework:spring-core:$springVersion"</span></span><br><span class="line">    <span class="keyword">compile</span> <span class="string">"org.springframework:spring-context:$springVersion"</span></span><br><span class="line">    <span class="keyword">compile</span> <span class="string">"org.springframework:spring-beans:$springVersion"</span></span><br><span class="line">    <span class="keyword">compile</span> <span class="string">"org.springframework:spring-expression:$springVersion"</span></span><br><span class="line">    <span class="keyword">compile</span> <span class="string">"org.springframework:spring-aop:$springVersion"</span></span><br><span class="line">    <span class="keyword">compile</span> <span class="string">"org.springframework:spring-aspects:$springVersion"</span></span><br><span class="line"></span><br><span class="line">    testCompile <span class="string">"junit:junit:4.12"</span></span><br><span class="line">    testCompile <span class="string">"org.springframework:spring-test:$springVersion"</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">jar &#123;</span><br><span class="line">    <span class="keyword">from</span> &#123;</span><br><span class="line">        <span class="keyword">configurations</span>.<span class="keyword">runtime</span>.<span class="keyword">collect</span>&#123;zipTree(it)&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    manifest &#123;</span><br><span class="line">        attributes <span class="string">'Main-Class'</span>: <span class="string">'com.yww.Main'</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>Message.java</code>通过使用<code>@Component</code>注解，在组件扫描时，注册bean。</p>
+<blockquote>
+<p><code>@Value</code>注解简单直接赋值。不同于xml配置文件配置bean这么繁琐。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.yww;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Value;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Component;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Message</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Value</span>(<span class="string">"---hello world---"</span>)</span><br><span class="line">    <span class="keyword">private</span> String msg;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getMsg</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> msg;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setMsg</span><span class="params">(String msg)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.msg = <span class="string">"this mssage is : "</span> + msg;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>Reader.java</code>依赖于<code>Message.java</code>，使用<code>@Autowired</code>注入<code>Message</code>这个bean到<code>Reader</code>中。</p>
+<blockquote>
+<p>此处可以将<code>@Autowired</code>写在成员变量上，也可写在构造函数上，二者选其一皆可。（构造函数自动连线可以做一些其它操作而已）</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.yww;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Autowired;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Component;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Reader</span> </span>&#123;</span><br><span class="line"><span class="comment">//    @Autowired</span></span><br><span class="line">    <span class="keyword">private</span> Message msg;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Reader</span><span class="params">(Message msg)</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.msg = msg;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">print</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(msg.getMsg());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>ReaderConfig.java</code>配置文件，主要时用于在获取应用上下文时，设置此类可以完成开启其中的配置。其类名任意。这里主要是开启组件扫描，将默认同包名下带有<code>@Component</code>等注解的类注册为bean。</p>
+<blockquote>
+<p>习惯上，我们可以在此处做一些配置工作，比如设置初始值，或者如何装配。为了方便，初始值在前面已使用<code>@Value</code>设置。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.yww;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Bean;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.ComponentScan;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Configuration;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReaderConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 可以在配置文件中设置初始值</span></span><br><span class="line">    <span class="comment">// 为了方便直接，就在Message的成员上使用@Value设置了值。</span></span><br><span class="line"><span class="comment">//    @Bean</span></span><br><span class="line"><span class="comment">//    public Message message()&#123;</span></span><br><span class="line"><span class="comment">//        Message message = new Message();</span></span><br><span class="line"><span class="comment">//        message.setMsg("---hi---");</span></span><br><span class="line"><span class="comment">//        return message;</span></span><br><span class="line"><span class="comment">//    &#125;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>Main.java</code>主函数，用于启动应用。这里展示如何获取到有依赖关系，并且按照自动装配好的bean。</p>
+<blockquote>
+<p>不同于web应用，app需要有个主函数启动应用，常规的web应用会打包成war放入tomcat加载，不过<code>spring boot</code>的web应用也可以有个主函数启动web应用。</p>
+<p>代码里注释的部分，是使用<code>xml配置</code>，演示如何获取bean。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.yww;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.context.ApplicationContext;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.AnnotationConfigApplicationContext;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.support.ClassPathXmlApplicationContext;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Main</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span></span>&#123;</span><br><span class="line">        <span class="comment">// xml配置(beans.xml)</span></span><br><span class="line"><span class="comment">//        ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");</span></span><br><span class="line"><span class="comment">//        Message msg = (Message) context.getBean("msg1");</span></span><br><span class="line"><span class="comment">//        System.out.println(msg.getMsg());</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// java配置(ReaderConfig.java) + 获取组件扫描到的bean</span></span><br><span class="line">        <span class="comment">// 测试文件AppTest.java中，可以通过注解@ContextConfiguration加载配置文件上下文，方便使用@Autowired注解获取Bean。</span></span><br><span class="line">        ApplicationContext context = <span class="keyword">new</span> AnnotationConfigApplicationContext(com.yww.ReaderConfig<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        Reader reader = (Reader) context.getBean(Reader<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">        reader.print();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最后剩下测试文件<code>MainTest.java</code>，这里不多过问，只是可以使用<code>@ContextConfiguration</code>注解获取上下文的bean，在使用<code>@Autowired</code>自动注入bean，方便了测试。</p>
+<h2 id="运行"><a href="#运行" class="headerlink" title="运行"></a>运行</h2><blockquote>
+<p>因为为了简单，项目是非web项目，很少有帖子讲解对此的打包和运行。（web项目就很容易通过添加<code>war</code>插件和<code>gradle build</code>打包）</p>
+</blockquote>
+<p>运行的方法尝试出了几种：</p>
+<ul>
+<li><p>方法1：使用idea直接运行<code>main</code>类即可，也可运行测试类<code>MainTest.java</code>。</p>
+</li>
+<li><p>方法2：使用gradle，需要在<code>build.gradle</code>文件中，添加插件<code>application</code>，并设置好主函数的名称<code>mainClassName</code>。最后在项目根目录下（<code>build.gradle</code>同级目录）执行命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gradle run</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="问题处理"><a href="#问题处理" class="headerlink" title="问题处理"></a>问题处理</h2><blockquote>
+<p>在<code>非web</code>应用中，会发现一个问题，无法通过<code>@Autowired</code>获取到bean，这是由于非web应用无法知道bean，也没有提供相应的注解去处理，只能通过<code>ApplicationContext</code>应用上下文获取bean。而bean之间是可以通过<code>@Autowired</code>获取到的。</p>
+</blockquote>
+<h1 id="java装配"><a href="#java装配" class="headerlink" title="java装配"></a>java装配</h1><p>很多时候，通过组件扫描和自动装配实现自动化配置都是推荐的方式。但如果要将第三方库装配到自己的应用中，就无法使用<code>@Component</code>注解实现自动化装配。</p>
+<p>要想显式配置bean，可以在配置文件中使用<code>@Bean</code>获取。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// src/main/java/com/yww/ReaderConfig.java</span></span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="meta">@Bean</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Message <span class="title">message</span><span class="params">()</span></span>&#123;</span><br><span class="line">    Message message = <span class="keyword">new</span> Message();</span><br><span class="line">    message.setMsg(<span class="string">"---hi---"</span>);</span><br><span class="line">    <span class="keyword">return</span> message;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>使用自动装配，不能创建多个同类型的bean。</p>
+</blockquote>
+<h2 id="Bean更名"><a href="#Bean更名" class="headerlink" title="Bean更名"></a>Bean更名</h2><p>默认bean的ID与<code>@Bean</code>注解的方法名一样的。</p>
+<p>可提供<code>name</code>参数设置其它名称。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Bean</span>(name=<span class="string">"msgX"</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="不使用组件扫描的配置"><a href="#不使用组件扫描的配置" class="headerlink" title="不使用组件扫描的配置"></a>不使用组件扫描的配置</h2><p>如果不使用组件扫描，那么一个配置如何找到另一个配置，或者bean？</p>
+<p>此时，可以使用<code>@Import</code>导入那个类。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.yww;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Bean;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Configuration;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Import;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@Import</span>(&#123;MessageConfig<span class="class">.<span class="keyword">class</span>&#125;)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">ReaderConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 可以在配置文件中设置初始值</span></span><br><span class="line">    <span class="comment">// 为了方便直接，就在Message的成员上使用@Value设置了值。</span></span><br><span class="line"><span class="comment">//    @Bean</span></span><br><span class="line"><span class="comment">//    @Bean(name="msgX")</span></span><br><span class="line"><span class="comment">//    public Message message()&#123;</span></span><br><span class="line"><span class="comment">//        Message message = new Message();</span></span><br><span class="line"><span class="comment">//        message.setMsg("---hi---");</span></span><br><span class="line"><span class="comment">//        return message;</span></span><br><span class="line"><span class="comment">//    &#125;</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 这个bean传入的名称可以任意.</span></span><br><span class="line">    <span class="comment">// 但如果在同一个类里声明了名称，像上面那样指定了名词，这里的参数名也必须相同。</span></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Reader <span class="title">reader</span><span class="params">(Message msg)</span></span>&#123;</span><br><span class="line">        System.out.println(msg.getMsg());</span><br><span class="line">        msg.setMsg(<span class="string">"---hello---"</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Reader(msg);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中，导入的另一个bean的<code>java配置</code>文件如下。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// src/main/java/com/yww/MessageConfig.java</span></span><br><span class="line"><span class="keyword">package</span> com.yww;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Bean;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Configuration;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MessageConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Message <span class="title">message</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Message();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="xml装配"><a href="#xml装配" class="headerlink" title="xml装配"></a>xml装配</h1><ul>
+<li>gradle app的<code>xml配置</code>放在<code>src/main/resources/</code>目录下。</li>
+<li>web的<code>xml配置</code>放在<code>web/WEB-INF/</code>目录下，需要在<code>web.xml</code>中配置<code>&lt;context-param&gt;</code>。</li>
+</ul>
+<p>配置形如下面这个。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">beans</span> <span class="attr">xmlns</span>=<span class="string">"http://www.springframework.org/schema/beans"</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xsi:schemaLocation</span>=<span class="string">"http://www.springframework.org/schema/beans</span></span></span><br><span class="line"><span class="tag"><span class="string">       http://www.springframework.org/schema/beans/</span></span></span><br><span class="line"><span class="tag"><span class="string"></span></span></span><br><span class="line"><span class="tag"><span class="string">    &lt;bean id="</span><span class="attr">msg1</span>" <span class="attr">class</span>=<span class="string">"com.yww.Message"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"msg"</span> <span class="attr">value</span>=<span class="string">"hello world"</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">beans</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>如果不给<code>id</code>，将会通过全限定类名来命名，此处的bean将会被命名为<code>com.yww.Message#0</code>，<code>#0</code>是计数同类型的其它bean。</p>
+<h2 id="其它设置"><a href="#其它设置" class="headerlink" title="其它设置"></a>其它设置</h2><p>由于不推荐使用<code>xml配置</code>，故只是简单在此记下有哪些配置。</p>
+<blockquote>
+<p>很多配置有<code>c-命名空间</code>，<code>p-命名空间</code>去替代繁杂的标签。</p>
+</blockquote>
+<ul>
+<li>构造其注入bean引用，注入字符串，数字，列表等。（\<constructor-arg>）</constructor-arg></li>
+<li>使用xml配置\<bean>导入JavaConfig配置。</bean></li>
+<li><code>&lt;beans&gt;</code>的<code>profile</code>属性。</li>
+<li><code>&lt;jdbc&gt;</code>，<code>&lt;jee:jndi-lookup&gt;</code>。</li>
+<li><code>&lt;beans&gt;</code>嵌套<code>&lt;beans&gt;</code>。</li>
+</ul>
+<h1 id="高级装配"><a href="#高级装配" class="headerlink" title="高级装配"></a>高级装配</h1><p>提供更多配置，实现更多装配的控制。</p>
+<h2 id="Profile"><a href="#Profile" class="headerlink" title="Profile"></a>Profile</h2><p>通常我们需要配置不同的环境，如：测试环境使用嵌入数据库<code>h2</code>，生产环境使用<code>jndi</code>获取数据库等。</p>
+<blockquote>
+<p>（从spring4开始）<code>@Profile</code>也是基于<code>@Conditional</code>实现。</p>
+</blockquote>
+<h3 id="设置配置"><a href="#设置配置" class="headerlink" title="设置配置"></a>设置配置</h3><p>可以使用<code>@Profile</code>注解在<code>类</code>或<code>方法</code>上，去生成Bean。（此处使用<code>JavaConfig</code>配置，也可以使用<code>xml</code>配置）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.yww;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.*;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span></span><br><span class="line"><span class="meta">@PropertySource</span>(<span class="string">"application.properties"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReaderConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="meta">@Profile</span>(<span class="string">"dev"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Message <span class="title">message1</span><span class="params">()</span></span>&#123;</span><br><span class="line">        Message message = <span class="keyword">new</span> Message();</span><br><span class="line">        message.setMsg(<span class="string">"---hi---1"</span>);</span><br><span class="line">        <span class="keyword">return</span> message;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="meta">@Profile</span>(<span class="string">"prod"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Message <span class="title">message2</span><span class="params">()</span></span>&#123;</span><br><span class="line">        Message message = <span class="keyword">new</span> Message();</span><br><span class="line">        message.setMsg(<span class="string">"---hi---2"</span>);</span><br><span class="line">        <span class="keyword">return</span> message;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><code>@PropertySource</code>导入配置文件。</p>
+</blockquote>
+<h3 id="激活配置"><a href="#激活配置" class="headerlink" title="激活配置"></a>激活配置</h3><p>通过两个属性确定哪个profile激活，<code>spring.profiles.active</code>和<code>spring.profiles.default</code>。</p>
+<p>如果设置了<code>active</code>，就用此值确定哪个profile激活。如果没设置<code>active</code>，就用<code>default</code>确定。如果都没设置，只会创建没有定义profile的bean。</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#src/main/resources/application.properties</span></span><br><span class="line"><span class="meta">spring.profiles.default</span>=<span class="string">dev</span></span><br><span class="line"><span class="meta">spring.profiles.active</span>=<span class="string">prod</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>在测试类中，可以使用<code>@ActiveProfiles(&quot;dev&quot;)</code>便捷的激活配置。</p>
+</blockquote>
+<h3 id="其它方式"><a href="#其它方式" class="headerlink" title="其它方式"></a>其它方式</h3><p>有多种方式设置属性：</p>
+<ul>
+<li>DispatcherServlet的初始化参数。</li>
+<li>Web应用的上下文参数。</li>
+<li>JNDI条目。</li>
+<li>环境变量。</li>
+<li>JVM的系统属性。</li>
+<li>集成测试类上，使用@ActiveProfiles注解设置。</li>
+</ul>
+<p>例，<code>web.xml</code>的配置。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- ... --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">context-param</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">param-name</span>&gt;</span>spring.profiles.default<span class="tag">&lt;/<span class="name">param-name</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">param-value</span>&gt;</span>dev<span class="tag">&lt;/<span class="name">param-value</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">context-param</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- ... --&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="附：配置文件是如何关联的？"><a href="#附：配置文件是如何关联的？" class="headerlink" title="附：配置文件是如何关联的？"></a>附：配置文件是如何关联的？</h3><p>程序如何找到这个<code>.properties</code>文件？</p>
+<p>在app项目中，我们通过<code>@PropertySource</code>注解到JavaConfig类上，设置<code>.properties</code>配置文件的路径。</p>
+<blockquote>
+<p>在gradle项目中，配置文件放在<code>src/main/resources/</code>路径下，还可以放在这个目录下的文件夹。如：<code>src/main/resources/demo/app.properties</code>的设置<code>@PropertySource(&quot;demo/app.properties&quot;)</code>。</p>
+</blockquote>
+<p>在web项目中，spring web已经将配置文件设置好了，不需要<code>@PropertySource</code>配置。</p>
+<h2 id="条件化的Bean"><a href="#条件化的Bean" class="headerlink" title="条件化的Bean"></a>条件化的Bean</h2><p>如果希望实现一个bean只有在应用的类路径下包含特定的库时才创建，或者希望某个bean只有当在另一个特定bean声明之后才会创建，或者在设置了特定的环境变量后才会创建某个bean。</p>
+<p>通过<code>@Conditional</code>注解，它可以用于带有<code>@Bean</code>注解的方法上。如果条件计算为true就会创建bean，否则这个bean就会被忽略。</p>
+<blockquote>
+<p>条件化bean是<code>spring boot</code>自动装配的实现原理。</p>
+</blockquote>
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><p>当配置文件中含有”reader”值时，创建bean。</p>
+<p><strong>目录结构</strong><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── build.gradle</span><br><span class="line">└── src&#x2F;</span><br><span class="line">    ├── main&#x2F;</span><br><span class="line">    │   ├── java&#x2F;</span><br><span class="line">    │   │   └── com&#x2F;</span><br><span class="line">    │   │       └── yww&#x2F;</span><br><span class="line">    │   │           ├── Main.java</span><br><span class="line">    │   │           ├── Message.java</span><br><span class="line">    │   │           ├── ReaderConfig.java</span><br><span class="line">    │   │           ├── ReaderExistsCondition.java</span><br><span class="line">    │   │           └── Reader.java</span><br><span class="line">    │   └── resources&#x2F;</span><br><span class="line">    │       ├── application.properties</span><br><span class="line">    └── test&#x2F;</span><br><span class="line">        ├── java&#x2F;</span><br><span class="line">        │   └── com&#x2F;</span><br><span class="line">        │       └── yww&#x2F;</span><br><span class="line">        │           └── MainTest.java</span><br><span class="line">        └── resources&#x2F;</span><br></pre></td></tr></table></figure></p>
+<p><strong>关键代码</strong></p>
+<p>先取消了<code>Reader.java</code>类的<code>@Component</code>注解，方便此处使用条件化方式创建Reader的bean。</p>
+<p>设置的条件为<code>ReaderExistsCondition.java</code>，这个类继承接口<code>Condition</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.yww;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.*;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span></span><br><span class="line"><span class="meta">@PropertySource</span>(<span class="string">"application.properties"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReaderConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Message <span class="title">message1</span><span class="params">()</span></span>&#123;</span><br><span class="line">        Message message = <span class="keyword">new</span> Message();</span><br><span class="line">        message.setMsg(<span class="string">"---hi---"</span>);</span><br><span class="line">        <span class="keyword">return</span> message;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="meta">@Conditional</span>(ReaderExistsCondition<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class">    <span class="title">public</span> <span class="title">Reader</span> <span class="title">reader</span>(<span class="title">Message</span> <span class="title">message</span>)</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Reader(message);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>设置的条件为，从配置文件中寻找是否存在名为<code>reader</code>的配置属性，如果方法<code>matches</code>返回true，即会创建被设置条件的bean。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.yww;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.Condition;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.ConditionContext;</span><br><span class="line"><span class="keyword">import</span> org.springframework.core.env.Environment;</span><br><span class="line"><span class="keyword">import</span> org.springframework.core.type.AnnotatedTypeMetadata;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReaderExistsCondition</span> <span class="keyword">implements</span> <span class="title">Condition</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">matches</span><span class="params">(ConditionContext context, AnnotatedTypeMetadata metadata)</span> </span>&#123;</span><br><span class="line">        Environment env = context.getEnvironment();</span><br><span class="line">        <span class="keyword">return</span> env.containsProperty(<span class="string">"reader"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="附：接口Condition"><a href="#附：接口Condition" class="headerlink" title="附：接口Condition"></a>附：接口Condition</h3><p><code>Condition</code>接口源码如下，只包含一个<code>matches</code>方法，如果方法返回<code>true</code>即会满足条件创建bean，<code>false</code>即不会创建。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@FunctionalInterface</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Condition</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="keyword">boolean</span> <span class="title">matches</span><span class="params">(ConditionContext context, AnnotatedTypeMetadata metadata)</span></span>;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><code>ConditionContext</code>接口可以检查Bean，环境变量，资源，类。</p>
+<p><code>AnnotatedTypeMetadata</code>接口能检查带有<code>@Bean</code>注解的方法上还有什么其它注解。</p>
+</blockquote>
+<h2 id="处理自动装配的歧义性"><a href="#处理自动装配的歧义性" class="headerlink" title="处理自动装配的歧义性"></a>处理自动装配的歧义性</h2><p>当同一个类型有多个bean被创建，组件扫描无法选取来装配。</p>
+<blockquote>
+<p>spring会抛出<code>NoUniqueBeanDefinitionException</code>。</p>
+</blockquote>
+<h3 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h3><p>有2种处理方法：</p>
+<ul>
+<li>在<code>@Component</code>或<code>@Bean</code>上，使用<code>@Primary</code>注解，在遇到歧义时，选择首选的bean。</li>
+<li>在<code>@Autowired</code>或<code>@Inject</code>上，使用<code>@Qualifier</code>限定要注入的bean的<code>ID</code>。当注解到<code>@Component</code>或<code>@Bean</code>时，则是创建自己的限定符（类似于更名bean的ID）。</li>
+</ul>
+<blockquote>
+<p><code>@Qualifier</code>限定名类似于设置标签给bean，spring会装载满足标签的bean。</p>
+<p>为了设置多个标签，可以自己定义注解了<code>@Qualifier</code>的接口，用自定义注解作为标签限定。（java 8允许在定义注解上添加<code>@Repeatable</code>实现重复注解,不过Spring的<code>@Qualifier</code>并没有为此添加重复注解功能。）</p>
+</blockquote>
+<h3 id="附：byName和byType"><a href="#附：byName和byType" class="headerlink" title="附：byName和byType"></a>附：byName和byType</h3><p>一般情况下，虽然创建的bean和注入的参数名不一样（此处的bean名<code>message1</code>和参数名<code>message</code>），但spring会以<code>byType</code>的方式找到类型相同的bean装配好。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.yww;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.*;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReaderConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Message <span class="title">message1</span><span class="params">()</span></span>&#123;</span><br><span class="line">        Message message = <span class="keyword">new</span> Message();</span><br><span class="line">        message.setMsg(<span class="string">"---hi---1"</span>);</span><br><span class="line">        <span class="keyword">return</span> message;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Reader <span class="title">reader</span><span class="params">(Message message)</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Reader(message);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>但有多个同类型的bean时，就无法依赖<code>byType</code>找到对应的bean，可以通过改变传入的参数名（此处改用参数名<code>message2</code>），采用<code>byName</code>指定bean。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.yww;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.*;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="meta">@ComponentScan</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReaderConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Message <span class="title">message1</span><span class="params">()</span></span>&#123;</span><br><span class="line">        Message message = <span class="keyword">new</span> Message();</span><br><span class="line">        message.setMsg(<span class="string">"---hi---1"</span>);</span><br><span class="line">        <span class="keyword">return</span> message;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Message <span class="title">message2</span><span class="params">()</span></span>&#123;</span><br><span class="line">        Message message = <span class="keyword">new</span> Message();</span><br><span class="line">        message.setMsg(<span class="string">"---hi---2"</span>);</span><br><span class="line">        <span class="keyword">return</span> message;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Reader <span class="title">reader</span><span class="params">(Message message2)</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> Reader(message2);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="注入外部值"><a href="#注入外部值" class="headerlink" title="注入外部值"></a>注入外部值</h2><p>可以通过3种方式获取环境值：</p>
+<ul>
+<li>注入并使用<code>Environment</code>。</li>
+<li>属性占位符（property placeholder）。</li>
+<li>Spring表达式语言<code>SpEL</code>。</li>
+</ul>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#src/main/resources/application.properties</span></span><br><span class="line"><span class="meta">info.message</span>=<span class="string">this is a message.</span></span><br><span class="line"><span class="meta">info.counter</span>=<span class="string">10</span></span><br></pre></td></tr></table></figure>
+<p>Environment：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.*;</span><br><span class="line"><span class="keyword">import</span> org.springframework.core.env.Environment;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@PropertySource</span>(<span class="string">"application.properties"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Message</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    Environment env;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">print</span><span class="params">()</span></span>&#123;</span><br><span class="line">        String msgStr = env.getProperty(<span class="string">"info.message"</span>, <span class="string">"this is a msg"</span>);</span><br><span class="line">        <span class="keyword">int</span> msgInt = env.getProperty(<span class="string">"info.counter"</span>, Integer<span class="class">.<span class="keyword">class</span>, 30)</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>属性占位符：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Value;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.PropertySource;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Component;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@PropertySource</span>(<span class="string">"application.properties"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Message</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Value</span>(<span class="string">"$&#123;info.message&#125;"</span>)</span><br><span class="line">    <span class="keyword">private</span> String msg;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Spring EL：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.springframework.beans.factory.annotation.Value;</span><br><span class="line"><span class="keyword">import</span> org.springframework.context.annotation.PropertySource;</span><br><span class="line"><span class="keyword">import</span> org.springframework.stereotype.Component;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@PropertySource</span>(<span class="string">"application.properties"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Message</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Value</span>(<span class="string">"#&#123;systemProperties['info.message']&#125;"</span>)</span><br><span class="line">    <span class="keyword">private</span> String msg;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/10/06/web/spring/spring-proxyMode/" rel="prev" title="[spring] proxyMode">
+      <i class="fa fa-chevron-left"></i> [spring] proxyMode
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2019/10/06/web/spring/spring-SpEL/" rel="next" title="[spring] SpEL">
+      [spring] SpEL <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#自动装配"><span class="nav-number">2.</span> <span class="nav-text">自动装配</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#项目结构"><span class="nav-number">2.1.</span> <span class="nav-text">项目结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代码"><span class="nav-number">2.2.</span> <span class="nav-text">代码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#运行"><span class="nav-number">2.3.</span> <span class="nav-text">运行</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题处理"><span class="nav-number">2.4.</span> <span class="nav-text">问题处理</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#java装配"><span class="nav-number">3.</span> <span class="nav-text">java装配</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Bean更名"><span class="nav-number">3.1.</span> <span class="nav-text">Bean更名</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#不使用组件扫描的配置"><span class="nav-number">3.2.</span> <span class="nav-text">不使用组件扫描的配置</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#xml装配"><span class="nav-number">4.</span> <span class="nav-text">xml装配</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#其它设置"><span class="nav-number">4.1.</span> <span class="nav-text">其它设置</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#高级装配"><span class="nav-number">5.</span> <span class="nav-text">高级装配</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Profile"><span class="nav-number">5.1.</span> <span class="nav-text">Profile</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#设置配置"><span class="nav-number">5.1.1.</span> <span class="nav-text">设置配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#激活配置"><span class="nav-number">5.1.2.</span> <span class="nav-text">激活配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#其它方式"><span class="nav-number">5.1.3.</span> <span class="nav-text">其它方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#附：配置文件是如何关联的？"><span class="nav-number">5.1.4.</span> <span class="nav-text">附：配置文件是如何关联的？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#条件化的Bean"><span class="nav-number">5.2.</span> <span class="nav-text">条件化的Bean</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#示例"><span class="nav-number">5.2.1.</span> <span class="nav-text">示例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#附：接口Condition"><span class="nav-number">5.2.2.</span> <span class="nav-text">附：接口Condition</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#处理自动装配的歧义性"><span class="nav-number">5.3.</span> <span class="nav-text">处理自动装配的歧义性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#解决方法"><span class="nav-number">5.3.1.</span> <span class="nav-text">解决方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#附：byName和byType"><span class="nav-number">5.3.2.</span> <span class="nav-text">附：byName和byType</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#注入外部值"><span class="nav-number">5.4.</span> <span class="nav-text">注入外部值</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="dejiang"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">dejiang</p>
+  <div class="site-description" itemprop="description">你根本不知道你什么都不知道</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">31</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wwstory" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wwstory" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:1018472917@qq.com" title="E-Mail → mailto:1018472917@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-qq"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.cnblogs.com/maplesnow" title="cnblogs → https:&#x2F;&#x2F;www.cnblogs.com&#x2F;maplesnow" rel="noopener" target="_blank"><i class="fa fa-fw fa-cnblogs"></i>cnblogs</a>
+      </span>
+  </div>
+
+<!-- old nav -->
+<!--
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+-->
+
+
+
+      </div>
+
+      <!-- nav -->
+      <nav class="site-nav">
+        
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+      </nav>
+
+      <!-- music player -->
+      <div>
+        
+          <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=298 height=52 src="//music.163.com/outchain/player?type=0&id=431226116&auto=0&height=32"></iframe>
+        
+      </div>
+
+    </div>
+  </aside>
+
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">dejiang</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
