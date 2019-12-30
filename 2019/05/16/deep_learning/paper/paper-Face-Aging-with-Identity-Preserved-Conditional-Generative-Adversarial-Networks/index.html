@@ -44,23 +44,22 @@
   };
 </script>
 
-  <meta name="description" content="背景 以往做法，采用运动学分解目标，作为图模型表达。 以往做法，结合浅层鉴别模型，和手动设计表达。  效果 贡献 1.解决了对象的精确定位，和对象分类问题。 2.能够预测多个物体的边界框。 3.使用深度神经网络训练。  网络 算法步骤： 思路损失函数：  \min _{\Theta} \sum_{(x, m) \in D}\left\|(\operatorname{Diag}(m)+\lambda">
+  <meta name="description" content="背景 1.前人缺乏不同年龄段给定的人脸的训练样本。 2.传统做法，粗略的从原型基础上分类，基于原型方法年龄分组计算平均人脸。使用时对待不同年龄组的模式合成。结果导致每个人中特殊人群的信息丢失，一些合成的结果看起来不真实。 3.基于物理模型的方法。 4.RNN方法，相邻年龄组的面部合成更平滑，但身份信息没有明确的保持。 5.CGAN方法，没有效率，不同年龄的衰老几乎没有什么不同，由一定的效果，但看起">
 <meta property="og:type" content="article">
-<meta property="og:title" content="[paper] Deep Neural Networks for Object Detection">
-<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;29&#x2F;deep_learning&#x2F;paper&#x2F;paper-Deep-Neural-Networks-for-Object-Detection&#x2F;index.html">
+<meta property="og:title" content="[paper] Face Aging with Identity-Preserved Conditional Generative Adversarial Networks">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;05&#x2F;16&#x2F;deep_learning&#x2F;paper&#x2F;paper-Face-Aging-with-Identity-Preserved-Conditional-Generative-Adversarial-Networks&#x2F;index.html">
 <meta property="og:site_name" content="枫の故事">
-<meta property="og:description" content="背景 以往做法，采用运动学分解目标，作为图模型表达。 以往做法，结合浅层鉴别模型，和手动设计表达。  效果 贡献 1.解决了对象的精确定位，和对象分类问题。 2.能够预测多个物体的边界框。 3.使用深度神经网络训练。  网络 算法步骤： 思路损失函数：  \min _{\Theta} \sum_{(x, m) \in D}\left\|(\operatorname{Diag}(m)+\lambda">
+<meta property="og:description" content="背景 1.前人缺乏不同年龄段给定的人脸的训练样本。 2.传统做法，粗略的从原型基础上分类，基于原型方法年龄分组计算平均人脸。使用时对待不同年龄组的模式合成。结果导致每个人中特殊人群的信息丢失，一些合成的结果看起来不真实。 3.基于物理模型的方法。 4.RNN方法，相邻年龄组的面部合成更平滑，但身份信息没有明确的保持。 5.CGAN方法，没有效率，不同年龄的衰老几乎没有什么不同，由一定的效果，但看起">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;29&#x2F;deep_learning&#x2F;paper&#x2F;paper-Deep-Neural-Networks-for-Object-Detection&#x2F;3.png">
-<meta property="og:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;29&#x2F;deep_learning&#x2F;paper&#x2F;paper-Deep-Neural-Networks-for-Object-Detection&#x2F;1.png">
-<meta property="og:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;29&#x2F;deep_learning&#x2F;paper&#x2F;paper-Deep-Neural-Networks-for-Object-Detection&#x2F;2.png">
-<meta property="article:published_time" content="2019-11-28T16:00:00.000Z">
-<meta property="article:modified_time" content="2019-12-29T15:44:23.142Z">
+<meta property="og:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;05&#x2F;16&#x2F;deep_learning&#x2F;paper&#x2F;paper-Face-Aging-with-Identity-Preserved-Conditional-Generative-Adversarial-Networks&#x2F;2.png">
+<meta property="og:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;05&#x2F;16&#x2F;deep_learning&#x2F;paper&#x2F;paper-Face-Aging-with-Identity-Preserved-Conditional-Generative-Adversarial-Networks&#x2F;1.png">
+<meta property="article:published_time" content="2019-05-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-12-30T12:33:50.584Z">
 <meta property="article:author" content="dejiang">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;11&#x2F;29&#x2F;deep_learning&#x2F;paper&#x2F;paper-Deep-Neural-Networks-for-Object-Detection&#x2F;3.png">
+<meta name="twitter:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;05&#x2F;16&#x2F;deep_learning&#x2F;paper&#x2F;paper-Face-Aging-with-Identity-Preserved-Conditional-Generative-Adversarial-Networks&#x2F;2.png">
 
-<link rel="canonical" href="http://yoursite.com/2019/11/29/deep_learning/paper/paper-Deep-Neural-Networks-for-Object-Detection/">
+<link rel="canonical" href="http://yoursite.com/2019/05/16/deep_learning/paper/paper-Face-Aging-with-Identity-Preserved-Conditional-Generative-Adversarial-Networks/">
 
 
 <script id="page-configurations">
@@ -74,7 +73,7 @@
   };
 </script>
 
-  <title>[paper] Deep Neural Networks for Object Detection | 枫の故事</title>
+  <title>[paper] Face Aging with Identity-Preserved Conditional Generative Adversarial Networks | 枫の故事</title>
   
 
 
@@ -186,7 +185,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/29/deep_learning/paper/paper-Deep-Neural-Networks-for-Object-Detection/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/05/16/deep_learning/paper/paper-Face-Aging-with-Identity-Preserved-Conditional-Generative-Adversarial-Networks/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -199,7 +198,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          [paper] Deep Neural Networks for Object Detection
+          [paper] Face Aging with Identity-Preserved Conditional Generative Adversarial Networks
         </h1>
 
         <div class="post-meta">
@@ -209,14 +208,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2019-11-29 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-29T00:00:00+08:00">2019-11-29</time>
+              <time title="创建时间：2019-05-16 00:00:00" itemprop="dateCreated datePublished" datetime="2019-05-16T00:00:00+08:00">2019-05-16</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-12-29 23:44:23" itemprop="dateModified" datetime="2019-12-29T23:44:23+08:00">2019-12-29</time>
+                <time title="修改时间：2019-12-30 20:33:50" itemprop="dateModified" datetime="2019-12-30T20:33:50+08:00">2019-12-30</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -242,78 +241,72 @@
 
       
         <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><ul>
-<li>以往做法，采用运动学分解目标，作为图模型表达。</li>
-<li>以往做法，结合浅层鉴别模型，和手动设计表达。</li>
+<li>1.前人缺乏不同年龄段给定的人脸的训练样本。</li>
+<li>2.传统做法，粗略的从原型基础上分类，基于原型方法年龄分组计算平均人脸。使用时对待不同年龄组的模式合成。结果导致每个人中特殊人群的信息丢失，一些合成的结果看起来不真实。</li>
+<li>3.基于物理模型的方法。</li>
+<li>4.RNN方法，相邻年龄组的面部合成更平滑，但身份信息没有明确的保持。</li>
+<li>5.CGAN方法，没有效率，不同年龄的衰老几乎没有什么不同，由一定的效果，但看起来模糊。</li>
 </ul>
-<h1 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h1><p><img src="/2019/11/29/deep_learning/paper/paper-Deep-Neural-Networks-for-Object-Detection/3.png" alt="show effect"></p>
+<h1 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h1><p><img src="/2019/05/16/deep_learning/paper/paper-Face-Aging-with-Identity-Preserved-Conditional-Generative-Adversarial-Networks/2.png" alt="effect"></p>
 <h1 id="贡献"><a href="#贡献" class="headerlink" title="贡献"></a>贡献</h1><ul>
-<li>1.解决了对象的精确定位，和对象分类问题。</li>
-<li>2.能够预测多个物体的边界框。</li>
-<li>3.使用深度神经网络训练。</li>
+<li>将CGAN应用到人脸衰老预测中。</li>
+<li>重点是保证合成的人脸的人的身份是同一人，并迫使使其分类到目标年龄。</li>
 </ul>
-<h1 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h1><p><img src="/2019/11/29/deep_learning/paper/paper-Deep-Neural-Networks-for-Object-Detection/1.png" alt="net"></p>
-<p>算法步骤：<br><img src="/2019/11/29/deep_learning/paper/paper-Deep-Neural-Networks-for-Object-Detection/2.png" alt="algorithm"></p>
-<h1 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h1><p>损失函数：</p>
+<h1 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h1><p><img src="/2019/05/16/deep_learning/paper/paper-Face-Aging-with-Identity-Preserved-Conditional-Generative-Adversarial-Networks/1.png" alt="net"></p>
+<p>IPCGAN组成</p>
+<ul>
+<li>1.条件生成对抗网络。</li>
+<li>2.身份保持模块。</li>
+<li>3.年龄分类模块</li>
+</ul>
+<p>将年龄分为5组，对应不同年龄段，设成328x328x5或64x64x5的矩阵，4层设为全0的矩阵，对应的年龄那一层设为全1，将其作为条件附加输入上输入网络。</p>
+<h1 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h1><p>以图1为例：</p>
+<ul>
+<li>将20-30岁128x128x3的原图+128x128x5的条件作输入，生成40-50岁的假图片，再使用年龄分类器判别生成的年龄。（年龄分类器损失）</li>
+<li>将生成的40-50岁的假图片和数据集中40-50岁的真图片作输入，辨别器预测2者是否是生成了目标的年龄。（身份保持损失）</li>
+<li>将生成的40-50岁的假图片和其输入20-30岁的原图作输入，2者计算距离。（生成器损失）</li>
+</ul>
+<h2 id="基于CGANs的面部生成模块-CGANs-based-face-generation-module"><a href="#基于CGANs的面部生成模块-CGANs-based-face-generation-module" class="headerlink" title="基于CGANs的面部生成模块 (CGANs based face generation module)"></a>基于CGANs的面部生成模块 (CGANs based face generation module)</h2><p>使用最小二乘法生成网络LSGANs计算生成网络和鉴别网络的损失。</p>
 <script type="math/tex; mode=display">
-\min _{\Theta} \sum_{(x, m) \in D}\left\|(\operatorname{Diag}(m)+\lambda I)^{1 / 2}(D N N(x ; \Theta)-m)\right\|_{2}^{2}</script><p>损失函数 = 平衡正负数据量 + DNN做深度神经网络计算预测目标相对于标签的误差</p>
-<blockquote>
+L_D = \frac{1}{2} \mathbb{E}_{x \sim p_x(x)} [(D(x|C_t)-1)^2] + \frac{1}{2} \mathbb{E}_{y \sim p_y{y}} [(D(G(y|C_t))^2]</script><blockquote>
 <ul>
-<li>$\Theta$：网格参数。</li>
-<li>预测目标的二进制蒙版：$DNN(x ; \Theta) \in \mathbb{R}^{N}$</li>
-<li>N：像素的数量，$N=d \times d$。</li>
-<li>m：图片x的蒙版标签，$m \in[0,1]^{N}$。</li>
-<li>D：图片中包含标签的部分。</li>
-<li>$\lambda$：$\lambda$非零值一致性权值。因为相对于图像，对象较小，很容易使网络被简单的分配全零捕获网络。输错0的惩罚小于输错1的，鼓励非零预测。（宁可认错，不愿错过）</li>
-</ul>
-<p>网络接受225x225的图片，预测蒙版尺寸为$d \times d$（d=24）。</p>
-</blockquote>
-<h1 id="细节"><a href="#细节" class="headerlink" title="细节"></a>细节</h1><p>通过DNN生成的掩码进行精确的对象定位 （Precise Object Localization via DNN-generated Masks）</p>
-<p>问题：小的对象对神经元的影响非常小，因此难以辨识。</p>
-<h2 id="多个蒙版实现可靠的集中-（Multiple-Masks-for-Robust-Localization）"><a href="#多个蒙版实现可靠的集中-（Multiple-Masks-for-Robust-Localization）" class="headerlink" title="多个蒙版实现可靠的集中 （Multiple Masks for Robust Localization）"></a>多个蒙版实现可靠的集中 （Multiple Masks for Robust Localization）</h2><script type="math/tex; mode=display">
-m^{h}(i, j ; b b)=\frac{\operatorname{area}(b b(h) \cap T(i, j))}{\operatorname{area}(T(i, j))}</script><blockquote>
-<ul>
-<li>$m^h$：蒙版的5种切分。</li>
-<li>bb：(bounding box)边界盒。</li>
-<li>h：$h \in { \text{full, bottom, top, left, right}}$。</li>
-<li>T(i, j)：表示预测的(i, j)那部分的图像。</li>
-<li>d1：图像的高。</li>
-<li>d2：图像的宽。</li>
-<li>d：预划分的蒙版尺寸。</li>
-</ul>
-</blockquote>
-<p>为处理多个接触目标，使用多个mask。</p>
-<p>计算预测的掩码T和滑动窗口bb之间的比例。（前景像素的比例）</p>
-<blockquote>
-<p>每个mask需训练单独DNN，它们的定位器可以共享参数。</p>
-</blockquote>
-<h2 id="DNN输出中的对象集中-（Object-Localization-from-DNN-Output）"><a href="#DNN输出中的对象集中-（Object-Localization-from-DNN-Output）" class="headerlink" title="DNN输出中的对象集中 （Object Localization from DNN Output）"></a>DNN输出中的对象集中 （Object Localization from DNN Output）</h2><p>计算标签m和滑动窗口bb的重合量作为打分。</p>
-<p>计算5种scale的mask，和这5种mask附加周边的分数差。（为了彻底搜索可能的bb）</p>
-<p>计算的值大于0.5，再使用Alexnet对其分类：</p>
-<blockquote>
-<ul>
-<li>S：bb和m重合的分数。</li>
+<li>第1项：真实图，真标签。</li>
+<li>第2项：真实图，假标签。生成图，真标签。</li>
+<li>$C_t$：年龄分组。</li>
 </ul>
 </blockquote>
 <script type="math/tex; mode=display">
-S(bb, m)=\frac{1}{area(bb)} \sum_{(i, j)} area(bb \cap T(i, j))</script><p>彻底地搜索可能的bb：</p>
-<script type="math/tex; mode=display">
-S(bb)=\sum_{h \in halves} (S(bb(h), m^h) - S(bb(\overline{h}, m^h)</script><blockquote>
+L_G = \frac{1}{2} \mathbb{E}_{y \sim p_y{y}} [(D(G(y)|C_t)-1)^2]</script><h2 id="身份保持模块-Identity-preserved-module"><a href="#身份保持模块-Identity-preserved-module" class="headerlink" title="身份保持模块 (Identity-preserved module)"></a>身份保持模块 (Identity-preserved module)</h2><script type="math/tex; mode=display">
+L_{identity} = \sum_{x \in p_x(x)} ||h(x) - h(G(x|C_t))||^2</script><blockquote>
 <ul>
-<li>$\overline{h}$：围绕bb的矩形区域。</li>
+<li>h：网络输出。</li>
 </ul>
 </blockquote>
-<p>滑动窗口步骤：使用9种(0.1,…,0.9)图像比例的对象框。用k-means聚类数据集的对象框，获取10种横纵比。以步长为5个像素滑动窗口。将此公式计算值大于0.5的，使用Alexnet分类。保存分类，剪枝。</p>
-<h2 id="DNN定位器的多尺度优化-（Multi-scale-Refinement-of-DNN-Localizer）"><a href="#DNN定位器的多尺度优化-（Multi-scale-Refinement-of-DNN-Localizer）" class="headerlink" title="DNN定位器的多尺度优化 （Multi-scale Refinement of DNN Localizer）"></a>DNN定位器的多尺度优化 （Multi-scale Refinement of DNN Localizer）</h2><p>问题：前2个方法已经解决定位识别（大致定位），现需要优化得到不大不小的框。</p>
-<h3 id="步骤1-滑动窗口"><a href="#步骤1-滑动窗口" class="headerlink" title="步骤1-滑动窗口"></a>步骤1-滑动窗口</h3><p>3个图像的scale，可以看作3个尺度为1x,2x,4x大小的窗口去扫描图片。步长控制在让每个窗口的overlap少于20%。最后对每个scale得到5个{full, bottom, top, left, right}detection结果，共15个detection结果。</p>
-<h3 id="步骤2-refine"><a href="#步骤2-refine" class="headerlink" title="步骤2-refine"></a>步骤2-refine</h3><p>对上述15个detection的结果，将bb扩大1.2倍后，重新应用到网络。（如图2）</p>
-<blockquote>
-<p>论文认为，这个方法与滑动窗口不同，因为需要鉴定的滑动窗口少。</p>
+<ul>
+<li>低特征层保持内容。</li>
+<li>高特征层保持风格。</li>
+</ul>
+<p>选择Alexnet的Conv5作为h(x)判断身份保存的程度。</p>
+<h2 id="年龄分类模块-Age-classification-module"><a href="#年龄分类模块-Age-classification-module" class="headerlink" title="年龄分类模块 (Age classification module)"></a>年龄分类模块 (Age classification module)</h2><script type="math/tex; mode=display">
+L_{age} = \sum_{x \in p_x (x)} \ell (G(x|C_t), C_t)</script><blockquote>
+<ul>
+<li>$\ell$：softmax损失。</li>
+</ul>
 </blockquote>
-<h1 id="train"><a href="#train" class="headerlink" title="train"></a>train</h1><p>对于每个类别，都训练2个DNN，一个用于mask的定位模型，一个用于分类模型。</p>
-<p>先训练分类模型，在用分类模型做pretrain训练定位模型。</p>
-<p>计算交集公式Jaccard-similarity：$J(A, B) = \frac{A \cap B}{A \cup B}$</p>
-<p>将J &lt; 0.2，视为负样本，J &gt; 0.6，视为正样本。</p>
-<h1 id="more"><a href="#more" class="headerlink" title="more"></a>more</h1><h2 id="note"><a href="#note" class="headerlink" title="note"></a>note</h2><p>本文将深度神经网络应用到目标检测中。</p>
+<h2 id="目标函数-Objective-function"><a href="#目标函数-Objective-function" class="headerlink" title="目标函数 (Objective function)"></a>目标函数 (Objective function)</h2><script type="math/tex; mode=display">
+\begin{align*}
+& G_{loss} = \lambda_1 L_G + \lambda_2 L_{identity} + \lambda_3 L_{age} \\
+& D_{loss} = L_D
+\end{align*}</script><p>生成器损失 = 生成器损失 + 身份信息的损失 + 年龄分类器的损失</p>
+<ul>
+<li>生成器损失：鉴别器对生成器生成的图的损失</li>
+<li>身份信息的损失：对生成器身份分类，提取的特征层，2层特征层作均方差可得</li>
+<li>年龄分类器的损失：对生成器生成图分类的损失</li>
+</ul>
+<h1 id="细节"><a href="#细节" class="headerlink" title="细节"></a>细节</h1><p>选择卷积Conv5作为风格迁移。</p>
+<p>合并128x128x3和128x128x5条件特征图作为输入。</p>
+<p>使用leakyRelu和Batchnorm。</p>
+<h1 id="more"><a href="#more" class="headerlink" title="more"></a>more</h1><h2 id="note"><a href="#note" class="headerlink" title="note"></a>note</h2><p>本文实际是一种风格迁移的做法，对于人脸衰老有一定的效果，但基本上看起来是对图片风格的识别，以更适合的方式给图像贴上皱纹之类的。对于年龄较小的人脸无法生成如骨骼成长之类的效果。</p>
 
     </div>
 
@@ -329,12 +322,12 @@ S(bb)=\sum_{h \in halves} (S(bb(h), m^h) - S(bb(\overline{h}, m^h)</script><bloc
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2019/11/22/deep_learning/paper/paper-Cycle-Consistency-for-Robust-Visual-Question-Answering/" rel="prev" title="[paper] Cycle-Consistency for Robust Visual Question Answering">
-      <i class="fa fa-chevron-left"></i> [paper] Cycle-Consistency for Robust Visual Question Answering
+    <a href="/2019/04/07/deep_learning/paper/paper-ImageNet-Classification-with-Deep-Convolutional-Neural-Networks/" rel="prev" title="[paper] ImageNet Classification with Deep Convolutional Neural Networks">
+      <i class="fa fa-chevron-left"></i> [paper] ImageNet Classification with Deep Convolutional Neural Networks
     </a></div>
       <div class="post-nav-item">
-    <a href="/2019/12/15/web/spring/spring-DispatcherServlet/" rel="next" title="[spring] DispatcherServlet">
-      [spring] DispatcherServlet <i class="fa fa-chevron-right"></i>
+    <a href="/2019/08/01/note/book-list/" rel="next" title="book list">
+      book list <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -373,7 +366,7 @@ S(bb)=\sum_{h \in halves} (S(bb(h), m^h) - S(bb(\overline{h}, m^h)</script><bloc
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#效果"><span class="nav-number">2.</span> <span class="nav-text">效果</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#贡献"><span class="nav-number">3.</span> <span class="nav-text">贡献</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#网络"><span class="nav-number">4.</span> <span class="nav-text">网络</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#思路"><span class="nav-number">5.</span> <span class="nav-text">思路</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#细节"><span class="nav-number">6.</span> <span class="nav-text">细节</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#多个蒙版实现可靠的集中-（Multiple-Masks-for-Robust-Localization）"><span class="nav-number">6.1.</span> <span class="nav-text">多个蒙版实现可靠的集中 （Multiple Masks for Robust Localization）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DNN输出中的对象集中-（Object-Localization-from-DNN-Output）"><span class="nav-number">6.2.</span> <span class="nav-text">DNN输出中的对象集中 （Object Localization from DNN Output）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DNN定位器的多尺度优化-（Multi-scale-Refinement-of-DNN-Localizer）"><span class="nav-number">6.3.</span> <span class="nav-text">DNN定位器的多尺度优化 （Multi-scale Refinement of DNN Localizer）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤1-滑动窗口"><span class="nav-number">6.3.1.</span> <span class="nav-text">步骤1-滑动窗口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#步骤2-refine"><span class="nav-number">6.3.2.</span> <span class="nav-text">步骤2-refine</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#train"><span class="nav-number">7.</span> <span class="nav-text">train</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#more"><span class="nav-number">8.</span> <span class="nav-text">more</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#note"><span class="nav-number">8.1.</span> <span class="nav-text">note</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#背景"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#效果"><span class="nav-number">2.</span> <span class="nav-text">效果</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#贡献"><span class="nav-number">3.</span> <span class="nav-text">贡献</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#网络"><span class="nav-number">4.</span> <span class="nav-text">网络</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#思路"><span class="nav-number">5.</span> <span class="nav-text">思路</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基于CGANs的面部生成模块-CGANs-based-face-generation-module"><span class="nav-number">5.1.</span> <span class="nav-text">基于CGANs的面部生成模块 (CGANs based face generation module)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#身份保持模块-Identity-preserved-module"><span class="nav-number">5.2.</span> <span class="nav-text">身份保持模块 (Identity-preserved module)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#年龄分类模块-Age-classification-module"><span class="nav-number">5.3.</span> <span class="nav-text">年龄分类模块 (Age classification module)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#目标函数-Objective-function"><span class="nav-number">5.4.</span> <span class="nav-text">目标函数 (Objective function)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#细节"><span class="nav-number">6.</span> <span class="nav-text">细节</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#more"><span class="nav-number">7.</span> <span class="nav-text">more</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#note"><span class="nav-number">7.1.</span> <span class="nav-text">note</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
