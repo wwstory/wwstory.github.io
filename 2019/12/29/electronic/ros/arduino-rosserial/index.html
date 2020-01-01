@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.1.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    hostname: new URL('http://yoursite.com').hostname,
+    root: '/',
+    scheme: 'Muse',
+    version: '7.6.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}
+  };
+</script>
+
+  <meta name="description" content="软件安装下载arduino：1sudo apt install arduino 安装rosserial：1sudo apt install ros-melodic-rosserial ros-melodic-rosserial-server ros-melodic-rosserial-arduino ros-melodic-rosserial-python 为了在Arduino中使用它,需要创建一">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[arduino] rosserial">
+<meta property="og:url" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;12&#x2F;29&#x2F;electronic&#x2F;ros&#x2F;arduino-rosserial&#x2F;index.html">
+<meta property="og:site_name" content="枫の故事">
+<meta property="og:description" content="软件安装下载arduino：1sudo apt install arduino 安装rosserial：1sudo apt install ros-melodic-rosserial ros-melodic-rosserial-server ros-melodic-rosserial-arduino ros-melodic-rosserial-python 为了在Arduino中使用它,需要创建一">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;12&#x2F;29&#x2F;electronic&#x2F;ros&#x2F;arduino-rosserial&#x2F;1.png">
+<meta property="og:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;12&#x2F;29&#x2F;electronic&#x2F;ros&#x2F;arduino-rosserial&#x2F;2.png">
+<meta property="article:published_time" content="2019-12-29T10:16:00.000Z">
+<meta property="article:modified_time" content="2020-01-01T06:07:50.053Z">
+<meta property="article:author" content="dejiang">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http:&#x2F;&#x2F;yoursite.com&#x2F;2019&#x2F;12&#x2F;29&#x2F;electronic&#x2F;ros&#x2F;arduino-rosserial&#x2F;1.png">
+
+<link rel="canonical" href="http://yoursite.com/2019/12/29/electronic/ros/arduino-rosserial/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>[arduino] rosserial | 枫の故事</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫の故事</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <p class="site-subtitle">纸上得来终觉浅，绝知此事要恭行</p>
+  </div>
+
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+</div>
+
+
+<!--
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+-->
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content">
+            
+
+  <div class="posts-expand">
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block " lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/29/electronic/ros/arduino-rosserial/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="dejiang">
+      <meta itemprop="description" content="你根本不知道你什么都不知道">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫の故事">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          [arduino] rosserial
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-12-29 18:16:00" itemprop="dateCreated datePublished" datetime="2019-12-29T18:16:00+08:00">2019-12-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-01-01 14:07:50" itemprop="dateModified" datetime="2020-01-01T14:07:50+08:00">2020-01-01</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/electronic/" itemprop="url" rel="index">
+                    <span itemprop="name">electronic</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/electronic/arduino/" itemprop="url" rel="index">
+                    <span itemprop="name">arduino</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="软件安装"><a href="#软件安装" class="headerlink" title="软件安装"></a>软件安装</h1><p>下载arduino：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install arduino</span><br></pre></td></tr></table></figure></p>
+<p>安装rosserial：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install ros-melodic-rosserial ros-melodic-rosserial-server ros-melodic-rosserial-arduino ros-melodic-rosserial-python</span><br></pre></td></tr></table></figure></p>
+<p>为了在Arduino中使用它,需要创建一个用于Arduino的rosserial库：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/Arduino/libraries/</span><br><span class="line">rm -rf ros_lib</span><br><span class="line">rosrun rosserial_arduino make_libraries.py .</span><br></pre></td></tr></table></figure></p>
+<h1 id="arduino"><a href="#arduino" class="headerlink" title="arduino"></a>arduino</h1><h2 id="subscriber"><a href="#subscriber" class="headerlink" title="subscriber"></a>subscriber</h2><p>arduino接受发布在/led_out的数据，控制pin8引脚的电平开关。</p>
+<h3 id="硬件"><a href="#硬件" class="headerlink" title="硬件"></a>硬件</h3><p>使用的是arduino pro mini 328p版，发现168p版本存储不够。</p>
+<p><img src="/2019/12/29/electronic/ros/arduino-rosserial/1.png" alt="ros_sub"></p>
+<blockquote>
+<p>DTR用于在上传程序时自动RESET板子，否则需要在上传时手动按一下板子上的RESET按键（时机需要自己把握，比较麻烦）。</p>
+</blockquote>
+<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;ros.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;std_msgs/Byte.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">process</span><span class="params">(<span class="keyword">const</span> std_msgs::Byte&amp; led_msg)</span></span>&#123;</span><br><span class="line">  <span class="built_in">digitalWrite</span>(<span class="number">8</span>, led_msg.data);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">ros::NodeHandle nh;</span><br><span class="line">ros::Subscriber&lt;std_msgs::Byte&gt; sub(<span class="string">"led_out"</span>, <span class="built_in">process</span>);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">setup</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="comment">// put your setup code here, to run once:</span></span><br><span class="line">  <span class="built_in">pinMode</span>(<span class="number">8</span>, <span class="literal">OUTPUT</span>);</span><br><span class="line"></span><br><span class="line">  nh.initNode();</span><br><span class="line">  nh.subscribe(sub);</span><br><span class="line"></span><br><span class="line"><span class="comment">//  Serial.begin(9600);</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">loop</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="comment">// put your main code here, to run repeatedly:</span></span><br><span class="line">  nh.spinOnce();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>arduino上传程序需要/dev/ttyUSB0的权限。<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo chmod 777 /dev/ttyUSB0</span><br></pre></td></tr></table></figure></p>
+</blockquote>
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><ul>
+<li>启动ros服务</li>
+<li>启动rosserial服务</li>
+<li>查看msg数据</li>
+<li>发送数据</li>
+</ul>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">roscore</span><br><span class="line"></span><br><span class="line">rosrun rosserial_python serial_node.py _port:=/dev/ttyUSB0</span><br><span class="line"></span><br><span class="line">rostopic <span class="built_in">echo</span> /led_out</span><br><span class="line"></span><br><span class="line">rostopic pub -1 /led_out std_msgs/Byte 1</span><br></pre></td></tr></table></figure>
+<p>发送数字1打开小灯（非1即可），发送数字0关闭。</p>
+<blockquote>
+<p><code>rosserial_python</code>可通过_port指定设备，通过_baud指定波特率（书中是115200并不能成功连接，改为57600后成功，后改为不设置可以自动设置）。<br>rostopic pub <topic-name> <topic-type> [data…]<br><code>rostopic pub</code>的中-1是执行一次。</topic-type></topic-name></p>
+</blockquote>
+<p><a href="http://wiki.ros.org/rosserial/" target="_blank" rel="noopener">rosserial</a><br><a href="http://wiki.ros.org/rostopic" target="_blank" rel="noopener">rostopic</a></p>
+<h2 id="publisher"><a href="#publisher" class="headerlink" title="publisher"></a>publisher</h2><p>用引线将VCC/GND输入pin9，将pin8输出电平值。</p>
+<p>arduino发送pin9引脚的值到/led_out。</p>
+<h3 id="硬件-1"><a href="#硬件-1" class="headerlink" title="硬件"></a>硬件</h3><p><img src="/2019/12/29/electronic/ros/arduino-rosserial/2.png" alt="ros_pub"></p>
+<h3 id="代码-1"><a href="#代码-1" class="headerlink" title="代码"></a>代码</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;ros.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;std_msgs/Byte.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">ros::NodeHandle nh;</span><br><span class="line">std_msgs::Byte led_msg;</span><br><span class="line">ros::<span class="function">Publisher <span class="title">pub</span><span class="params">(<span class="string">"led_out"</span>, &amp;led_msg)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">setup</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="comment">// put your setup code here, to run once:</span></span><br><span class="line">  nh.initNode();</span><br><span class="line">  nh.advertise(pub);</span><br><span class="line"></span><br><span class="line">  <span class="built_in">pinMode</span>(<span class="number">8</span>, <span class="literal">OUTPUT</span>);</span><br><span class="line">  <span class="built_in">pinMode</span>(<span class="number">9</span>, <span class="literal">INPUT</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">loop</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="comment">// put your main code here, to run repeatedly:</span></span><br><span class="line">  <span class="keyword">uint8_t</span> reading = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">uint32_t</span> pre_time;</span><br><span class="line"></span><br><span class="line">  reading = <span class="built_in">digitalRead</span>(<span class="number">9</span>);</span><br><span class="line">  <span class="built_in">digitalWrite</span>(<span class="number">8</span>, reading);</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span>(<span class="built_in">millis</span>() - pre_time &gt;= <span class="number">50</span>)&#123;</span><br><span class="line">    led_msg.data = reading;</span><br><span class="line">    pub.publish(&amp;led_msg);</span><br><span class="line">    pre_time = <span class="built_in">millis</span>();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  nh.spinOnce();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="测试-1"><a href="#测试-1" class="headerlink" title="测试"></a>测试</h3><ul>
+<li>启动ros服务</li>
+<li>启动rosserial服务</li>
+<li>查看msg数据</li>
+<li>输入电平到输入引脚</li>
+</ul>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">roscore</span><br><span class="line"></span><br><span class="line">rosrun rosserial_python serial_node.py _port:=/dev/ttyUSB0</span><br><span class="line"></span><br><span class="line">rostopic <span class="built_in">echo</span> /led_out</span><br></pre></td></tr></table></figure>
+<p>将引脚VCC/GND引到pin9。</p>
+<p>在pc，<code>rostopic echo</code>命令的终端可以看到来自板子的/led_out数据。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2019/12/22/deep_learning/paper/paper-SSD-Single-Shot-MultiBox-Detector/" rel="prev" title="[paper] SSD: Single Shot MultiBox Detector">
+      <i class="fa fa-chevron-left"></i> [paper] SSD: Single Shot MultiBox Detector
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#软件安装"><span class="nav-number">1.</span> <span class="nav-text">软件安装</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#arduino"><span class="nav-number">2.</span> <span class="nav-text">arduino</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#subscriber"><span class="nav-number">2.1.</span> <span class="nav-text">subscriber</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#硬件"><span class="nav-number">2.1.1.</span> <span class="nav-text">硬件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码"><span class="nav-number">2.1.2.</span> <span class="nav-text">代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试"><span class="nav-number">2.1.3.</span> <span class="nav-text">测试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#publisher"><span class="nav-number">2.2.</span> <span class="nav-text">publisher</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#硬件-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">硬件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码-1"><span class="nav-number">2.2.2.</span> <span class="nav-text">代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试-1"><span class="nav-number">2.2.3.</span> <span class="nav-text">测试</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="dejiang"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">dejiang</p>
+  <div class="site-description" itemprop="description">你根本不知道你什么都不知道</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">35</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/wwstory" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;wwstory" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:1018472917@qq.com" title="E-Mail → mailto:1018472917@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-qq"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.cnblogs.com/maplesnow" title="cnblogs → https:&#x2F;&#x2F;www.cnblogs.com&#x2F;maplesnow" rel="noopener" target="_blank"><i class="fa fa-fw fa-cnblogs"></i>cnblogs</a>
+      </span>
+  </div>
+
+<!-- old nav -->
+<!--
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+</nav>
+-->
+
+
+
+      </div>
+
+      <!-- nav -->
+      <nav class="site-nav">
+        
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+  </ul>
+
+      </nav>
+
+      <!-- music player -->
+      <div>
+        
+          <iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=298 height=52 src="//music.163.com/outchain/player?type=0&id=431226116&auto=0&height=32"></iframe>
+        
+      </div>
+
+    </div>
+  </aside>
+
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">dejiang</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
