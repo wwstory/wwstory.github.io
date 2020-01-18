@@ -52,7 +52,7 @@
 <meta property="og:description" content="介绍创建一个接受图片数据，发布数值数据的rospy程序。 项目结构1234567891011.└── src    ├── CMakeLists.txt -&gt; &#x2F;opt&#x2F;ros&#x2F;melodic&#x2F;share&#x2F;catkin&#x2F;cmake&#x2F;toplevel.cmake    └── demo        ├── CMakeLis">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2020-01-18T05:21:00.000Z">
-<meta property="article:modified_time" content="2020-01-18T08:24:46.904Z">
+<meta property="article:modified_time" content="2020-01-18T09:00:21.970Z">
 <meta property="article:author" content="dejiang">
 <meta name="twitter:card" content="summary">
 
@@ -206,7 +206,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2020-01-18 13:21:00 / 修改时间：16:24:46" itemprop="dateCreated datePublished" datetime="2020-01-18T13:21:00+08:00">2020-01-18</time>
+              <time title="创建时间：2020-01-18 13:21:00 / 修改时间：17:00:21" itemprop="dateCreated datePublished" datetime="2020-01-18T13:21:00+08:00">2020-01-18</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -239,7 +239,7 @@
       
         <h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>创建一个接受图片数据，发布数值数据的rospy程序。</p>
 <h1 id="项目结构"><a href="#项目结构" class="headerlink" title="项目结构"></a>项目结构</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">└── src</span><br><span class="line">    ├── CMakeLists.txt -&gt; &#x2F;opt&#x2F;ros&#x2F;melodic&#x2F;share&#x2F;catkin&#x2F;cmake&#x2F;toplevel.cmake</span><br><span class="line">    └── demo</span><br><span class="line">        ├── CMakeLists.txt</span><br><span class="line">        ├── msg</span><br><span class="line">        │   └── Detection.msg</span><br><span class="line">        ├── package.xml</span><br><span class="line">        ├── scripts</span><br><span class="line">        │   └── detect.py</span><br><span class="line">        └── src</span><br></pre></td></tr></table></figure>
-<h1 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h1><h2 id="创建项目"><a href="#创建项目" class="headerlink" title="创建项目"></a>创建项目</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p catkin_ws/src</span><br><span class="line"><span class="built_in">cd</span> catkin_ws/src</span><br><span class="line">catkin_create_pkg demo rospy std_msgs message_generation</span><br><span class="line"><span class="built_in">cd</span> demo</span><br></pre></td></tr></table></figure>
+<h1 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h1><h2 id="创建项目"><a href="#创建项目" class="headerlink" title="创建项目"></a>创建项目</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p catkin_ws/src</span><br><span class="line"><span class="built_in">cd</span> catkin_ws</span><br><span class="line">catkin_make</span><br><span class="line">. devel/setup.bash</span><br><span class="line"><span class="built_in">cd</span> src</span><br><span class="line">catkin_create_pkg demo rospy std_msgs message_generation</span><br><span class="line"><span class="built_in">cd</span> demo</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>message_generation：用于msg文件生成代码，以便用于后续直接导入。（可以在<code>devel/lib/python2.7/dist-packages/demo/msg/_Detection.py</code>或<code>devel/include/demo/Detection.h</code>看到生成的代码文件。）</p>
 </blockquote>
