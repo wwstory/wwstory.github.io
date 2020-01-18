@@ -180,6 +180,193 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/04/web/spring/spring-ApplicationContext/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="dejiang">
+      <meta itemprop="description" content="你根本不知道你什么都不知道">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫の故事">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/10/04/web/spring/spring-ApplicationContext/" class="post-title-link" itemprop="url">[spring] ApplicationContext</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-10-04 18:37:00" itemprop="dateCreated datePublished" datetime="2019-10-04T18:37:00+08:00">2019-10-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-12-26 14:34:40" itemprop="dateModified" datetime="2019-12-26T14:34:40+08:00">2019-12-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/java/" itemprop="url" rel="index">
+                    <span itemprop="name">java</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/java/spring/" itemprop="url" rel="index">
+                    <span itemprop="name">spring</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="ApplicationContext"><a href="#ApplicationContext" class="headerlink" title="ApplicationContext"></a>ApplicationContext</h1><p>在构建非web应用时，发现了些问题，比如理所当然的使用<code>@Autowired</code>在主函数想要获取bean，却失败了，得到了<code>null</code>。</p>
+<p>这是非web应用的细节问题，了解这些可以帮助构建一个非web应用，也可以帮助处理掉《spring实战》源码的运行。</p>
+<h2 id="app如何获取bean"><a href="#app如何获取bean" class="headerlink" title="app如何获取bean"></a>app如何获取bean</h2><p>在<code>非web</code>应用中，会发现一个问题，无法通过<code>@Autowired</code>获取到bean，这是由于非web应用无法知道bean，也没有提供相应的注解去处理，只能通过<code>ApplicationContext</code>应用上下文获取bean。而bean之间是可以通过<code>@Autowired</code>获取到的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ApplicationContext context = <span class="keyword">new</span> AnnotationConfigApplicationContext(com.example.DemoConfig<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">A a = (A) context.getBean(A<span class="class">.<span class="keyword">class</span>)</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="web中为何能使用"><a href="#web中为何能使用" class="headerlink" title="web中为何能使用"></a>web中为何能使用</h2><p>相应的<code>web</code>应用中，我们通常使用<code>spring mvc</code>的<code>@Controller</code>去操作，而这已经是被封装过的了，对每个控制器实则是在写<code>控制器bean</code>。（源码<code>HandlerMethod.class</code>的<code>createWithResolvedBean</code>方法中<code>getBean</code>操作展示了出来）<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> HandlerMethod <span class="title">createWithResolvedBean</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Object handler = <span class="keyword">this</span>.bean;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.bean <span class="keyword">instanceof</span> String) &#123;</span><br><span class="line">        Assert.state(<span class="keyword">this</span>.beanFactory != <span class="keyword">null</span>, <span class="string">"Cannot resolve bean name without BeanFactory"</span>);</span><br><span class="line">        String beanName = (String) <span class="keyword">this</span>.bean;</span><br><span class="line">        handler = <span class="keyword">this</span>.beanFactory.getBean(beanName);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> HandlerMethod(<span class="keyword">this</span>, handler);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>组件扫描也是，需要通过设配置文件（xml配置或java配置）到<code>ApplicationContext</code>中，从上下文获取其它组件扫描到的bean。</p>
+<blockquote>
+<p>组件扫描的测试却可用<code>@ContextConfiguration</code>设置配置文件，从而处于可以直接使用<code>@Autowired</code>的上下文环境。</p>
+</blockquote>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p>HandlerMethod 331行 : <a href="https://github.com/spring-projects/spring-framework/blob/master/spring-web/src/main/java/org/springframework/web/method/HandlerMethod.java" target="_blank" rel="noopener">https://github.com/spring-projects/spring-framework/blob/master/spring-web/src/main/java/org/springframework/web/method/HandlerMethod.java</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/04/other/gradle%E6%89%93%E5%8C%85/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="dejiang">
+      <meta itemprop="description" content="你根本不知道你什么都不知道">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫の故事">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/10/04/other/gradle%E6%89%93%E5%8C%85/" class="post-title-link" itemprop="url">gradle打包</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-10-04 18:09:00" itemprop="dateCreated datePublished" datetime="2019-10-04T18:09:00+08:00">2019-10-04</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-12-26 14:34:40" itemprop="dateModified" datetime="2019-12-26T14:34:40+08:00">2019-12-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/other/" itemprop="url" rel="index">
+                    <span itemprop="name">other</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="非web应用"><a href="#非web应用" class="headerlink" title="非web应用"></a>非web应用</h1><blockquote>
+<p>非web项目，很少有帖子讲解对此的打包和运行。（web项目就很容易通过添加<code>war</code>插件和<code>gradle build</code>打包）</p>
+</blockquote>
+<p>运行的方法尝试出了几种。</p>
+<h2 id="idead中直接运行"><a href="#idead中直接运行" class="headerlink" title="idead中直接运行"></a>idead中直接运行</h2><p>使用idea直接运行<code>main</code>类即可。</p>
+<h2 id="使用插件"><a href="#使用插件" class="headerlink" title="使用插件"></a>使用插件</h2><p>使用gradle，需要在<code>build.gradle</code>文件中，添加插件<code>application</code>，并设置好主函数的名称<code>mainClassName</code>。最后在项目根目录下（<code>build.gradle</code>同级目录）执行命令：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gradle run</span><br></pre></td></tr></table></figure></p>
+<h2 id="打包成多个jar文件"><a href="#打包成多个jar文件" class="headerlink" title="打包成多个jar文件"></a>打包成多个jar文件</h2><p>依然需要上一步的<code>application</code>插件和<code>mainClassName</code>配置，然后执行命令下载依赖库并发布：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gradle install</span><br></pre></td></tr></table></figure></p>
+<p>打开<code>build/install/项目名/</code>目录可以看到两个文件夹<code>bin/</code>和<code>lib/</code>，lib目录下是打包好的项目jar包和其它添加的依赖包，bin目录下是配置好的sh脚本，方便直接运行。</p>
+<blockquote>
+<p>这个sh脚本主要就是获取了lib的路径，将里面的所有jar包的路径都记录下，然后执行命令<code>java -classpath 绝对路径/lib/xxx.jar:绝对路径/lib/yyy.jar com.yww.Main</code>运行。</p>
+</blockquote>
+<h2 id="打包成单个jar文件"><a href="#打包成单个jar文件" class="headerlink" title="打包成单个jar文件"></a>打包成单个jar文件</h2><p>上一个方法打包出来，自己的项目打包的jar和依赖的jar都零散的堆在文件夹中，运行时，还需要指定所有的jar包路径<code>-classpath</code>，十分麻烦。找到在<code>build.gradle</code>配置打包方式，且不需要插件<code>application</code>和<code>mainClassName</code>配置。<br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">jar &#123;</span><br><span class="line">    <span class="keyword">from</span> &#123;</span><br><span class="line">        <span class="keyword">configurations</span>.<span class="keyword">runtime</span>.<span class="keyword">collect</span>&#123;zipTree(it)&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    manifest &#123;</span><br><span class="line">        attributes <span class="string">'Main-Class'</span>: <span class="string">'com.yww.Main'</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>找到目录<code>build/lib/</code>执行命令运行：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar demo.jar</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>发现idea中可直接打包成单个文件，输出到<code>out/</code>目录下，但运行的方式不太一样，找不到主类，需要执行命令<code>java -classpath demo.jar com.yww.Main</code>运行。</p>
+</blockquote>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
+<li><a href="https://docs.gradle.org/current/userguide/building_java_projects.html" target="_blank" rel="noopener">https://docs.gradle.org/current/userguide/building_java_projects.html</a></li>
+<li><a href="https://www.jianshu.com/p/5bb1e87df15f" target="_blank" rel="noopener">https://www.jianshu.com/p/5bb1e87df15f</a></li>
+<li><a href="https://www.cnblogs.com/basenet855x/p/4302909.html" target="_blank" rel="noopener">https://www.cnblogs.com/basenet855x/p/4302909.html</a></li>
+<li><a href="https://my.oschina.net/u/2505383/blog/677301" target="_blank" rel="noopener">https://my.oschina.net/u/2505383/blog/677301</a></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/03/web/spring/spring-%E5%AD%A6%E4%B9%A01-IoC%E5%AE%B9%E5%99%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1031,98 +1218,6 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/01/note/book-list-readed/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="dejiang">
-      <meta itemprop="description" content="你根本不知道你什么都不知道">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="枫の故事">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/08/01/note/book-list-readed/" class="post-title-link" itemprop="url">book list - readed</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-08-01 00:00:00" itemprop="dateCreated datePublished" datetime="2019-08-01T00:00:00+08:00">2019-08-01</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-12-26 14:34:40" itemprop="dateModified" datetime="2019-12-26T14:34:40+08:00">2019-12-26</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/note/" itemprop="url" rel="index">
-                    <span itemprop="name">note</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <div class="minder-view" minder-data-type="json" style="width:100%; height:10000px;">
-{"root":{"data":{"id":"134b381888bd","created":1566956099,"text":"书单"},"children":[{"data":{"id":"bwkvl51dr2g0","created":1566956122502,"text":"C/C++"},"children":[{"data":{"id":"bwkvrtb4c9s0","created":1566956645518,"text":"C Primer Plus","image":"http://kityminder-img.gz.bcebos.com/fe3b13e9b49bd6afe72e5b7c76bbe3cc41b66719","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]},{"data":{"id":"bwkvrxgay480","created":1566956654539,"text":"C++ Primer Plus","image":"http://kityminder-img.gz.bcebos.com/3c39e5b69f99e4963d890689f541ea2370bda229","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]}]},{"data":{"id":"bwkvl8wkzb40","created":1566956130919,"text":"代码"},"children":[{"data":{"id":"bxbid19rhd6o","created":1569660931789,"text":"图解设计模式","image":"http://kityminder-img.gz.bcebos.com/81b9215dce3160b4a24a2a0072321d89c7bf5692","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]}]},{"data":{"id":"bwkvle1arz40","created":1566956142088,"text":"Java","expandState":"expand"},"children":[{"data":{"id":"bwkvmbwcn5c0","created":1566956215799,"text":"Java基础","expandState":"expand"},"children":[{"data":{"id":"bwkvscyv1zc0","created":1566956688313,"text":"Java 8编程参考官方教程(第9版)","image":"http://kityminder-img.gz.bcebos.com/3597d69f5d304174e857e7ebf01f84aece30c0a6","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvt1divvk0","created":1566956741442,"text":"码农翻身","image":"http://kityminder-img.gz.bcebos.com/d74d3a9f8e68aa00c41073c80d026f24ac15e78c","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]}]},{"data":{"id":"bwkvme9xzk00","created":1566956220975,"text":"JVM"},"children":[{"data":{"id":"bwkvst045ww0","created":1566956723217,"text":"深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）","image":"http://kityminder-img.gz.bcebos.com/d5531736ca642d7e77626568a9a906fe8f6a637d","imageTitle":"","imageSize":{"width":153,"height":200}},"children":[]}]},{"data":{"id":"bwkvli75q3k0","created":1566956151149,"text":"Spring"},"children":[{"data":{"id":"bwkvtp4air40","created":1566956793127,"text":"Spring实战（第4版）","image":"http://kityminder-img.gz.bcebos.com/6848bcf18ec91e0f97b7264eb6c8cccb7bbfcc34","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvtrd64680","created":1566956798017,"text":"Spring Boot实战","image":"http://kityminder-img.gz.bcebos.com/9641bef0ec2e185e6b76c6c26d4220fe6c312114","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvtuoor5k0","created":1566956805244,"text":"Spring微服务实战","image":"http://kityminder-img.gz.bcebos.com/dfee4134feef3b89dd5a5d31b6d0c5207b5e6e2a","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvtx90o9k0","created":1566956810827,"text":"Spring Data实战","image":"http://kityminder-img.gz.bcebos.com/271cd38418aafe495eaef59e53d454a459e870f8","imageTitle":"","imageSize":{"width":152,"height":200}},"children":[]}]},{"data":{"id":"bwkvlr83sg80","created":1566956170798,"text":"分布式"},"children":[{"data":{"id":"bwkvu8bucnk0","created":1566956834942,"text":"深入理解Nginx：模块开发与架构解析（第2版）","image":"http://kityminder-img.gz.bcebos.com/9a95a05c87ee92907bbaf6160e972ab3d8324e17","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvuavjqr40","created":1566956840487,"text":"深入浅出Docker","image":"http://kityminder-img.gz.bcebos.com/f305241a55947b9343bbd2461f5ca70e709e6bad","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]}]},{"data":{"id":"bwkvmwat62o0","created":1566956260209,"text":"其它"},"children":[{"data":{"id":"bwkvvezmc4o0","created":1566956927805,"text":"Mybatis技术内幕","image":"http://kityminder-img.gz.bcebos.com/2ecfae24d4e26c3e298ac36bf75ca65d24473d0d","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]}]}]},{"data":{"id":"bwkvlo4q6g00","created":1566956164063,"text":"数据库"},"children":[{"data":{"id":"bwkvu04lkow0","created":1566956817090,"text":"MySQL技术内幕：InnoDB存储引擎（第2版）","image":"http://kityminder-img.gz.bcebos.com/c1b83527c009f8c89ee5a119ece0ed0ba6588f0a","imageTitle":"","imageSize":{"width":133,"height":200}},"children":[]},{"data":{"id":"bwkvu56qpug0","created":1566956828103,"text":"Redis实战","image":"http://kityminder-img.gz.bcebos.com/80d8843d1e11bca2ff5aaa9841936f7df8faa0d9","imageTitle":"","imageSize":{"width":158,"height":200}},"children":[]}]},{"data":{"id":"bwkvlvgluls0","created":1566956180019,"text":"Python"},"children":[{"data":{"id":"bwkvugnt1pc0","created":1566956853080,"text":"Python并行编程参考手册","image":"http://kityminder-img.gz.bcebos.com/b9c1bf306b06837d1e1b6ae60d3d04fa913b0ce8","imageTitle":"","imageSize":{"width":153,"height":200}},"children":[]},{"data":{"id":"bwkvuibxhx40","created":1566956856715,"text":"Python高性能编程","image":"http://kityminder-img.gz.bcebos.com/68aa17db831e39d24121d0961dea22dc1894432f","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvukij5t40","created":1566956861468,"text":"Effective Python","image":"http://kityminder-img.gz.bcebos.com/4f7c939d73eeb118839ae3643aabe9f7b9baffca","imageTitle":"","imageSize":{"width":156,"height":200}},"children":[]},{"data":{"id":"bwkvuoyw1v40","created":1566956871164,"text":"自己动手写Python虚拟机","image":"http://kityminder-img.gz.bcebos.com/78d5638962bcfad452ad8487fea19e6a656e6f79","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]}]},{"data":{"id":"bwkvm16cav40","created":1566956192459,"text":"go","expandState":"expand"},"children":[{"data":{"id":"bxboiht39uo0","created":1569678286267,"text":"Go语言实战","expandState":"expand","image":"http://kityminder-img.gz.bcebos.com/488f7db5c0d687c99239b5d41c01c7b594980b0f","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]}]},{"data":{"id":"bwkvn7ojogw0","created":1566956284984,"text":"系统"},"children":[{"data":{"id":"bwkvvv05w8w0","created":1566956962666,"text":"鸟哥的Linux私房菜 基础学习篇 第四版","image":"http://kityminder-img.gz.bcebos.com/089b1c7443f53140799f38c67d58df069379e339","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvw1k6n680","created":1566956976937,"text":"编译原理（第2版）","image":"http://kityminder-img.gz.bcebos.com/790f4f21df0a786b3e1aff511276907519be1f06","imageTitle":"","imageSize":{"width":149,"height":200}},"children":[]},{"data":{"id":"bwkx8ygs7j40","created":1566960810046,"text":"操作系统 精髓与设计原理 ","image":"http://kityminder-img.gz.bcebos.com/725f016d7d2fb94e76e0d767823d7ee12f87b049","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]},{"data":{"id":"bwkxe90y5vc0","created":1566961224853,"text":"计算机组成(第6版)","image":"http://kityminder-img.gz.bcebos.com/726c685d05c6ed58c9c3bf46ad44dace3a000aca","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]},{"data":{"id":"bwkxfqmzv6w0","created":1566961341556,"text":"计算机网络(第6版)","image":"http://kityminder-img.gz.bcebos.com/57d5798a51745f0ccdbec72181ad0fb5fe0c0055","imageTitle":"","imageSize":{"width":138,"height":200}},"children":[]}]},{"data":{"id":"bwkvnwvycmo0","created":1566956339852,"text":"网络"},"children":[{"data":{"id":"bwkvwcis9000","created":1566957000797,"text":"图解HTTP","image":"http://kityminder-img.gz.bcebos.com/50874fc99ba25f44426534c1002e17ed63022775","imageTitle":"","imageSize":{"width":138,"height":200}},"children":[]},{"data":{"id":"bwkvwesvajs0","created":1566957005761,"text":"图解TCP/IP：第5版","image":"http://kityminder-img.gz.bcebos.com/665c74c1ddfa98c45a309d5ea046e60419844e54","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]}]},{"data":{"id":"bwkvnyvyw8o0","created":1566956344206,"text":"算法"},"children":[{"data":{"id":"bwkvwh36ho00","created":1566957010738,"text":"数据结构与算法分析：C语言描述","image":"http://kityminder-img.gz.bcebos.com/021b23779cd82851985e3347dc887011d1eb8df0","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwjecqjc0","created":1566957015767,"text":"算法导论","image":"http://kityminder-img.gz.bcebos.com/f250d3b4392617434509f7e7022b865d4f33c17c","imageTitle":"","imageSize":{"width":151,"height":200}},"children":[]},{"data":{"id":"bwkvwlgyya80","created":1566957020279,"text":"算法竞赛入门经典（第2版）","image":"http://kityminder-img.gz.bcebos.com/6867bf5cdedba9cdf832745b3d97d70b6e9e9ae4","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwmvvrw00","created":1566957023358,"text":"算法竞赛入门经典 训练指南","image":"http://kityminder-img.gz.bcebos.com/f095bab9c7f6ae27f54915ff7d8cc00700809eba","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwpdg4w80","created":1566957028773,"text":"算法图解","image":"http://kityminder-img.gz.bcebos.com/1424a93d83a888ab03a018d224d11c45c0a70554","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwqwi3080","created":1566957032102,"text":"漫画算法：小灰的算法之旅","image":"http://kityminder-img.gz.bcebos.com/5ca50dc902a819f7316a9dcaba64d461daca3ccf","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]}]},{"data":{"id":"bwkvo1hk2pk0","created":1566956349865,"text":"机器学习"},"children":[{"data":{"id":"bwkvwubm7f40","created":1566957039546,"text":"机器学习","image":"http://kityminder-img.gz.bcebos.com/31877ff7126872f2f560b4c168e058a2d553ee99","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwvpirvk0","created":1566957042564,"text":"Python神经网络编程","image":"http://kityminder-img.gz.bcebos.com/d2211092ac9a0f99293af2f06474f22e0d6eaaa8","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwxnwv680","created":1566957046820,"text":"TensorFlow：实战Google深度学习框架（第2版）","image":"http://kityminder-img.gz.bcebos.com/1cdea519b73766fd2cb5870111a0ea48e2485744","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwzwic140","created":1566957051693,"text":"深度学习框架PyTorch：入门与实践","image":"http://kityminder-img.gz.bcebos.com/7c284e0f06efa3aad2616a1b5943d71e4585f51a","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvx1alc140","created":1566957054722,"text":"生成对抗网络入门指南","image":"http://kityminder-img.gz.bcebos.com/1290e73cfef8f998c36574adcd86234da9aaea03","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvx37npmw0","created":1566957058898,"text":"深度学习","image":"http://kityminder-img.gz.bcebos.com/407d622d6b1e4589fd439cea365046bad19f1dbd","imageTitle":"","imageSize":{"width":166,"height":200}},"children":[]},{"data":{"id":"bwkvx4jszao0","created":1566957061809,"text":"机器学习实战","image":"http://kityminder-img.gz.bcebos.com/388d614a84efad18829fb359a11ac62eb3d6f784","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvx6cvzzs0","created":1566957065744,"text":"统计学习方法（第2版）","image":"http://kityminder-img.gz.bcebos.com/c57b6c3a6642c028d824fa742ecb8f0f307dfa04","imageTitle":"","imageSize":{"width":153,"height":200}},"children":[]},{"data":{"id":"bxt7u2ytjg80","created":1571459314683,"text":"百面机器学习","image":"https://kityminder-img.gz.bcebos.com/58ec3b64e87b007a93fdd6491a3418d34fde37ea","imageTitle":"","imageSize":{"width":147,"height":200}},"children":[]}]},{"data":{"id":"bym6w4b7yr40","created":1574401891972,"text":"Robot"},"children":[{"data":{"id":"bym6w6h5clk0","created":1574401896684,"text":"ROS_Robot_Programming","image":"https://kityminder-img.gz.bcebos.com/1d7da4981e34d5880256edef7d8f6a1f912bef27","imageTitle":"","imageSize":{"width":156,"height":200}},"children":[]}]}]},"template":"default","theme":"snow-compact","version":"1.4.43"}
-</div>
-
-<script type="text/javascript" src="https://unpkg.com/kity"></script>
-<script type="text/javascript" src="https://unpkg.com/kityminder-core"></script>
-<script type="text/javascript" src="https://unpkg.com/jquery"></script>
-
-<script type="text/javascript">
-        // 创建 km 实例
-        /* global kityminder */
-        var km = new kityminder.Minder();
-        km.setup('.minder-view');
-        km.disable();
-        km.execCommand('hand');
-        $(".km-receiver").remove()
-</script>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/01/note/book-list/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1181,6 +1276,98 @@
       
           <div class="minder-view" minder-data-type="json" style="width:100%; height:10000px;">
 {"root":{"data":{"id":"134b381888bd","created":1566956099,"text":"书单"},"children":[{"data":{"id":"bwkvl51dr2g0","created":1566956122502,"text":"C/C++"},"children":[{"data":{"id":"bwkvrtb4c9s0","created":1566956645518,"text":"C Primer Plus","image":"http://kityminder-img.gz.bcebos.com/fe3b13e9b49bd6afe72e5b7c76bbe3cc41b66719","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]},{"data":{"id":"bwkvrxgay480","created":1566956654539,"text":"C++ Primer Plus","image":"http://kityminder-img.gz.bcebos.com/3c39e5b69f99e4963d890689f541ea2370bda229","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]},{"data":{"id":"bxu3ligws2w0","created":1571548918668,"text":"c++标准库","image":"https://kityminder-img.gz.bcebos.com/f2cb2ce914b97a3e74c401caf80f298db493a005","imageTitle":"","imageSize":{"width":173,"height":200}},"children":[]},{"data":{"id":"bxu3lh30sw80","created":1571548915652,"text":"STL源码剖析","image":"https://kityminder-img.gz.bcebos.com/12608ff6e1527b008e43a7d029d1630aa7c16f77","imageTitle":"","imageSize":{"width":160,"height":200}},"children":[]},{"data":{"id":"bxu3ikunye80","created":1571548688761,"text":"Effective C++","image":"https://kityminder-img.gz.bcebos.com/96dc76bf2f07e03d85a8f8640976d7a4543a292e","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bxu3an0clao0","created":1571548066545,"text":"More Effective C++","image":"https://kityminder-img.gz.bcebos.com/a7adaf31100ed712b4d53589189e40122f4c0e3b","imageTitle":"","imageSize":{"width":161,"height":200}},"children":[]},{"data":{"id":"bxu3dcm48ww0","created":1571548279009,"text":"Effective STL","image":"https://kityminder-img.gz.bcebos.com/7b3330ac09e2f25dd7cceac20a3953185b416dc1","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]}]},{"data":{"id":"bwkvl8wkzb40","created":1566956130919,"text":"代码"},"children":[{"data":{"id":"bwkvs3r9xnc0","created":1566956668263,"text":"重构 改善既有代码的设计 (第2版)","image":"http://kityminder-img.gz.bcebos.com/e8cac985c0d2e28a44e20d1eba39e42d188ebd25","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bxbid19rhd6o","created":1569660931789,"text":"图解设计模式","image":"http://kityminder-img.gz.bcebos.com/81b9215dce3160b4a24a2a0072321d89c7bf5692","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]},{"data":{"id":"bwkvs6x5k280","created":1566956675149,"text":"领域专用语言实战","image":"http://kityminder-img.gz.bcebos.com/2ffbcc95493b60ebe826789901b359137e244579","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvs9x1ycg0","created":1566956681673,"text":"架构整洁之道","image":"http://kityminder-img.gz.bcebos.com/f5757144f7807f19b68bafffa57da26f93e7e780","imageTitle":"","imageSize":{"width":151,"height":200}},"children":[]},{"data":{"id":"bxqt8xo0tzk0","created":1571215042047,"text":"编程珠玑","image":"https://kityminder-img.gz.bcebos.com/1299338e48524484cb7088b6016ab43c95434bf6","imageTitle":"","imageSize":{"width":147,"height":200}},"children":[]}]},{"data":{"id":"bwkvle1arz40","created":1566956142088,"text":"Java","expandState":"expand"},"children":[{"data":{"id":"bwkvmbwcn5c0","created":1566956215799,"text":"Java基础","expandState":"expand"},"children":[{"data":{"id":"bwkvscyv1zc0","created":1566956688313,"text":"Java 8编程参考官方教程(第9版)","image":"http://kityminder-img.gz.bcebos.com/3597d69f5d304174e857e7ebf01f84aece30c0a6","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvsi1a9ts0","created":1566956699343,"text":"Java 8实战","image":"http://kityminder-img.gz.bcebos.com/626e44e79c09530afd77bbcea9c5d9da068fa61b","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvsmi367c0","created":1566956709066,"text":"图解Java多线程设计模式","image":"http://kityminder-img.gz.bcebos.com/2ad3a7b13418846822da5f36b2ffc32dc8aef3c8","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]},{"data":{"id":"bwkvt1divvk0","created":1566956741442,"text":"码农翻身","image":"http://kityminder-img.gz.bcebos.com/d74d3a9f8e68aa00c41073c80d026f24ac15e78c","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvt7iu97c0","created":1566956754824,"text":"Effective Java中文版（原书第3版）","image":"http://kityminder-img.gz.bcebos.com/14c5c3ef802df2d676754615021621242e063a32","imageTitle":"","imageSize":{"width":153,"height":200}},"children":[]}]},{"data":{"id":"bwkvme9xzk00","created":1566956220975,"text":"JVM"},"children":[{"data":{"id":"bwkvst045ww0","created":1566956723217,"text":"深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）","image":"http://kityminder-img.gz.bcebos.com/d5531736ca642d7e77626568a9a906fe8f6a637d","imageTitle":"","imageSize":{"width":153,"height":200}},"children":[]},{"data":{"id":"bwkvsw0jdo80","created":1566956729773,"text":"JVM G1源码分析和调优","image":"http://kityminder-img.gz.bcebos.com/4d2c8cbf47a934ecd895cb6b4cf6161b64b081e6","imageTitle":"","imageSize":{"width":155,"height":200}},"children":[]},{"data":{"id":"bwkvtapzq0o0","created":1566956761787,"text":"自己动手写Java虚拟机","image":"http://kityminder-img.gz.bcebos.com/0e08f58f39dd2398897bbc98dd54e6c7bf3ed46d","imageTitle":"","imageSize":{"width":133,"height":200}},"children":[]}]},{"data":{"id":"bwkvli75q3k0","created":1566956151149,"text":"Spring"},"children":[{"data":{"id":"bwkvtp4air40","created":1566956793127,"text":"Spring实战（第4版）","image":"http://kityminder-img.gz.bcebos.com/6848bcf18ec91e0f97b7264eb6c8cccb7bbfcc34","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvtrd64680","created":1566956798017,"text":"Spring Boot实战","image":"http://kityminder-img.gz.bcebos.com/9641bef0ec2e185e6b76c6c26d4220fe6c312114","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvtuoor5k0","created":1566956805244,"text":"Spring微服务实战","image":"http://kityminder-img.gz.bcebos.com/dfee4134feef3b89dd5a5d31b6d0c5207b5e6e2a","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvtx90o9k0","created":1566956810827,"text":"Spring Data实战","image":"http://kityminder-img.gz.bcebos.com/271cd38418aafe495eaef59e53d454a459e870f8","imageTitle":"","imageSize":{"width":152,"height":200}},"children":[]},{"data":{"id":"bxbdg0oyra4g","created":1569647060075,"text":"Spring技术内幕：深入解析Spring架构与设计原理（第2版）","image":"http://kityminder-img.gz.bcebos.com/a99f89fa09433576d7cab3c7f39676b124bc9844","imageTitle":"","imageSize":{"width":148,"height":200}},"children":[]}]},{"data":{"id":"bwkvlr83sg80","created":1566956170798,"text":"分布式"},"children":[{"data":{"id":"bwkvu8bucnk0","created":1566956834942,"text":"深入理解Nginx：模块开发与架构解析（第2版）","image":"http://kityminder-img.gz.bcebos.com/9a95a05c87ee92907bbaf6160e972ab3d8324e17","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvuavjqr40","created":1566956840487,"text":"深入浅出Docker","image":"http://kityminder-img.gz.bcebos.com/f305241a55947b9343bbd2461f5ca70e709e6bad","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bxbdrlnbsa2o","created":1569647967694,"text":"自己动手写Docker","image":"http://kityminder-img.gz.bcebos.com/948420c68fad4b9a42fa6ec70b7b2e2957f1f3b0","imageTitle":"","imageSize":{"width":149,"height":200}},"children":[]},{"data":{"id":"bwkvudhc1js0","created":1566956846158,"text":"Spring Cloud微服务：入门、实战与进阶","image":"http://kityminder-img.gz.bcebos.com/eeceaaf4b8e2611d26e439e9ed3b3055fc5c1d4e","imageTitle":"","imageSize":{"width":133,"height":200}},"children":[]}]},{"data":{"id":"bwkvmwat62o0","created":1566956260209,"text":"其它"},"children":[{"data":{"id":"bwkvvezmc4o0","created":1566956927805,"text":"Mybatis技术内幕","image":"http://kityminder-img.gz.bcebos.com/2ecfae24d4e26c3e298ac36bf75ca65d24473d0d","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvtks3f4w0","created":1566956783682,"text":"Netty实战","image":"http://kityminder-img.gz.bcebos.com/9f0a42ad8735552cdb4588ce36bf1b3ab4abf002","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvvccqt4w0","created":1566956922068,"text":"OAuth 2实战","image":"http://kityminder-img.gz.bcebos.com/5a565ce1fa9558d3f04e60c9bdc44297d090cdfe","imageTitle":"","imageSize":{"width":155,"height":200}},"children":[]}]}]},{"data":{"id":"bwkvlo4q6g00","created":1566956164063,"text":"数据库"},"children":[{"data":{"id":"bwkvu04lkow0","created":1566956817090,"text":"MySQL技术内幕：InnoDB存储引擎（第2版）","image":"http://kityminder-img.gz.bcebos.com/c1b83527c009f8c89ee5a119ece0ed0ba6588f0a","imageTitle":"","imageSize":{"width":133,"height":200}},"children":[]},{"data":{"id":"bwkvu3fhhzc0","created":1566956824279,"text":"Effective Sql","image":"http://kityminder-img.gz.bcebos.com/2b1c918c9b55a35833549e0ac4e9e352f029520c","imageTitle":"","imageSize":{"width":156,"height":200}},"children":[]},{"data":{"id":"bwkvu56qpug0","created":1566956828103,"text":"Redis实战","image":"http://kityminder-img.gz.bcebos.com/80d8843d1e11bca2ff5aaa9841936f7df8faa0d9","imageTitle":"","imageSize":{"width":158,"height":200}},"children":[]}]},{"data":{"id":"bwkvlvgluls0","created":1566956180019,"text":"Python"},"children":[{"data":{"id":"bwkvugnt1pc0","created":1566956853080,"text":"Python并行编程参考手册","image":"http://kityminder-img.gz.bcebos.com/b9c1bf306b06837d1e1b6ae60d3d04fa913b0ce8","imageTitle":"","imageSize":{"width":153,"height":200}},"children":[]},{"data":{"id":"bwkvuibxhx40","created":1566956856715,"text":"Python高性能编程","image":"http://kityminder-img.gz.bcebos.com/68aa17db831e39d24121d0961dea22dc1894432f","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvukij5t40","created":1566956861468,"text":"Effective Python","image":"http://kityminder-img.gz.bcebos.com/4f7c939d73eeb118839ae3643aabe9f7b9baffca","imageTitle":"","imageSize":{"width":156,"height":200}},"children":[]},{"data":{"id":"bwkvumczc540","created":1566956865486,"text":"Python源码剖析","image":"http://kityminder-img.gz.bcebos.com/e62ed8c3a8e41523f175fb430b5d49c4dd4d160e","imageTitle":"","imageSize":{"width":158,"height":200}},"children":[]},{"data":{"id":"bwkvuoyw1v40","created":1566956871164,"text":"自己动手写Python虚拟机","image":"http://kityminder-img.gz.bcebos.com/78d5638962bcfad452ad8487fea19e6a656e6f79","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]}]},{"data":{"id":"bwkvm16cav40","created":1566956192459,"text":"go","expandState":"expand"},"children":[{"data":{"id":"bxboiht39uo0","created":1569678286267,"text":"Go语言实战","expandState":"expand","image":"http://kityminder-img.gz.bcebos.com/488f7db5c0d687c99239b5d41c01c7b594980b0f","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]}]},{"data":{"id":"bwkvmp53glk0","created":1566956244626,"text":"大数据"},"children":[{"data":{"id":"bwkvuu66y8w0","created":1566956882490,"text":"Hadoop实战","image":"http://kityminder-img.gz.bcebos.com/1f99855644b499ed27a78b98429a9663ccf7951c","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvuwn5cc00","created":1566956887869,"text":"Elasticsearch实战","image":"http://kityminder-img.gz.bcebos.com/4308493804727d9e3217f59abba36460cab09d7d","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvuydspww0","created":1566956891657,"text":"Kafka Streams实战","image":"http://kityminder-img.gz.bcebos.com/ec545deac44743e594cc04d0e5892f94bacb3f83","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwl14xbkl400","created":1566971778537,"text":"数据挖掘导论","image":"http://kityminder-img.gz.bcebos.com/c8f8d2fa4862a49124c272beaf816434e47d85d5","imageTitle":"","imageSize":{"width":149,"height":200}},"children":[]}]},{"data":{"id":"bwkvn7ojogw0","created":1566956284984,"text":"系统"},"children":[{"data":{"id":"bwkvvv05w8w0","created":1566956962666,"text":"鸟哥的Linux私房菜 基础学习篇 第四版","image":"http://kityminder-img.gz.bcebos.com/089b1c7443f53140799f38c67d58df069379e339","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvvx19oa00","created":1566956967087,"text":"Linux内核设计与实现(原书第3版)","image":"http://kityminder-img.gz.bcebos.com/f3ae4637c7735245a7092c84706259b66ebacecb","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvvyyvj1k0","created":1566956971295,"text":"Linux内核完全剖析——基于0.12内核","image":"http://kityminder-img.gz.bcebos.com/ff6dbd053a82f6625b994567d710954e68830716","imageTitle":"","imageSize":{"width":141,"height":200}},"children":[]},{"data":{"id":"bwkvw1k6n680","created":1566956976937,"text":"编译原理（第2版）","image":"http://kityminder-img.gz.bcebos.com/790f4f21df0a786b3e1aff511276907519be1f06","imageTitle":"","imageSize":{"width":149,"height":200}},"children":[]},{"data":{"id":"bwkvw3cammg0","created":1566956980814,"text":"自己动手写编译器、链接器","image":"http://kityminder-img.gz.bcebos.com/c879366e0436542ac110e6e494e6c56c81a821c5","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvw5etgpk0","created":1566956985320,"text":"自己动手构造编译系统","image":"http://kityminder-img.gz.bcebos.com/c6a368bf9b061eb1c6f8323c33f5ca1311acde7f","imageTitle":"","imageSize":{"width":152,"height":200}},"children":[]},{"data":{"id":"bwkvw9rzztk0","created":1566956994824,"text":"垃圾回收算法手册：自动内存管理的艺术","image":"http://kityminder-img.gz.bcebos.com/7dd5bb2905c67256d5ac2682d50a210152fcb721","imageTitle":"","imageSize":{"width":141,"height":200}},"children":[]},{"data":{"id":"bwkx8ygs7j40","created":1566960810046,"text":"操作系统 精髓与设计原理 ","image":"http://kityminder-img.gz.bcebos.com/725f016d7d2fb94e76e0d767823d7ee12f87b049","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]},{"data":{"id":"bwkxe90y5vc0","created":1566961224853,"text":"计算机组成(第6版)","image":"http://kityminder-img.gz.bcebos.com/726c685d05c6ed58c9c3bf46ad44dace3a000aca","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]},{"data":{"id":"bwkxfqmzv6w0","created":1566961341556,"text":"计算机网络(第6版)","image":"http://kityminder-img.gz.bcebos.com/57d5798a51745f0ccdbec72181ad0fb5fe0c0055","imageTitle":"","imageSize":{"width":138,"height":200}},"children":[]}]},{"data":{"id":"bwkvnwvycmo0","created":1566956339852,"text":"网络"},"children":[{"data":{"id":"bwkvwcis9000","created":1566957000797,"text":"图解HTTP","image":"http://kityminder-img.gz.bcebos.com/50874fc99ba25f44426534c1002e17ed63022775","imageTitle":"","imageSize":{"width":138,"height":200}},"children":[]},{"data":{"id":"bwkvwesvajs0","created":1566957005761,"text":"图解TCP/IP：第5版","image":"http://kityminder-img.gz.bcebos.com/665c74c1ddfa98c45a309d5ea046e60419844e54","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]}]},{"data":{"id":"bwkvnyvyw8o0","created":1566956344206,"text":"算法"},"children":[{"data":{"id":"bwkvwh36ho00","created":1566957010738,"text":"数据结构与算法分析：C语言描述","image":"http://kityminder-img.gz.bcebos.com/021b23779cd82851985e3347dc887011d1eb8df0","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwjecqjc0","created":1566957015767,"text":"算法导论","image":"http://kityminder-img.gz.bcebos.com/f250d3b4392617434509f7e7022b865d4f33c17c","imageTitle":"","imageSize":{"width":151,"height":200}},"children":[]},{"data":{"id":"bwkvwlgyya80","created":1566957020279,"text":"算法竞赛入门经典（第2版）","image":"http://kityminder-img.gz.bcebos.com/6867bf5cdedba9cdf832745b3d97d70b6e9e9ae4","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwmvvrw00","created":1566957023358,"text":"算法竞赛入门经典 训练指南","image":"http://kityminder-img.gz.bcebos.com/f095bab9c7f6ae27f54915ff7d8cc00700809eba","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwpdg4w80","created":1566957028773,"text":"算法图解","image":"http://kityminder-img.gz.bcebos.com/1424a93d83a888ab03a018d224d11c45c0a70554","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwqwi3080","created":1566957032102,"text":"漫画算法：小灰的算法之旅","image":"http://kityminder-img.gz.bcebos.com/5ca50dc902a819f7316a9dcaba64d461daca3ccf","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]}]},{"data":{"id":"bwkvo0h1iqo0","created":1566956347657,"text":"其它"},"children":[{"data":{"id":"bwkvvppaxx40","created":1566956951126,"text":"图解网站分析：让流量倍增的网站优化方法","image":"http://kityminder-img.gz.bcebos.com/f2d8630f683f26d101680271b47a8f79a016eaff","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvvs5lgr40","created":1566956956464,"text":"图解密码技术 第3版","image":"http://kityminder-img.gz.bcebos.com/6579f49d4eed3f89ec9965e681a935b99ca9b796","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]}]},{"data":{"id":"bwkvo1hk2pk0","created":1566956349865,"text":"机器学习"},"children":[{"data":{"id":"bwkvwubm7f40","created":1566957039546,"text":"机器学习","image":"http://kityminder-img.gz.bcebos.com/31877ff7126872f2f560b4c168e058a2d553ee99","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwvpirvk0","created":1566957042564,"text":"Python神经网络编程","image":"http://kityminder-img.gz.bcebos.com/d2211092ac9a0f99293af2f06474f22e0d6eaaa8","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwxnwv680","created":1566957046820,"text":"TensorFlow：实战Google深度学习框架（第2版）","image":"http://kityminder-img.gz.bcebos.com/1cdea519b73766fd2cb5870111a0ea48e2485744","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwzwic140","created":1566957051693,"text":"深度学习框架PyTorch：入门与实践","image":"http://kityminder-img.gz.bcebos.com/7c284e0f06efa3aad2616a1b5943d71e4585f51a","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvx1alc140","created":1566957054722,"text":"生成对抗网络入门指南","image":"http://kityminder-img.gz.bcebos.com/1290e73cfef8f998c36574adcd86234da9aaea03","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvx37npmw0","created":1566957058898,"text":"深度学习","image":"http://kityminder-img.gz.bcebos.com/407d622d6b1e4589fd439cea365046bad19f1dbd","imageTitle":"","imageSize":{"width":166,"height":200}},"children":[]},{"data":{"id":"bwkvx4jszao0","created":1566957061809,"text":"机器学习实战","image":"http://kityminder-img.gz.bcebos.com/388d614a84efad18829fb359a11ac62eb3d6f784","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvx6cvzzs0","created":1566957065744,"text":"统计学习方法（第2版）","image":"http://kityminder-img.gz.bcebos.com/c57b6c3a6642c028d824fa742ecb8f0f307dfa04","imageTitle":"","imageSize":{"width":153,"height":200}},"children":[]},{"data":{"id":"bwkvx889i8g0","created":1566957069818,"text":"动手学深度学习","image":"http://kityminder-img.gz.bcebos.com/0c2fd72eb38fd7c913e84107c430156dacb5eb3e","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]},{"data":{"id":"bwkvxo4njnc0","created":1566957104429,"text":"图解机器学习","image":"http://kityminder-img.gz.bcebos.com/eb23d19d9d0960b651291557a211eca3da4a183f","imageTitle":"","imageSize":{"width":138,"height":200}},"children":[]},{"data":{"id":"bwkvxqegx8o0","created":1566957109376,"text":"图解深度学习","image":"http://kityminder-img.gz.bcebos.com/58c63f24b5ac31b34318f373eeb63c8ede335eb6","imageTitle":"","imageSize":{"width":138,"height":200}},"children":[]},{"data":{"id":"bxt7u2ytjg80","created":1571459314683,"text":"百面机器学习","image":"https://kityminder-img.gz.bcebos.com/58ec3b64e87b007a93fdd6491a3418d34fde37ea","imageTitle":"","imageSize":{"width":147,"height":200}},"children":[]}]},{"data":{"id":"bym6w4b7yr40","created":1574401891972,"text":"Robot"},"children":[{"data":{"id":"bym6w6h5clk0","created":1574401896684,"text":"ROS_Robot_Programming","image":"https://kityminder-img.gz.bcebos.com/1d7da4981e34d5880256edef7d8f6a1f912bef27","imageTitle":"","imageSize":{"width":156,"height":200}},"children":[]}]},{"data":{"id":"bym6x9onasg0","created":1574401982032,"text":"数学"},"children":[]}]},"template":"default","theme":"snow-compact","version":"1.4.43"}
+</div>
+
+<script type="text/javascript" src="https://unpkg.com/kity"></script>
+<script type="text/javascript" src="https://unpkg.com/kityminder-core"></script>
+<script type="text/javascript" src="https://unpkg.com/jquery"></script>
+
+<script type="text/javascript">
+        // 创建 km 实例
+        /* global kityminder */
+        var km = new kityminder.Minder();
+        km.setup('.minder-view');
+        km.disable();
+        km.execCommand('hand');
+        $(".km-receiver").remove()
+</script>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/01/note/book-list-readed/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="dejiang">
+      <meta itemprop="description" content="你根本不知道你什么都不知道">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫の故事">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/08/01/note/book-list-readed/" class="post-title-link" itemprop="url">book list - readed</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-08-01 00:00:00" itemprop="dateCreated datePublished" datetime="2019-08-01T00:00:00+08:00">2019-08-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-12-26 14:34:40" itemprop="dateModified" datetime="2019-12-26T14:34:40+08:00">2019-12-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/note/" itemprop="url" rel="index">
+                    <span itemprop="name">note</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <div class="minder-view" minder-data-type="json" style="width:100%; height:10000px;">
+{"root":{"data":{"id":"134b381888bd","created":1566956099,"text":"书单"},"children":[{"data":{"id":"bwkvl51dr2g0","created":1566956122502,"text":"C/C++"},"children":[{"data":{"id":"bwkvrtb4c9s0","created":1566956645518,"text":"C Primer Plus","image":"http://kityminder-img.gz.bcebos.com/fe3b13e9b49bd6afe72e5b7c76bbe3cc41b66719","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]},{"data":{"id":"bwkvrxgay480","created":1566956654539,"text":"C++ Primer Plus","image":"http://kityminder-img.gz.bcebos.com/3c39e5b69f99e4963d890689f541ea2370bda229","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]}]},{"data":{"id":"bwkvl8wkzb40","created":1566956130919,"text":"代码"},"children":[{"data":{"id":"bxbid19rhd6o","created":1569660931789,"text":"图解设计模式","image":"http://kityminder-img.gz.bcebos.com/81b9215dce3160b4a24a2a0072321d89c7bf5692","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]}]},{"data":{"id":"bwkvle1arz40","created":1566956142088,"text":"Java","expandState":"expand"},"children":[{"data":{"id":"bwkvmbwcn5c0","created":1566956215799,"text":"Java基础","expandState":"expand"},"children":[{"data":{"id":"bwkvscyv1zc0","created":1566956688313,"text":"Java 8编程参考官方教程(第9版)","image":"http://kityminder-img.gz.bcebos.com/3597d69f5d304174e857e7ebf01f84aece30c0a6","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvt1divvk0","created":1566956741442,"text":"码农翻身","image":"http://kityminder-img.gz.bcebos.com/d74d3a9f8e68aa00c41073c80d026f24ac15e78c","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]}]},{"data":{"id":"bwkvme9xzk00","created":1566956220975,"text":"JVM"},"children":[{"data":{"id":"bwkvst045ww0","created":1566956723217,"text":"深入理解Java虚拟机：JVM高级特性与最佳实践（第2版）","image":"http://kityminder-img.gz.bcebos.com/d5531736ca642d7e77626568a9a906fe8f6a637d","imageTitle":"","imageSize":{"width":153,"height":200}},"children":[]}]},{"data":{"id":"bwkvli75q3k0","created":1566956151149,"text":"Spring"},"children":[{"data":{"id":"bwkvtp4air40","created":1566956793127,"text":"Spring实战（第4版）","image":"http://kityminder-img.gz.bcebos.com/6848bcf18ec91e0f97b7264eb6c8cccb7bbfcc34","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvtrd64680","created":1566956798017,"text":"Spring Boot实战","image":"http://kityminder-img.gz.bcebos.com/9641bef0ec2e185e6b76c6c26d4220fe6c312114","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvtuoor5k0","created":1566956805244,"text":"Spring微服务实战","image":"http://kityminder-img.gz.bcebos.com/dfee4134feef3b89dd5a5d31b6d0c5207b5e6e2a","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvtx90o9k0","created":1566956810827,"text":"Spring Data实战","image":"http://kityminder-img.gz.bcebos.com/271cd38418aafe495eaef59e53d454a459e870f8","imageTitle":"","imageSize":{"width":152,"height":200}},"children":[]}]},{"data":{"id":"bwkvlr83sg80","created":1566956170798,"text":"分布式"},"children":[{"data":{"id":"bwkvu8bucnk0","created":1566956834942,"text":"深入理解Nginx：模块开发与架构解析（第2版）","image":"http://kityminder-img.gz.bcebos.com/9a95a05c87ee92907bbaf6160e972ab3d8324e17","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvuavjqr40","created":1566956840487,"text":"深入浅出Docker","image":"http://kityminder-img.gz.bcebos.com/f305241a55947b9343bbd2461f5ca70e709e6bad","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]}]},{"data":{"id":"bwkvmwat62o0","created":1566956260209,"text":"其它"},"children":[{"data":{"id":"bwkvvezmc4o0","created":1566956927805,"text":"Mybatis技术内幕","image":"http://kityminder-img.gz.bcebos.com/2ecfae24d4e26c3e298ac36bf75ca65d24473d0d","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]}]}]},{"data":{"id":"bwkvlo4q6g00","created":1566956164063,"text":"数据库"},"children":[{"data":{"id":"bwkvu04lkow0","created":1566956817090,"text":"MySQL技术内幕：InnoDB存储引擎（第2版）","image":"http://kityminder-img.gz.bcebos.com/c1b83527c009f8c89ee5a119ece0ed0ba6588f0a","imageTitle":"","imageSize":{"width":133,"height":200}},"children":[]},{"data":{"id":"bwkvu56qpug0","created":1566956828103,"text":"Redis实战","image":"http://kityminder-img.gz.bcebos.com/80d8843d1e11bca2ff5aaa9841936f7df8faa0d9","imageTitle":"","imageSize":{"width":158,"height":200}},"children":[]}]},{"data":{"id":"bwkvlvgluls0","created":1566956180019,"text":"Python"},"children":[{"data":{"id":"bwkvugnt1pc0","created":1566956853080,"text":"Python并行编程参考手册","image":"http://kityminder-img.gz.bcebos.com/b9c1bf306b06837d1e1b6ae60d3d04fa913b0ce8","imageTitle":"","imageSize":{"width":153,"height":200}},"children":[]},{"data":{"id":"bwkvuibxhx40","created":1566956856715,"text":"Python高性能编程","image":"http://kityminder-img.gz.bcebos.com/68aa17db831e39d24121d0961dea22dc1894432f","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvukij5t40","created":1566956861468,"text":"Effective Python","image":"http://kityminder-img.gz.bcebos.com/4f7c939d73eeb118839ae3643aabe9f7b9baffca","imageTitle":"","imageSize":{"width":156,"height":200}},"children":[]},{"data":{"id":"bwkvuoyw1v40","created":1566956871164,"text":"自己动手写Python虚拟机","image":"http://kityminder-img.gz.bcebos.com/78d5638962bcfad452ad8487fea19e6a656e6f79","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]}]},{"data":{"id":"bwkvm16cav40","created":1566956192459,"text":"go","expandState":"expand"},"children":[{"data":{"id":"bxboiht39uo0","created":1569678286267,"text":"Go语言实战","expandState":"expand","image":"http://kityminder-img.gz.bcebos.com/488f7db5c0d687c99239b5d41c01c7b594980b0f","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]}]},{"data":{"id":"bwkvn7ojogw0","created":1566956284984,"text":"系统"},"children":[{"data":{"id":"bwkvvv05w8w0","created":1566956962666,"text":"鸟哥的Linux私房菜 基础学习篇 第四版","image":"http://kityminder-img.gz.bcebos.com/089b1c7443f53140799f38c67d58df069379e339","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvw1k6n680","created":1566956976937,"text":"编译原理（第2版）","image":"http://kityminder-img.gz.bcebos.com/790f4f21df0a786b3e1aff511276907519be1f06","imageTitle":"","imageSize":{"width":149,"height":200}},"children":[]},{"data":{"id":"bwkx8ygs7j40","created":1566960810046,"text":"操作系统 精髓与设计原理 ","image":"http://kityminder-img.gz.bcebos.com/725f016d7d2fb94e76e0d767823d7ee12f87b049","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]},{"data":{"id":"bwkxe90y5vc0","created":1566961224853,"text":"计算机组成(第6版)","image":"http://kityminder-img.gz.bcebos.com/726c685d05c6ed58c9c3bf46ad44dace3a000aca","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]},{"data":{"id":"bwkxfqmzv6w0","created":1566961341556,"text":"计算机网络(第6版)","image":"http://kityminder-img.gz.bcebos.com/57d5798a51745f0ccdbec72181ad0fb5fe0c0055","imageTitle":"","imageSize":{"width":138,"height":200}},"children":[]}]},{"data":{"id":"bwkvnwvycmo0","created":1566956339852,"text":"网络"},"children":[{"data":{"id":"bwkvwcis9000","created":1566957000797,"text":"图解HTTP","image":"http://kityminder-img.gz.bcebos.com/50874fc99ba25f44426534c1002e17ed63022775","imageTitle":"","imageSize":{"width":138,"height":200}},"children":[]},{"data":{"id":"bwkvwesvajs0","created":1566957005761,"text":"图解TCP/IP：第5版","image":"http://kityminder-img.gz.bcebos.com/665c74c1ddfa98c45a309d5ea046e60419844e54","imageTitle":"","imageSize":{"width":142,"height":200}},"children":[]}]},{"data":{"id":"bwkvnyvyw8o0","created":1566956344206,"text":"算法"},"children":[{"data":{"id":"bwkvwh36ho00","created":1566957010738,"text":"数据结构与算法分析：C语言描述","image":"http://kityminder-img.gz.bcebos.com/021b23779cd82851985e3347dc887011d1eb8df0","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwjecqjc0","created":1566957015767,"text":"算法导论","image":"http://kityminder-img.gz.bcebos.com/f250d3b4392617434509f7e7022b865d4f33c17c","imageTitle":"","imageSize":{"width":151,"height":200}},"children":[]},{"data":{"id":"bwkvwlgyya80","created":1566957020279,"text":"算法竞赛入门经典（第2版）","image":"http://kityminder-img.gz.bcebos.com/6867bf5cdedba9cdf832745b3d97d70b6e9e9ae4","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwmvvrw00","created":1566957023358,"text":"算法竞赛入门经典 训练指南","image":"http://kityminder-img.gz.bcebos.com/f095bab9c7f6ae27f54915ff7d8cc00700809eba","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwpdg4w80","created":1566957028773,"text":"算法图解","image":"http://kityminder-img.gz.bcebos.com/1424a93d83a888ab03a018d224d11c45c0a70554","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwqwi3080","created":1566957032102,"text":"漫画算法：小灰的算法之旅","image":"http://kityminder-img.gz.bcebos.com/5ca50dc902a819f7316a9dcaba64d461daca3ccf","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]}]},{"data":{"id":"bwkvo1hk2pk0","created":1566956349865,"text":"机器学习"},"children":[{"data":{"id":"bwkvwubm7f40","created":1566957039546,"text":"机器学习","image":"http://kityminder-img.gz.bcebos.com/31877ff7126872f2f560b4c168e058a2d553ee99","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwvpirvk0","created":1566957042564,"text":"Python神经网络编程","image":"http://kityminder-img.gz.bcebos.com/d2211092ac9a0f99293af2f06474f22e0d6eaaa8","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwxnwv680","created":1566957046820,"text":"TensorFlow：实战Google深度学习框架（第2版）","image":"http://kityminder-img.gz.bcebos.com/1cdea519b73766fd2cb5870111a0ea48e2485744","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvwzwic140","created":1566957051693,"text":"深度学习框架PyTorch：入门与实践","image":"http://kityminder-img.gz.bcebos.com/7c284e0f06efa3aad2616a1b5943d71e4585f51a","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvx1alc140","created":1566957054722,"text":"生成对抗网络入门指南","image":"http://kityminder-img.gz.bcebos.com/1290e73cfef8f998c36574adcd86234da9aaea03","imageTitle":"","imageSize":{"width":200,"height":200}},"children":[]},{"data":{"id":"bwkvx37npmw0","created":1566957058898,"text":"深度学习","image":"http://kityminder-img.gz.bcebos.com/407d622d6b1e4589fd439cea365046bad19f1dbd","imageTitle":"","imageSize":{"width":166,"height":200}},"children":[]},{"data":{"id":"bwkvx4jszao0","created":1566957061809,"text":"机器学习实战","image":"http://kityminder-img.gz.bcebos.com/388d614a84efad18829fb359a11ac62eb3d6f784","imageTitle":"","imageSize":{"width":159,"height":200}},"children":[]},{"data":{"id":"bwkvx6cvzzs0","created":1566957065744,"text":"统计学习方法（第2版）","image":"http://kityminder-img.gz.bcebos.com/c57b6c3a6642c028d824fa742ecb8f0f307dfa04","imageTitle":"","imageSize":{"width":153,"height":200}},"children":[]},{"data":{"id":"bxt7u2ytjg80","created":1571459314683,"text":"百面机器学习","image":"https://kityminder-img.gz.bcebos.com/58ec3b64e87b007a93fdd6491a3418d34fde37ea","imageTitle":"","imageSize":{"width":147,"height":200}},"children":[]}]},{"data":{"id":"bym6w4b7yr40","created":1574401891972,"text":"Robot"},"children":[{"data":{"id":"bym6w6h5clk0","created":1574401896684,"text":"ROS_Robot_Programming","image":"https://kityminder-img.gz.bcebos.com/1d7da4981e34d5880256edef7d8f6a1f912bef27","imageTitle":"","imageSize":{"width":156,"height":200}},"children":[]}]}]},"template":"default","theme":"snow-compact","version":"1.4.43"}
 </div>
 
 <script type="text/javascript" src="https://unpkg.com/kity"></script>
@@ -1599,196 +1786,6 @@ L_{age} = \sum_{x \in p_x (x)} \ell (G(x|C_t), C_t)</script><blockquote>
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/29/python/python-%E5%B9%B6%E8%A1%8C6-%E5%88%86%E5%B8%83%E5%BC%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="dejiang">
-      <meta itemprop="description" content="你根本不知道你什么都不知道">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="枫の故事">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2018/11/29/python/python-%E5%B9%B6%E8%A1%8C6-%E5%88%86%E5%B8%83%E5%BC%8F/" class="post-title-link" itemprop="url">[python 并行6] 分布式</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-11-29 18:42:09" itemprop="dateCreated datePublished" datetime="2018-11-29T18:42:09+08:00">2018-11-29</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-12-26 14:34:40" itemprop="dateModified" datetime="2019-12-26T14:34:40+08:00">2019-12-26</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/python/" itemprop="url" rel="index">
-                    <span itemprop="name">python</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h1><p>分布式计算的基本理念是将工作划分为一个一个小任务，分发给多台设备处理，再汇总结果。在分布式计算中，网络中的机器必须要保持可用（延迟误差、意外宕机等等），需要一个持续监控架构</p>
-<hr>
-<h1 id="分布式多进程-2"><a href="#分布式多进程-2" class="headerlink" title="分布式多进程 2"></a>分布式多进程 <sup>2</sup></h1><p><code>multiprocessing</code>的子模块<code>managers</code>还支持把多进程分布在多台机器上，<code>managers</code>模块已经封装好了网络通信的细节</p>
-<p><strong>实现方法</strong>：我们可以使用<code>managers</code>模块将<code>queue</code>队列通过网络暴露出去，让其它机器访问到这个队列，然后就可以通过它实现数据交换</p>
-<p>示例：<br>服务器通过暴露queue到网络，放入数据到队列，让客户端取出数据处理，再放回结果<br>服务器代码<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># task_master.py</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> random, time, queue</span><br><span class="line"><span class="keyword">from</span> multiprocessing.managers <span class="keyword">import</span> BaseManager</span><br><span class="line"></span><br><span class="line"><span class="comment"># 发送任务的队列:</span></span><br><span class="line">task_queue = queue.Queue()</span><br><span class="line"><span class="comment"># 接收结果的队列:</span></span><br><span class="line">result_queue = queue.Queue()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 从BaseManager继承的QueueManager:</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">QueueManager</span><span class="params">(BaseManager)</span>:</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 把两个Queue都注册到网络上, callable参数关联了Queue对象:</span></span><br><span class="line">QueueManager.register(<span class="string">'get_task_queue'</span>, callable=<span class="keyword">lambda</span>: task_queue)</span><br><span class="line">QueueManager.register(<span class="string">'get_result_queue'</span>, callable=<span class="keyword">lambda</span>: result_queue)</span><br><span class="line"><span class="comment"># 绑定端口5000, 设置验证码'abc':</span></span><br><span class="line">manager = QueueManager(address=(<span class="string">''</span>, <span class="number">5000</span>), authkey=<span class="string">b'abc'</span>)</span><br><span class="line"><span class="comment"># 启动Queue:</span></span><br><span class="line">manager.start()</span><br><span class="line"><span class="comment"># 获得通过网络访问的Queue对象:</span></span><br><span class="line">task = manager.get_task_queue()</span><br><span class="line">result = manager.get_result_queue()</span><br><span class="line"><span class="comment"># 放几个任务进去:</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">10</span>):</span><br><span class="line">    n = random.randint(<span class="number">0</span>, <span class="number">10000</span>)</span><br><span class="line">    print(<span class="string">'Put task %d...'</span> % n)</span><br><span class="line">    task.put(n)</span><br><span class="line"><span class="comment"># 从result队列读取结果:</span></span><br><span class="line">print(<span class="string">'Try get results...'</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">10</span>):</span><br><span class="line">    r = result.get(timeout=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">'Result: %s'</span> % r)</span><br><span class="line"><span class="comment"># 关闭:</span></span><br><span class="line">manager.shutdown()</span><br><span class="line">print(<span class="string">'master exit.'</span>)</span><br></pre></td></tr></table></figure><br>客户端代码<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># task_worker.py</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> time, sys, queue</span><br><span class="line"><span class="keyword">from</span> multiprocessing.managers <span class="keyword">import</span> BaseManager</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建类似的QueueManager:</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">QueueManager</span><span class="params">(BaseManager)</span>:</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 由于这个QueueManager只从网络上获取Queue，所以注册时只提供名字:</span></span><br><span class="line">QueueManager.register(<span class="string">'get_task_queue'</span>)</span><br><span class="line">QueueManager.register(<span class="string">'get_result_queue'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 连接到服务器，也就是运行task_master.py的机器:</span></span><br><span class="line">server_addr = <span class="string">'127.0.0.1'</span></span><br><span class="line">print(<span class="string">'Connect to server %s...'</span> % server_addr)</span><br><span class="line"><span class="comment"># 端口和验证码注意保持与task_master.py设置的完全一致:</span></span><br><span class="line">m = QueueManager(address=(server_addr, <span class="number">5000</span>), authkey=<span class="string">b'abc'</span>)</span><br><span class="line"><span class="comment"># 从网络连接:</span></span><br><span class="line">m.connect()</span><br><span class="line"><span class="comment"># 获取Queue的对象:</span></span><br><span class="line">task = m.get_task_queue()</span><br><span class="line">result = m.get_result_queue()</span><br><span class="line"><span class="comment"># 从task队列取任务,并把结果写入result队列:</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">10</span>):</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        n = task.get(timeout=<span class="number">1</span>)</span><br><span class="line">        print(<span class="string">'run task %d * %d...'</span> % (n, n))</span><br><span class="line">        r = n*n</span><br><span class="line">        time.sleep(<span class="number">1</span>)</span><br><span class="line">        result.put(r)</span><br><span class="line">    <span class="keyword">except</span> Queue.Empty:</span><br><span class="line">        print(<span class="string">'task queue is empty.'</span>)</span><br><span class="line"><span class="comment"># 处理结束:</span></span><br><span class="line">print(<span class="string">'worker exit.'</span>)</span><br></pre></td></tr></table></figure></p>
-<hr>
-<h1 id="分布式架构库"><a href="#分布式架构库" class="headerlink" title="分布式架构库"></a>分布式架构库</h1><p><del>这篇仅是简单的分布式的简单操作，更多详情，搜索以下的内容作为关键字</del></p>
-<p>使用面向对象模式和远程调用模式实现分布式框架的库，如Celery、SCOOP、Pyro4、RPyC，还有使用MapReduce实现的PyCSP、Disco</p>
-<p>Celery：是一个用于管理分布式任务的Python框架<br>SCOOP：（Scalable Concurrent Operations in Python）用于进行科学计算<br>Pyro4：（Python Remote Object）远程调用方法，类似于java中远程方法调用(RMI)的库，支持调用远程对象（属于不同进程，或不同机器上）的方法，就好像它是本地对象<br>PyCSP：是基于通信的顺序进程（communicating sequential processes，简称CSP）的一个Python模块，它是通过消息传递方式构建并发程序的一种编程范式，特点：进程间的消息交换、通过线程使用共享内存、通过通道完成信息交换<br>Disco：是一个基于谷歌推出的MapReduce框架的Python模块，支持在计算机集群中管理大规模分布式数据</p>
-<hr>
-<p>1.参考书籍：《Python并行编程手册》</p>
-<p>2.分布式多进程: 这段代码完全参考：廖雪峰 -分布式进程 <a href="https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/001431929340191970154d52b9d484b88a7b343708fcc60000" target="_blank" rel="noopener">https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/001431929340191970154d52b9d484b88a7b343708fcc60000</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/29/python/python-%E5%B9%B6%E8%A1%8C5-GPU/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="dejiang">
-      <meta itemprop="description" content="你根本不知道你什么都不知道">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="枫の故事">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2018/11/29/python/python-%E5%B9%B6%E8%A1%8C5-GPU/" class="post-title-link" itemprop="url">[python 并行5] GPU</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2018-11-29 12:50:47" itemprop="dateCreated datePublished" datetime="2018-11-29T12:50:47+08:00">2018-11-29</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-12-26 14:34:40" itemprop="dateModified" datetime="2019-12-26T14:34:40+08:00">2019-12-26</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/python/" itemprop="url" rel="index">
-                    <span itemprop="name">python</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h1><blockquote>
-<ol>
-<li>需要有支持CUDA的Nvidia显卡<br> linux查看显卡信息：lspci | grep -i vga<br> 使用nvidia显卡可以这样查看：lspci | grep -i nvidia<br> 上一个命令可以得到类似”<strong>03.00.0</strong>“的显卡代号，查看详细信息：lspic -v -s 03.00.0<br> 查看显卡使用情况（nvidia专用）：nvidia-smi<br> 持续周期性输出使用情况（1秒1次）：watch -n 1 nvidia-smi</li>
-<li>需要安装pycuda（linux安装：apt install python3-pycuda）</li>
-</ol>
-</blockquote>
-<h1 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h1><h2 id="1-底层操作"><a href="#1-底层操作" class="headerlink" title="1.底层操作"></a>1.底层操作</h2><blockquote>
-<ol>
-<li>准备工作: sudo apt install python3-pycuda</li>
-<li>在cpu使用的内存中创建矩阵</li>
-<li>将矩阵从cpu使用的内存移动到gpu的显存中</li>
-<li>编辑c语言代码，让gpu计算</li>
-<li>将矩阵从gpu显存移动到cpu使用的内存中</li>
-</ol>
-</blockquote>
-<p><strong>内核与线程层级</strong>：<br>CUDA程序的一个最重要元素就是内核（kernel），它代表可以并行执行的代码<br>每个内核的执行均有叫做线程（thread）的计算单元完成，与cpu的线程不同，gpu线程更加轻量，上下文切换不会影响性能<br>为了确定运行一个内核所需的线程数机器逻辑组织形式，CUDA定义了一个二层结构。在最高一层，定义了所谓的区块网格（grid of blocks），这个网格代表了线程区块所在的二维结构，而这些线程区块则是三维的（简单来说，一个cuda结构包含多个blocks，每个blocks包含多个thread）（在下面还会对每个线程区块细分操作）</p>
-<p>一个线程区块会被指派给一个流式多处理器(SM)，然后这些线程被进一步划分为被称为warp的线程组，其大小有GPU的架构决定<br>为了充分发挥SM本身的并发性，同一组内的线程必须执行相同的指令，否则会出现线程分歧（divergence of thread）</p>
-<p>示例：<br>用gpu将矩阵每个元素x2<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pycuda.driver <span class="keyword">as</span> cuda</span><br><span class="line"><span class="keyword">import</span> pycuda.autoinit  <span class="comment"># init GPU</span></span><br><span class="line"><span class="keyword">from</span> pycuda.compiler <span class="keyword">import</span> SourceModule</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1.cpu create matrix</span></span><br><span class="line">a = np.random.randn(<span class="number">5</span>, <span class="number">5</span>)	<span class="comment"># matrix:m*n</span></span><br><span class="line">a = a.astype(np.float32)	<span class="comment"># nvidia only support float calculate</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 2.move to gpu from cpu</span></span><br><span class="line">a_gpu = cuda.mem_alloc(a.nbytes)	<span class="comment"># alloc memory of gpu, this is 1 dim</span></span><br><span class="line">cuda.memcpy_htod(a_gpu, a)		<span class="comment"># copy cpu memory to gpu memory</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3.gpu calculate</span></span><br><span class="line"><span class="comment"># create module of gpu calculate by c</span></span><br><span class="line">mod = SourceModule(<span class="string">'''</span></span><br><span class="line"><span class="string">	__global__ void doubleMatrix(float *a)</span></span><br><span class="line"><span class="string">	&#123;</span></span><br><span class="line"><span class="string">		int idx = threadIdx.x + threadIdx.y * 5;	// (x,y,z), gpu -&gt; sm -&gt; warp</span></span><br><span class="line"><span class="string">		a[idx] *= 2;</span></span><br><span class="line"><span class="string">	&#125;</span></span><br><span class="line"><span class="string">'''</span>)</span><br><span class="line"></span><br><span class="line">func = mod.get_function(<span class="string">'doubleMatrix'</span>)	<span class="comment"># get function from module</span></span><br><span class="line">func(a_gpu, block = (<span class="number">5</span>, <span class="number">5</span>, <span class="number">1</span>))		<span class="comment"># set var and thread number from (x,y,z) orient to function</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 4.move to cpu from gpu</span></span><br><span class="line">a_doubled = np.empty_like(a)		<span class="comment"># create memory of cpu</span></span><br><span class="line">cuda.memcpy_dtoh(a_doubled, a_gpu)	<span class="comment"># copy gpu memory to cpu memory</span></span><br><span class="line"></span><br><span class="line">print(<span class="string">'original matrix'</span>)</span><br><span class="line">print(a)</span><br><span class="line">print(<span class="string">'double matrix'</span>)</span><br><span class="line">print(a_doubled)</span><br></pre></td></tr></table></figure></p>
-<p><strong>注1</strong>：<strong>import pycuda.autoinit</strong> 语句自动根据GPU可用性和数量选择要使用的GPU，这将创建一个接下来的代码运行中所需的GPU上下文（只需导入即可完成）</p>
-<p><strong>注</strong>: astype(numpy.float32)：将矩阵中的项转换为单精度模式，因为许多Nvidia显卡只支持单精度</p>
-<p><strong>注3</strong>：在调用gpu的c函数时，通过block参数设定，分配线程的方式，（5, 5, 1）是对应这gpu的(x, y, x)的分配<br>在c函数中，threadIdx是一个结构体，它有三个字段<code>x</code>、<code>y</code>、<code>z</code>，每个线程中的这个变量都不同（结合线程层级理解），故用此索引数组，由于动态分配的gpu内存是一维数组，所以需要在c函数内，使用<code>threadIdx.y</code>乘以矩阵每行的元素个数转换<br>更多详情：自行搜索cuda的线程区块划分</p>
-<p><strong>注4</strong>：gpu执行的c函数中 __global__ 关键字表示该函数是一个内核函数，必须从主机上调用才能在gpu设备上生成线程层级<br><del>涉及到pycuda内存，为了最大限度地利用可用资源，在支持CUDA的GPU显卡中，有4类内存：<br><code>寄存器(registers)</code>：每个线程将被分配一个寄存器，每个线程只能访问自身的寄存器，即使同属于一个线程区块<br><code>共享存储器(shared memory)</code>：在共享存储器中，每个线程区块都有一个其内部线程共享的内存，这部分内存速度极快<br><code>常数存储器(constant memory)</code>：一个网格中的所有线程一直都可以访问这部分内存，但只能在读取时访问。常数存储器中的数据在应用持续期间一直存在<br><code>全局存储器(global memory)</code>，：所有网格中的线程（也包含所有内核）都可访问全局存储器</del><br>更多详情：自行搜索PyCUDA内存模型</p>
-<h2 id="2-python封装控制"><a href="#2-python封装控制" class="headerlink" title="2.python封装控制"></a>2.python封装控制</h2><p>用gpuarray调用内核，它可以直接将数据保存在计算设备(gpu)中，并在该设备中进行计算</p>
-<p>示例：<br>用gpu将矩阵每个元素x2<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pycuda.autoinit</span><br><span class="line"><span class="keyword">import</span> pycuda.gpuarray <span class="keyword">as</span> gpuarray</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">x = np.random.randn(<span class="number">5</span>, <span class="number">5</span>)</span><br><span class="line">x_gpu = gpuarray.to_gpu(x)</span><br><span class="line"></span><br><span class="line">x_doubled = (<span class="number">2</span> * x_gpu).get()</span><br><span class="line"></span><br><span class="line">print(<span class="string">'x:'</span>)</span><br><span class="line">print(x)</span><br><span class="line">print(<span class="string">'x_doubled:'</span>)</span><br><span class="line">print(x_doubled)</span><br></pre></td></tr></table></figure></p>
-<hr>
-<h1 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h1><p>还有其它的库可以方便对cuda编程，如NumbaPro是一个Python编译器，提供了基于CUDA的API编程接口，可以编写CUDA持续，它专门设计用来执行与数组相关的计算任务，和广泛使用的numpy库类似<br>NumbaPro: 对GPU编程的库，提供许多的数值计算库，GPU加速库</p>
-<hr>
-<p>1.参考书籍：《Python并行编程手册》</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1839,14 +1836,14 @@ L_{age} = \sum_{x \in p_x (x)} \ell (G(x|C_t), C_t)</script><blockquote>
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-count">38</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
   </nav>

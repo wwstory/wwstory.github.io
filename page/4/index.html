@@ -180,6 +180,196 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/29/python/python-%E5%B9%B6%E8%A1%8C6-%E5%88%86%E5%B8%83%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="dejiang">
+      <meta itemprop="description" content="你根本不知道你什么都不知道">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫の故事">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2018/11/29/python/python-%E5%B9%B6%E8%A1%8C6-%E5%88%86%E5%B8%83%E5%BC%8F/" class="post-title-link" itemprop="url">[python 并行6] 分布式</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-11-29 18:42:09" itemprop="dateCreated datePublished" datetime="2018-11-29T18:42:09+08:00">2018-11-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-12-26 14:34:40" itemprop="dateModified" datetime="2019-12-26T14:34:40+08:00">2019-12-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/python/" itemprop="url" rel="index">
+                    <span itemprop="name">python</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h1><p>分布式计算的基本理念是将工作划分为一个一个小任务，分发给多台设备处理，再汇总结果。在分布式计算中，网络中的机器必须要保持可用（延迟误差、意外宕机等等），需要一个持续监控架构</p>
+<hr>
+<h1 id="分布式多进程-2"><a href="#分布式多进程-2" class="headerlink" title="分布式多进程 2"></a>分布式多进程 <sup>2</sup></h1><p><code>multiprocessing</code>的子模块<code>managers</code>还支持把多进程分布在多台机器上，<code>managers</code>模块已经封装好了网络通信的细节</p>
+<p><strong>实现方法</strong>：我们可以使用<code>managers</code>模块将<code>queue</code>队列通过网络暴露出去，让其它机器访问到这个队列，然后就可以通过它实现数据交换</p>
+<p>示例：<br>服务器通过暴露queue到网络，放入数据到队列，让客户端取出数据处理，再放回结果<br>服务器代码<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># task_master.py</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> random, time, queue</span><br><span class="line"><span class="keyword">from</span> multiprocessing.managers <span class="keyword">import</span> BaseManager</span><br><span class="line"></span><br><span class="line"><span class="comment"># 发送任务的队列:</span></span><br><span class="line">task_queue = queue.Queue()</span><br><span class="line"><span class="comment"># 接收结果的队列:</span></span><br><span class="line">result_queue = queue.Queue()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 从BaseManager继承的QueueManager:</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">QueueManager</span><span class="params">(BaseManager)</span>:</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 把两个Queue都注册到网络上, callable参数关联了Queue对象:</span></span><br><span class="line">QueueManager.register(<span class="string">'get_task_queue'</span>, callable=<span class="keyword">lambda</span>: task_queue)</span><br><span class="line">QueueManager.register(<span class="string">'get_result_queue'</span>, callable=<span class="keyword">lambda</span>: result_queue)</span><br><span class="line"><span class="comment"># 绑定端口5000, 设置验证码'abc':</span></span><br><span class="line">manager = QueueManager(address=(<span class="string">''</span>, <span class="number">5000</span>), authkey=<span class="string">b'abc'</span>)</span><br><span class="line"><span class="comment"># 启动Queue:</span></span><br><span class="line">manager.start()</span><br><span class="line"><span class="comment"># 获得通过网络访问的Queue对象:</span></span><br><span class="line">task = manager.get_task_queue()</span><br><span class="line">result = manager.get_result_queue()</span><br><span class="line"><span class="comment"># 放几个任务进去:</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">10</span>):</span><br><span class="line">    n = random.randint(<span class="number">0</span>, <span class="number">10000</span>)</span><br><span class="line">    print(<span class="string">'Put task %d...'</span> % n)</span><br><span class="line">    task.put(n)</span><br><span class="line"><span class="comment"># 从result队列读取结果:</span></span><br><span class="line">print(<span class="string">'Try get results...'</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">10</span>):</span><br><span class="line">    r = result.get(timeout=<span class="number">10</span>)</span><br><span class="line">    print(<span class="string">'Result: %s'</span> % r)</span><br><span class="line"><span class="comment"># 关闭:</span></span><br><span class="line">manager.shutdown()</span><br><span class="line">print(<span class="string">'master exit.'</span>)</span><br></pre></td></tr></table></figure><br>客户端代码<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># task_worker.py</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> time, sys, queue</span><br><span class="line"><span class="keyword">from</span> multiprocessing.managers <span class="keyword">import</span> BaseManager</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建类似的QueueManager:</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">QueueManager</span><span class="params">(BaseManager)</span>:</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 由于这个QueueManager只从网络上获取Queue，所以注册时只提供名字:</span></span><br><span class="line">QueueManager.register(<span class="string">'get_task_queue'</span>)</span><br><span class="line">QueueManager.register(<span class="string">'get_result_queue'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 连接到服务器，也就是运行task_master.py的机器:</span></span><br><span class="line">server_addr = <span class="string">'127.0.0.1'</span></span><br><span class="line">print(<span class="string">'Connect to server %s...'</span> % server_addr)</span><br><span class="line"><span class="comment"># 端口和验证码注意保持与task_master.py设置的完全一致:</span></span><br><span class="line">m = QueueManager(address=(server_addr, <span class="number">5000</span>), authkey=<span class="string">b'abc'</span>)</span><br><span class="line"><span class="comment"># 从网络连接:</span></span><br><span class="line">m.connect()</span><br><span class="line"><span class="comment"># 获取Queue的对象:</span></span><br><span class="line">task = m.get_task_queue()</span><br><span class="line">result = m.get_result_queue()</span><br><span class="line"><span class="comment"># 从task队列取任务,并把结果写入result队列:</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">10</span>):</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        n = task.get(timeout=<span class="number">1</span>)</span><br><span class="line">        print(<span class="string">'run task %d * %d...'</span> % (n, n))</span><br><span class="line">        r = n*n</span><br><span class="line">        time.sleep(<span class="number">1</span>)</span><br><span class="line">        result.put(r)</span><br><span class="line">    <span class="keyword">except</span> Queue.Empty:</span><br><span class="line">        print(<span class="string">'task queue is empty.'</span>)</span><br><span class="line"><span class="comment"># 处理结束:</span></span><br><span class="line">print(<span class="string">'worker exit.'</span>)</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h1 id="分布式架构库"><a href="#分布式架构库" class="headerlink" title="分布式架构库"></a>分布式架构库</h1><p><del>这篇仅是简单的分布式的简单操作，更多详情，搜索以下的内容作为关键字</del></p>
+<p>使用面向对象模式和远程调用模式实现分布式框架的库，如Celery、SCOOP、Pyro4、RPyC，还有使用MapReduce实现的PyCSP、Disco</p>
+<p>Celery：是一个用于管理分布式任务的Python框架<br>SCOOP：（Scalable Concurrent Operations in Python）用于进行科学计算<br>Pyro4：（Python Remote Object）远程调用方法，类似于java中远程方法调用(RMI)的库，支持调用远程对象（属于不同进程，或不同机器上）的方法，就好像它是本地对象<br>PyCSP：是基于通信的顺序进程（communicating sequential processes，简称CSP）的一个Python模块，它是通过消息传递方式构建并发程序的一种编程范式，特点：进程间的消息交换、通过线程使用共享内存、通过通道完成信息交换<br>Disco：是一个基于谷歌推出的MapReduce框架的Python模块，支持在计算机集群中管理大规模分布式数据</p>
+<hr>
+<p>1.参考书籍：《Python并行编程手册》</p>
+<p>2.分布式多进程: 这段代码完全参考：廖雪峰 -分布式进程 <a href="https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/001431929340191970154d52b9d484b88a7b343708fcc60000" target="_blank" rel="noopener">https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/001431929340191970154d52b9d484b88a7b343708fcc60000</a></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/29/python/python-%E5%B9%B6%E8%A1%8C5-GPU/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="dejiang">
+      <meta itemprop="description" content="你根本不知道你什么都不知道">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫の故事">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2018/11/29/python/python-%E5%B9%B6%E8%A1%8C5-GPU/" class="post-title-link" itemprop="url">[python 并行5] GPU</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2018-11-29 12:50:47" itemprop="dateCreated datePublished" datetime="2018-11-29T12:50:47+08:00">2018-11-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-12-26 14:34:40" itemprop="dateModified" datetime="2019-12-26T14:34:40+08:00">2019-12-26</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/python/" itemprop="url" rel="index">
+                    <span itemprop="name">python</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h1><blockquote>
+<ol>
+<li>需要有支持CUDA的Nvidia显卡<br> linux查看显卡信息：lspci | grep -i vga<br> 使用nvidia显卡可以这样查看：lspci | grep -i nvidia<br> 上一个命令可以得到类似”<strong>03.00.0</strong>“的显卡代号，查看详细信息：lspic -v -s 03.00.0<br> 查看显卡使用情况（nvidia专用）：nvidia-smi<br> 持续周期性输出使用情况（1秒1次）：watch -n 1 nvidia-smi</li>
+<li>需要安装pycuda（linux安装：apt install python3-pycuda）</li>
+</ol>
+</blockquote>
+<h1 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h1><h2 id="1-底层操作"><a href="#1-底层操作" class="headerlink" title="1.底层操作"></a>1.底层操作</h2><blockquote>
+<ol>
+<li>准备工作: sudo apt install python3-pycuda</li>
+<li>在cpu使用的内存中创建矩阵</li>
+<li>将矩阵从cpu使用的内存移动到gpu的显存中</li>
+<li>编辑c语言代码，让gpu计算</li>
+<li>将矩阵从gpu显存移动到cpu使用的内存中</li>
+</ol>
+</blockquote>
+<p><strong>内核与线程层级</strong>：<br>CUDA程序的一个最重要元素就是内核（kernel），它代表可以并行执行的代码<br>每个内核的执行均有叫做线程（thread）的计算单元完成，与cpu的线程不同，gpu线程更加轻量，上下文切换不会影响性能<br>为了确定运行一个内核所需的线程数机器逻辑组织形式，CUDA定义了一个二层结构。在最高一层，定义了所谓的区块网格（grid of blocks），这个网格代表了线程区块所在的二维结构，而这些线程区块则是三维的（简单来说，一个cuda结构包含多个blocks，每个blocks包含多个thread）（在下面还会对每个线程区块细分操作）</p>
+<p>一个线程区块会被指派给一个流式多处理器(SM)，然后这些线程被进一步划分为被称为warp的线程组，其大小有GPU的架构决定<br>为了充分发挥SM本身的并发性，同一组内的线程必须执行相同的指令，否则会出现线程分歧（divergence of thread）</p>
+<p>示例：<br>用gpu将矩阵每个元素x2<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pycuda.driver <span class="keyword">as</span> cuda</span><br><span class="line"><span class="keyword">import</span> pycuda.autoinit  <span class="comment"># init GPU</span></span><br><span class="line"><span class="keyword">from</span> pycuda.compiler <span class="keyword">import</span> SourceModule</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1.cpu create matrix</span></span><br><span class="line">a = np.random.randn(<span class="number">5</span>, <span class="number">5</span>)	<span class="comment"># matrix:m*n</span></span><br><span class="line">a = a.astype(np.float32)	<span class="comment"># nvidia only support float calculate</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 2.move to gpu from cpu</span></span><br><span class="line">a_gpu = cuda.mem_alloc(a.nbytes)	<span class="comment"># alloc memory of gpu, this is 1 dim</span></span><br><span class="line">cuda.memcpy_htod(a_gpu, a)		<span class="comment"># copy cpu memory to gpu memory</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3.gpu calculate</span></span><br><span class="line"><span class="comment"># create module of gpu calculate by c</span></span><br><span class="line">mod = SourceModule(<span class="string">'''</span></span><br><span class="line"><span class="string">	__global__ void doubleMatrix(float *a)</span></span><br><span class="line"><span class="string">	&#123;</span></span><br><span class="line"><span class="string">		int idx = threadIdx.x + threadIdx.y * 5;	// (x,y,z), gpu -&gt; sm -&gt; warp</span></span><br><span class="line"><span class="string">		a[idx] *= 2;</span></span><br><span class="line"><span class="string">	&#125;</span></span><br><span class="line"><span class="string">'''</span>)</span><br><span class="line"></span><br><span class="line">func = mod.get_function(<span class="string">'doubleMatrix'</span>)	<span class="comment"># get function from module</span></span><br><span class="line">func(a_gpu, block = (<span class="number">5</span>, <span class="number">5</span>, <span class="number">1</span>))		<span class="comment"># set var and thread number from (x,y,z) orient to function</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 4.move to cpu from gpu</span></span><br><span class="line">a_doubled = np.empty_like(a)		<span class="comment"># create memory of cpu</span></span><br><span class="line">cuda.memcpy_dtoh(a_doubled, a_gpu)	<span class="comment"># copy gpu memory to cpu memory</span></span><br><span class="line"></span><br><span class="line">print(<span class="string">'original matrix'</span>)</span><br><span class="line">print(a)</span><br><span class="line">print(<span class="string">'double matrix'</span>)</span><br><span class="line">print(a_doubled)</span><br></pre></td></tr></table></figure></p>
+<p><strong>注1</strong>：<strong>import pycuda.autoinit</strong> 语句自动根据GPU可用性和数量选择要使用的GPU，这将创建一个接下来的代码运行中所需的GPU上下文（只需导入即可完成）</p>
+<p><strong>注</strong>: astype(numpy.float32)：将矩阵中的项转换为单精度模式，因为许多Nvidia显卡只支持单精度</p>
+<p><strong>注3</strong>：在调用gpu的c函数时，通过block参数设定，分配线程的方式，（5, 5, 1）是对应这gpu的(x, y, x)的分配<br>在c函数中，threadIdx是一个结构体，它有三个字段<code>x</code>、<code>y</code>、<code>z</code>，每个线程中的这个变量都不同（结合线程层级理解），故用此索引数组，由于动态分配的gpu内存是一维数组，所以需要在c函数内，使用<code>threadIdx.y</code>乘以矩阵每行的元素个数转换<br>更多详情：自行搜索cuda的线程区块划分</p>
+<p><strong>注4</strong>：gpu执行的c函数中 __global__ 关键字表示该函数是一个内核函数，必须从主机上调用才能在gpu设备上生成线程层级<br><del>涉及到pycuda内存，为了最大限度地利用可用资源，在支持CUDA的GPU显卡中，有4类内存：<br><code>寄存器(registers)</code>：每个线程将被分配一个寄存器，每个线程只能访问自身的寄存器，即使同属于一个线程区块<br><code>共享存储器(shared memory)</code>：在共享存储器中，每个线程区块都有一个其内部线程共享的内存，这部分内存速度极快<br><code>常数存储器(constant memory)</code>：一个网格中的所有线程一直都可以访问这部分内存，但只能在读取时访问。常数存储器中的数据在应用持续期间一直存在<br><code>全局存储器(global memory)</code>，：所有网格中的线程（也包含所有内核）都可访问全局存储器</del><br>更多详情：自行搜索PyCUDA内存模型</p>
+<h2 id="2-python封装控制"><a href="#2-python封装控制" class="headerlink" title="2.python封装控制"></a>2.python封装控制</h2><p>用gpuarray调用内核，它可以直接将数据保存在计算设备(gpu)中，并在该设备中进行计算</p>
+<p>示例：<br>用gpu将矩阵每个元素x2<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pycuda.autoinit</span><br><span class="line"><span class="keyword">import</span> pycuda.gpuarray <span class="keyword">as</span> gpuarray</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line">x = np.random.randn(<span class="number">5</span>, <span class="number">5</span>)</span><br><span class="line">x_gpu = gpuarray.to_gpu(x)</span><br><span class="line"></span><br><span class="line">x_doubled = (<span class="number">2</span> * x_gpu).get()</span><br><span class="line"></span><br><span class="line">print(<span class="string">'x:'</span>)</span><br><span class="line">print(x)</span><br><span class="line">print(<span class="string">'x_doubled:'</span>)</span><br><span class="line">print(x_doubled)</span><br></pre></td></tr></table></figure></p>
+<hr>
+<h1 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h1><p>还有其它的库可以方便对cuda编程，如NumbaPro是一个Python编译器，提供了基于CUDA的API编程接口，可以编写CUDA持续，它专门设计用来执行与数组相关的计算任务，和广泛使用的numpy库类似<br>NumbaPro: 对GPU编程的库，提供许多的数值计算库，GPU加速库</p>
+<hr>
+<p>1.参考书籍：《Python并行编程手册》</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/28/python/python-%E5%B9%B6%E8%A1%8C4-%E5%BC%82%E6%AD%A5/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -986,14 +1176,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-count">38</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
   </nav>

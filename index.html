@@ -180,7 +180,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/29/electronic/ros/arduino-rosserial/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/18/electronic/ros/ros-demo/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -194,7 +194,185 @@
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
           
-            <a href="/2019/12/29/electronic/ros/arduino-rosserial/" class="post-title-link" itemprop="url">[arduino] rosserial</a>
+            <a href="/2020/01/18/electronic/ros/ros-demo/" class="post-title-link" itemprop="url">[ros] demo</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-01-18 13:21:00 / 修改时间：16:24:46" itemprop="dateCreated datePublished" datetime="2020-01-18T13:21:00+08:00">2020-01-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/electronic/" itemprop="url" rel="index">
+                    <span itemprop="name">electronic</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/electronic/ros/" itemprop="url" rel="index">
+                    <span itemprop="name">ros</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h1><p>创建一个接受图片数据，发布数值数据的rospy程序。</p>
+<h1 id="项目结构"><a href="#项目结构" class="headerlink" title="项目结构"></a>项目结构</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">└── src</span><br><span class="line">    ├── CMakeLists.txt -&gt; &#x2F;opt&#x2F;ros&#x2F;melodic&#x2F;share&#x2F;catkin&#x2F;cmake&#x2F;toplevel.cmake</span><br><span class="line">    └── demo</span><br><span class="line">        ├── CMakeLists.txt</span><br><span class="line">        ├── msg</span><br><span class="line">        │   └── Detection.msg</span><br><span class="line">        ├── package.xml</span><br><span class="line">        ├── scripts</span><br><span class="line">        │   └── detect.py</span><br><span class="line">        └── src</span><br></pre></td></tr></table></figure>
+<h1 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h1><h2 id="创建项目"><a href="#创建项目" class="headerlink" title="创建项目"></a>创建项目</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p catkin_ws/src</span><br><span class="line"><span class="built_in">cd</span> catkin_ws/src</span><br><span class="line">catkin_create_pkg demo rospy std_msgs message_generation</span><br><span class="line"><span class="built_in">cd</span> demo</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>message_generation：用于msg文件生成代码，以便用于后续直接导入。（可以在<code>devel/lib/python2.7/dist-packages/demo/msg/_Detection.py</code>或<code>devel/include/demo/Detection.h</code>看到生成的代码文件。）</p>
+</blockquote>
+<h2 id="添加msg文件"><a href="#添加msg文件" class="headerlink" title="添加msg文件"></a>添加msg文件</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p msg/</span><br><span class="line">vim msg/Detection.msg</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">float32[] pos</span><br><span class="line">uint32 classes</span><br><span class="line">float32 scores</span><br></pre></td></tr></table></figure>
+<h2 id="修改CMakeLists-txt"><a href="#修改CMakeLists-txt" class="headerlink" title="修改CMakeLists.txt"></a>修改CMakeLists.txt</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim CMakeLists.txt</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">## Generate messages in the &#39;msg&#39; folder</span><br><span class="line">add_message_files(</span><br><span class="line">  FILES</span><br><span class="line">  Detection.msg</span><br><span class="line">#   Message1.msg</span><br><span class="line">#   Message2.msg</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">## Generate added messages and services with any dependencies listed here</span><br><span class="line">generate_messages(</span><br><span class="line">  DEPENDENCIES</span><br><span class="line">  std_msgs</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir scripts/</span><br><span class="line">vim scripts/detect.py</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python3</span></span><br><span class="line"><span class="comment">#coding=utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> rospy</span><br><span class="line"><span class="keyword">from</span> sensor_msgs.msg <span class="keyword">import</span> Image</span><br><span class="line"><span class="keyword">from</span> demo.msg <span class="keyword">import</span> Detection  <span class="comment"># generate_messages的作用</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Detect</span>:</span></span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        rospy.init_node(<span class="string">'image_detect_node'</span>)</span><br><span class="line">        rospy.Subscriber(<span class="string">'/image_raw'</span>, Image, self.callback)</span><br><span class="line">        <span class="comment"># rospy.Subscriber('/camera/color/image_raw', Image, self.callback)</span></span><br><span class="line">        self.pub = rospy.Publisher(<span class="string">'image_detection'</span>, Detection , queue_size=<span class="number">10</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">callback</span><span class="params">(self, image)</span>:</span></span><br><span class="line">        img = np.frombuffer(image.data, dtype=np.uint8).reshape((<span class="number">480</span>, <span class="number">640</span>, <span class="number">3</span>))</span><br><span class="line">        <span class="comment"># rospy.loginfo(img)</span></span><br><span class="line">        self.pub.publish(Detection([<span class="number">1.</span>, <span class="number">2.</span>], <span class="number">10</span>, <span class="number">2.</span>))</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">start</span><span class="params">(self)</span>:</span></span><br><span class="line">        rospy.spin()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    Detect().start()</span><br></pre></td></tr></table></figure>
+<h2 id="test"><a href="#test" class="headerlink" title="test"></a>test</h2><p>需要为python文件添加可执行权限：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod +x detect.py</span><br></pre></td></tr></table></figure></p>
+<p>编译：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">catkin_make all clean</span><br><span class="line">catkin_make</span><br></pre></td></tr></table></figure></p>
+<p>执行：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rosrun demo detect.py</span><br></pre></td></tr></table></figure></p>
+<p>查看返回数据：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rostopic <span class="built_in">echo</span> /image_detection</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/02/electronic/ros/ros-remote/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="dejiang">
+      <meta itemprop="description" content="你根本不知道你什么都不知道">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫の故事">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/01/02/electronic/ros/ros-remote/" class="post-title-link" itemprop="url">[ros] 远程连接</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-01-02 15:00:00 / 修改时间：15:28:22" itemprop="dateCreated datePublished" datetime="2020-01-02T15:00:00+08:00">2020-01-02</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/electronic/" itemprop="url" rel="index">
+                    <span itemprop="name">electronic</span>
+                  </a>
+                </span>
+                  ，
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/electronic/ros/" itemprop="url" rel="index">
+                    <span itemprop="name">ros</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="远程节点"><a href="#远程节点" class="headerlink" title="远程节点"></a>远程节点</h1><p>为了远程接入roscore，只需要简单配置环境变量。</p>
+<div class="tabs" id="env"><ul class="nav-tabs"><li class="tab active"><a href="#env-1">master</a></li><li class="tab"><a href="#env-2">other computer</a></li></ul><div class="tab-content"><div class="tab-pane active" id="env-1"><p><code>ROS_HOSTNAME</code>设置为执行roscore主节点的ip：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> ROS_HOSTNAME=192.168.0.100</span><br><span class="line"><span class="built_in">export</span> ROS_MASTER_URI=http://<span class="variable">$&#123;ROS_HOSTNAME&#125;</span>:11311</span><br></pre></td></tr></table></figure></div><div class="tab-pane" id="env-2"><p>仅接受master的数据：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> ROS_MASTER_URI=http://192.168.0.100:11311</span><br></pre></td></tr></table></figure>
+如果需要发送数据到master，需要指定自身的ip：
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> ROS_MASTER_URI=http://192.168.0.100:11311</span><br><span class="line"><span class="built_in">export</span> ROS_HOSTNAME=192.168.0.101</span><br></pre></td></tr></table></figure></div></div></div>
+<h1 id="远程摄像头"><a href="#远程摄像头" class="headerlink" title="远程摄像头"></a>远程摄像头</h1><div class="tabs" id="camera"><ul class="nav-tabs"><li class="tab active"><a href="#camera-1">master</a></li><li class="tab"><a href="#camera-2">other computer</a></li></ul><div class="tab-content"><div class="tab-pane active" id="camera-1"><p>按照上述远程节点的方式配置后，在master上执行：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">roscore</span><br><span class="line">rosrun uvc_camera uvc_camera_node</span><br></pre></td></tr></table></figure></div><div class="tab-pane" id="camera-2"><p>安装uvc摄像头相关库：</p>
+<p><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt install ros-melodic-uvc-camera</span><br></pre></td></tr></table></figure><br>插入uvc摄像头，赋予读取设备权限：</p>
+<p><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo chmod 777 /dev/ttyUSB0</span><br></pre></td></tr></table></figure><br>在其它计算机上执行：</p>
+<p><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rosrun image_view image_view image:=/image_raw</span><br></pre></td></tr></table></figure><br>或使用rqt可视化。</p></div></div></div>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/12/29/electronic/arduino/arduino-rosserial/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="dejiang">
+      <meta itemprop="description" content="你根本不知道你什么都不知道">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫の故事">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/12/29/electronic/arduino/arduino-rosserial/" class="post-title-link" itemprop="url">[arduino] rosserial</a>
         </h1>
 
         <div class="post-meta">
@@ -211,7 +389,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-01-01 18:58:49" itemprop="dateModified" datetime="2020-01-01T18:58:49+08:00">2020-01-01</time>
+                <time title="修改时间：2020-01-02 13:31:14" itemprop="dateModified" datetime="2020-01-02T13:31:14+08:00">2020-01-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -247,7 +425,7 @@
 <p>为了在Arduino中使用它,需要创建一个用于Arduino的rosserial库：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/Arduino/libraries/</span><br><span class="line">rm -rf ros_lib</span><br><span class="line">rosrun rosserial_arduino make_libraries.py .</span><br></pre></td></tr></table></figure></p>
 <h1 id="arduino"><a href="#arduino" class="headerlink" title="arduino"></a>arduino</h1><h2 id="subscriber"><a href="#subscriber" class="headerlink" title="subscriber"></a>subscriber</h2><p>arduino接受发布在/led_out的数据，控制pin8引脚的电平开关。</p>
 <h3 id="硬件"><a href="#硬件" class="headerlink" title="硬件"></a>硬件</h3><p>使用的是arduino pro mini 328p版，发现168p版本存储不够。</p>
-<p><img src="/2019/12/29/electronic/ros/arduino-rosserial/1.png" alt="ros_sub"></p>
+<p><img src="/2019/12/29/electronic/arduino/arduino-rosserial/1.png" alt="ros_sub"></p>
 <blockquote>
 <p>DTR用于在上传程序时自动RESET板子，否则需要在上传时手动按一下板子上的RESET按键（时机需要自己把握，比较麻烦）。</p>
 </blockquote>
@@ -269,7 +447,7 @@
 <p><a href="http://wiki.ros.org/rosserial/" target="_blank" rel="noopener">rosserial</a><br><a href="http://wiki.ros.org/rostopic" target="_blank" rel="noopener">rostopic</a></p>
 <h2 id="publisher"><a href="#publisher" class="headerlink" title="publisher"></a>publisher</h2><p>用引线将VCC/GND输入pin9，将pin8输出电平值。</p>
 <p>arduino发送pin9引脚的值到/led_out。</p>
-<h3 id="硬件-1"><a href="#硬件-1" class="headerlink" title="硬件"></a>硬件</h3><p><img src="/2019/12/29/electronic/ros/arduino-rosserial/2.png" alt="ros_pub"></p>
+<h3 id="硬件-1"><a href="#硬件-1" class="headerlink" title="硬件"></a>硬件</h3><p><img src="/2019/12/29/electronic/arduino/arduino-rosserial/2.png" alt="ros_pub"></p>
 <h3 id="代码-1"><a href="#代码-1" class="headerlink" title="代码"></a>代码</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;ros.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;std_msgs/Byte.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">ros::NodeHandle nh;</span><br><span class="line">std_msgs::Byte led_msg;</span><br><span class="line">ros::<span class="function">Publisher <span class="title">pub</span><span class="params">(<span class="string">"led_out"</span>, &amp;led_msg)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">setup</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="comment">// put your setup code here, to run once:</span></span><br><span class="line">  nh.initNode();</span><br><span class="line">  nh.advertise(pub);</span><br><span class="line"></span><br><span class="line">  <span class="built_in">pinMode</span>(<span class="number">8</span>, <span class="literal">OUTPUT</span>);</span><br><span class="line">  <span class="built_in">pinMode</span>(<span class="number">9</span>, <span class="literal">INPUT</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">loop</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="comment">// put your main code here, to run repeatedly:</span></span><br><span class="line">  <span class="keyword">uint8_t</span> reading = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">uint32_t</span> pre_time;</span><br><span class="line"></span><br><span class="line">  reading = <span class="built_in">digitalRead</span>(<span class="number">9</span>);</span><br><span class="line">  <span class="built_in">digitalWrite</span>(<span class="number">8</span>, reading);</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">if</span>(<span class="built_in">millis</span>() - pre_time &gt;= <span class="number">50</span>)&#123;</span><br><span class="line">    led_msg.data = reading;</span><br><span class="line">    pub.publish(&amp;led_msg);</span><br><span class="line">    pre_time = <span class="built_in">millis</span>();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  nh.spinOnce();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h3 id="测试-1"><a href="#测试-1" class="headerlink" title="测试"></a>测试</h3><ul>
 <li>启动ros服务</li>
@@ -330,7 +508,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-12-27 14:46:29" itemprop="dateModified" datetime="2019-12-27T14:46:29+08:00">2019-12-27</time>
+                <time title="修改时间：2020-01-09 23:41:05" itemprop="dateModified" datetime="2020-01-09T23:41:05+08:00">2020-01-09</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -410,6 +588,11 @@ L(x, c, l, g)=\frac{1}{N}\left(L_{\operatorname{conf}}(x, c)+\alpha L_{\operator
 <script type="math/tex; mode=display">
 L_{l o c}(x, l, g)=\sum_{i \in P o s}^{N} \sum_{m \in\{c x, c y, w, h\}} x_{i j}^{k} \operatorname{smooth}_{L 1}\left(l_{i}^{m}-\hat{g}_{j}^{m}\right)</script><blockquote>
 <p>$x_{i j}^{p}={1,0}$：匹配第i个默认框与p类第j个标签框的指示器。</p>
+<p>使用L1而不是L2是为了2方面限制梯度：</p>
+<ul>
+<li>当默认框与标签框差别过大时，梯度值不至于过大。</li>
+<li>当默认框与标签框差别过小时，梯度值足够小。</li>
+</ul>
 </blockquote>
 <h3 id="分类损失"><a href="#分类损失" class="headerlink" title="分类损失"></a>分类损失</h3><p>softmax损失：</p>
 <script type="math/tex; mode=display">
@@ -436,6 +619,7 @@ s_{k}=s_{\min }+\frac{s_{\max }-s_{\min }}{m-1}(k-1), \quad k \in[1, m]</script>
 <script type="math/tex; mode=display">
 a_{r} \in\left\{1,2,3, \frac{1}{2}, \frac{1}{3}, s_{k}^{\prime}=\sqrt{s_{k} s_{k+1}} \right\}</script><blockquote>
 <p>其中Conv4_3，Conv10_2，Conv11_2层仅使用4个默认框，不使用长宽比为3,1/3的默认框。</p>
+<p>SSD总计预测：38 x 38 x 4 + 19 x 19 x 6 + 10 x 10 x 6 + 5 x 5 x 6 + 3 x 3 x 4 + 1 x 1 x 4 = 8732 个边界框。</p>
 </blockquote>
 <p>计算长和宽：</p>
 <script type="math/tex; mode=display">
@@ -457,7 +641,9 @@ w_{k}^{a}=s_{k} \sqrt{a_{r}}, \quad h_{k}^{a}=s_{k} / \sqrt{a_{r}}</script><p>�
 </ul>
 <h1 id="more"><a href="#more" class="headerlink" title="more"></a>more</h1><h2 id="note"><a href="#note" class="headerlink" title="note"></a>note</h2><p>本文主要与yolo比较，创新点主要在使用卷积中的多层特征图做定位和分类，采用卷积做分类。</p>
 <h2 id="ref"><a href="#ref" class="headerlink" title="ref"></a>ref</h2><ul>
+<li><a href="https://zhuanlan.zhihu.com/p/31427288" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/31427288</a></li>
 <li><a href="https://zhuanlan.zhihu.com/p/33544892" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/33544892</a></li>
+<li><a href="https://www.zhihu.com/question/58200555" target="_blank" rel="noopener">https://www.zhihu.com/question/58200555</a></li>
 </ul>
 
       
@@ -1726,234 +1912,6 @@ C S(k)=\sum_{Q^{\prime} \subset Q,\left|Q^{\prime}\right|=k} \frac{\mathcal{S}\l
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/12/deep_learning/paper/paper-Deep-Cross-Modal-Hashing/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="dejiang">
-      <meta itemprop="description" content="你根本不知道你什么都不知道">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="枫の故事">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/12/deep_learning/paper/paper-Deep-Cross-Modal-Hashing/" class="post-title-link" itemprop="url">[paper] Deep Cross-Modal Hashing</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-11-12 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-12T00:00:00+08:00">2019-11-12</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-12-30 16:41:21" itemprop="dateModified" datetime="2019-12-30T16:41:21+08:00">2019-12-30</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/deep-learning/" itemprop="url" rel="index">
-                    <span itemprop="name">deep learning</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>之前大多都是单模态检索，ANN，ANN + hash， MSH， CMH。</p>
-<h1 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h1><p>『DCMH模型在MIRFLICKR-25K数据集的MAP基准』<br><img src="/2019/11/12/deep_learning/paper/paper-Deep-Cross-Modal-Hashing/4.png" alt="accuracy"></p>
-<h1 id="贡献"><a href="#贡献" class="headerlink" title="贡献"></a>贡献</h1><p>提供深度学习实现图像和文本模态之间的检索方法。</p>
-<h1 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h1><p><img src="/2019/11/12/deep_learning/paper/paper-Deep-Cross-Modal-Hashing/1.png" alt="net"></p>
-<p>『网络结构的参数』<br><img src="/2019/11/12/deep_learning/paper/paper-Deep-Cross-Modal-Hashing/2.png" alt="net param"></p>
-<p>图片CNN模型采用的是Alexnet作预训练模型。</p>
-<p>『算法』<br><img src="/2019/11/12/deep_learning/paper/paper-Deep-Cross-Modal-Hashing/3.png" alt="algorithm"></p>
-<h1 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h1><p>损失函数：</p>
-<script type="math/tex; mode=display">
-\min_{B,B^{x},B^{y},\theta_x,\theta_y} \mathcal{J}=-\sum_{i,j=1}^{n} {(S_{ij} \Theta_{ij} - log(1+e^{\Theta_{ij}}))} \\
-+ \gamma(||B^{(x)}-F||_F^2 + ||B^{(y)}-G||_F^2) \\
-+ \eta(||F1||_F^2 + ||G1||_F^2) \\
-{\text { s.t. }} B^{(x)} \in \{-1, +1\}^{c \times n}, \\
-B^{(y)} \in \{-1, +1\}^{c \times n}, \\
-B \in \{-1, +1 \}^{c \times n}, \\
-B = B^{(x)} = B^{(y)}. \\</script><p>总损失 = 跨模态相似性（负对数似然） + 保持hash码匹配 + 使每个bit都发挥作用</p>
-<p>二值化为hash码：</p>
-<script type="math/tex; mode=display">
-\text{sign}(x) = \left \{ \begin{array}{}
-1 & x > 0, \\
--1 & x < 0.
-\end{array}\right.</script><blockquote>
-<ul>
-<li>F：图像生成的特征码。</li>
-<li>G：文本生成的特征码。</li>
-<li>B：二进制哈希编码。</li>
-</ul>
-</blockquote>
-<h1 id="细节"><a href="#细节" class="headerlink" title="细节"></a>细节</h1><p>使用第二范式计算误差。</p>
-<p>使用海明距离评估S的相似性。</p>
-<p>DCMH整合了特征学习和哈希编码学习。</p>
-<p>训练时，先训练图片模型，再训练文本模型：</p>
-<ul>
-<li>固定$\Theta_y$和B，优化$\Theta_x$。</li>
-<li>固定B和$\Theta_x$，优化$\Theta_y$。</li>
-<li>固定$\Theta_y$和$\Theta_y$，优化$B$。</li>
-</ul>
-<h1 id="more"><a href="#more" class="headerlink" title="more"></a>more</h1><h2 id="note"><a href="#note" class="headerlink" title="note"></a>note</h2><p>使用深度学习的方法实现跨模态的索引。</p>
-<p>其所用损失函数考虑也很全面。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/07/deep_learning/paper/paper-Coupled-CycleGAN-Unsupervised-Hashing-Network-for-Cross-Modal-Retrieval/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="dejiang">
-      <meta itemprop="description" content="你根本不知道你什么都不知道">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="枫の故事">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/11/07/deep_learning/paper/paper-Coupled-CycleGAN-Unsupervised-Hashing-Network-for-Cross-Modal-Retrieval/" class="post-title-link" itemprop="url">[paper] Coupled CycleGAN: Unsupervised Hashing Network for Cross-Modal Retrieval</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-11-07 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-07T00:00:00+08:00">2019-11-07</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-01-01 23:07:00" itemprop="dateModified" datetime="2020-01-01T23:07:00+08:00">2020-01-01</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/deep-learning/" itemprop="url" rel="index">
-                    <span itemprop="name">deep learning</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><ul>
-<li>DCMH,TDH,SPDQ,SSAN展示了深度跨模态hsh方法的有效性。</li>
-<li>SSAN是在DCMH上加了GAN。UGACH也使用了GAN。</li>
-<li>UDCMH自适应无分割学习策略来迭代学习哈希码。</li>
-</ul>
-<h1 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h1><p><img src="/2019/11/07/deep_learning/paper/paper-Coupled-CycleGAN-Unsupervised-Hashing-Network-for-Cross-Modal-Retrieval/3.png" alt="effect"><br><img src="/2019/11/07/deep_learning/paper/paper-Coupled-CycleGAN-Unsupervised-Hashing-Network-for-Cross-Modal-Retrieval/4.png" alt="effect"></p>
-<h1 id="贡献"><a href="#贡献" class="headerlink" title="贡献"></a>贡献</h1><p>使用2个GAN将跨模态索引问题，划分为2部分分开处理，1个GAN用于实现文本图像的表达，1个GAN用于生成hash码。</p>
-<h1 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h1><p><img src="/2019/11/07/deep_learning/paper/paper-Coupled-CycleGAN-Unsupervised-Hashing-Network-for-Cross-Modal-Retrieval/1.png" alt="net"></p>
-<h1 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h1><ul>
-<li>建立2个环状网络，总计4个GAN，外圈（内圈）的文本（图像）的生成器（鉴别器）各自有一个。</li>
-<li>外圈的生成器提取中间一层的输出，作内圈的网络的输入。</li>
-<li>内圈的生成器再提取中间一层的输出，作hash编码的输入。</li>
-</ul>
-<h1 id="细节"><a href="#细节" class="headerlink" title="细节"></a>细节</h1><script type="math/tex; mode=display">
-\mathcal{L}_f = \mathcal{L}_{adv\_f} + \mathcal{L}_{rec\_f} + \mathcal{L}_{sim\_f} \\
-\mathcal{L}_z = \mathcal{L}_{adv\_z} + \mathcal{L}_{rec\_z} + \mathcal{L}_{sim\_z} \\
-\mathcal{L}_{Total} = \mathcal{L}_f + \mathcal{L}_z</script><p>损失 = 对抗损失（鉴别器） + 重建损失（生成器损失） + 表达/hash码相似性损失</p>
-<p>生成器，鉴别器，2个模态编码间的相似性的损失，外圈内圈都是范式2计算误差损失。</p>
-<blockquote>
-<ul>
-<li>G：生成器。</li>
-<li>f：（fake）生成的数据。</li>
-<li>D：鉴别器。</li>
-<li>Z：跨模态表示。</li>
-<li>F：特征。</li>
-<li>E：抽取特征的网络。</li>
-</ul>
-</blockquote>
-<script type="math/tex; mode=display">
-B^* = sign(H^*), * \in \{v, t\} \\
-B^* \in {\{-1, 1\}}^{n \times K} \\</script><blockquote>
-<ul>
-<li>v：图像表示。</li>
-<li>t：文本表示。</li>
-</ul>
-</blockquote>
-<p>『algorithm步骤』<br><img src="/2019/11/07/deep_learning/paper/paper-Coupled-CycleGAN-Unsupervised-Hashing-Network-for-Cross-Modal-Retrieval/2.png" alt="algorithm"></p>
-<h1 id="more"><a href="#more" class="headerlink" title="more"></a>more</h1><h2 id="note"><a href="#note" class="headerlink" title="note"></a>note</h2><p>本文标题含有CycleGAN，却没有原CycleGAN的思维，仅是构建了一个网络结构看起来像环的网络。</p>
-<p>由于没提供代码，网络的复现时存在很多细节问题，难以构建。</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -2004,14 +1962,14 @@ B^* \in {\{-1, 1\}}^{n \times K} \\</script><blockquote>
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-count">38</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
   </nav>

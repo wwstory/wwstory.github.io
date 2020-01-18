@@ -180,6 +180,234 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/12/deep_learning/paper/paper-Deep-Cross-Modal-Hashing/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="dejiang">
+      <meta itemprop="description" content="你根本不知道你什么都不知道">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫の故事">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/11/12/deep_learning/paper/paper-Deep-Cross-Modal-Hashing/" class="post-title-link" itemprop="url">[paper] Deep Cross-Modal Hashing</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-12 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-12T00:00:00+08:00">2019-11-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-12-30 16:41:21" itemprop="dateModified" datetime="2019-12-30T16:41:21+08:00">2019-12-30</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/deep-learning/" itemprop="url" rel="index">
+                    <span itemprop="name">deep learning</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>之前大多都是单模态检索，ANN，ANN + hash， MSH， CMH。</p>
+<h1 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h1><p>『DCMH模型在MIRFLICKR-25K数据集的MAP基准』<br><img src="/2019/11/12/deep_learning/paper/paper-Deep-Cross-Modal-Hashing/4.png" alt="accuracy"></p>
+<h1 id="贡献"><a href="#贡献" class="headerlink" title="贡献"></a>贡献</h1><p>提供深度学习实现图像和文本模态之间的检索方法。</p>
+<h1 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h1><p><img src="/2019/11/12/deep_learning/paper/paper-Deep-Cross-Modal-Hashing/1.png" alt="net"></p>
+<p>『网络结构的参数』<br><img src="/2019/11/12/deep_learning/paper/paper-Deep-Cross-Modal-Hashing/2.png" alt="net param"></p>
+<p>图片CNN模型采用的是Alexnet作预训练模型。</p>
+<p>『算法』<br><img src="/2019/11/12/deep_learning/paper/paper-Deep-Cross-Modal-Hashing/3.png" alt="algorithm"></p>
+<h1 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h1><p>损失函数：</p>
+<script type="math/tex; mode=display">
+\min_{B,B^{x},B^{y},\theta_x,\theta_y} \mathcal{J}=-\sum_{i,j=1}^{n} {(S_{ij} \Theta_{ij} - log(1+e^{\Theta_{ij}}))} \\
++ \gamma(||B^{(x)}-F||_F^2 + ||B^{(y)}-G||_F^2) \\
++ \eta(||F1||_F^2 + ||G1||_F^2) \\
+{\text { s.t. }} B^{(x)} \in \{-1, +1\}^{c \times n}, \\
+B^{(y)} \in \{-1, +1\}^{c \times n}, \\
+B \in \{-1, +1 \}^{c \times n}, \\
+B = B^{(x)} = B^{(y)}. \\</script><p>总损失 = 跨模态相似性（负对数似然） + 保持hash码匹配 + 使每个bit都发挥作用</p>
+<p>二值化为hash码：</p>
+<script type="math/tex; mode=display">
+\text{sign}(x) = \left \{ \begin{array}{}
+1 & x > 0, \\
+-1 & x < 0.
+\end{array}\right.</script><blockquote>
+<ul>
+<li>F：图像生成的特征码。</li>
+<li>G：文本生成的特征码。</li>
+<li>B：二进制哈希编码。</li>
+</ul>
+</blockquote>
+<h1 id="细节"><a href="#细节" class="headerlink" title="细节"></a>细节</h1><p>使用第二范式计算误差。</p>
+<p>使用海明距离评估S的相似性。</p>
+<p>DCMH整合了特征学习和哈希编码学习。</p>
+<p>训练时，先训练图片模型，再训练文本模型：</p>
+<ul>
+<li>固定$\Theta_y$和B，优化$\Theta_x$。</li>
+<li>固定B和$\Theta_x$，优化$\Theta_y$。</li>
+<li>固定$\Theta_y$和$\Theta_y$，优化$B$。</li>
+</ul>
+<h1 id="more"><a href="#more" class="headerlink" title="more"></a>more</h1><h2 id="note"><a href="#note" class="headerlink" title="note"></a>note</h2><p>使用深度学习的方法实现跨模态的索引。</p>
+<p>其所用损失函数考虑也很全面。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/07/deep_learning/paper/paper-Coupled-CycleGAN-Unsupervised-Hashing-Network-for-Cross-Modal-Retrieval/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="dejiang">
+      <meta itemprop="description" content="你根本不知道你什么都不知道">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫の故事">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+            <a href="/2019/11/07/deep_learning/paper/paper-Coupled-CycleGAN-Unsupervised-Hashing-Network-for-Cross-Modal-Retrieval/" class="post-title-link" itemprop="url">[paper] Coupled CycleGAN: Unsupervised Hashing Network for Cross-Modal Retrieval</a>
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2019-11-07 00:00:00" itemprop="dateCreated datePublished" datetime="2019-11-07T00:00:00+08:00">2019-11-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-01-01 23:07:00" itemprop="dateModified" datetime="2020-01-01T23:07:00+08:00">2020-01-01</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/deep-learning/" itemprop="url" rel="index">
+                    <span itemprop="name">deep learning</span>
+                  </a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><ul>
+<li>DCMH,TDH,SPDQ,SSAN展示了深度跨模态hsh方法的有效性。</li>
+<li>SSAN是在DCMH上加了GAN。UGACH也使用了GAN。</li>
+<li>UDCMH自适应无分割学习策略来迭代学习哈希码。</li>
+</ul>
+<h1 id="效果"><a href="#效果" class="headerlink" title="效果"></a>效果</h1><p><img src="/2019/11/07/deep_learning/paper/paper-Coupled-CycleGAN-Unsupervised-Hashing-Network-for-Cross-Modal-Retrieval/3.png" alt="effect"><br><img src="/2019/11/07/deep_learning/paper/paper-Coupled-CycleGAN-Unsupervised-Hashing-Network-for-Cross-Modal-Retrieval/4.png" alt="effect"></p>
+<h1 id="贡献"><a href="#贡献" class="headerlink" title="贡献"></a>贡献</h1><p>使用2个GAN将跨模态索引问题，划分为2部分分开处理，1个GAN用于实现文本图像的表达，1个GAN用于生成hash码。</p>
+<h1 id="网络"><a href="#网络" class="headerlink" title="网络"></a>网络</h1><p><img src="/2019/11/07/deep_learning/paper/paper-Coupled-CycleGAN-Unsupervised-Hashing-Network-for-Cross-Modal-Retrieval/1.png" alt="net"></p>
+<h1 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h1><ul>
+<li>建立2个环状网络，总计4个GAN，外圈（内圈）的文本（图像）的生成器（鉴别器）各自有一个。</li>
+<li>外圈的生成器提取中间一层的输出，作内圈的网络的输入。</li>
+<li>内圈的生成器再提取中间一层的输出，作hash编码的输入。</li>
+</ul>
+<h1 id="细节"><a href="#细节" class="headerlink" title="细节"></a>细节</h1><script type="math/tex; mode=display">
+\mathcal{L}_f = \mathcal{L}_{adv\_f} + \mathcal{L}_{rec\_f} + \mathcal{L}_{sim\_f} \\
+\mathcal{L}_z = \mathcal{L}_{adv\_z} + \mathcal{L}_{rec\_z} + \mathcal{L}_{sim\_z} \\
+\mathcal{L}_{Total} = \mathcal{L}_f + \mathcal{L}_z</script><p>损失 = 对抗损失（鉴别器） + 重建损失（生成器损失） + 表达/hash码相似性损失</p>
+<p>生成器，鉴别器，2个模态编码间的相似性的损失，外圈内圈都是范式2计算误差损失。</p>
+<blockquote>
+<ul>
+<li>G：生成器。</li>
+<li>f：（fake）生成的数据。</li>
+<li>D：鉴别器。</li>
+<li>Z：跨模态表示。</li>
+<li>F：特征。</li>
+<li>E：抽取特征的网络。</li>
+</ul>
+</blockquote>
+<script type="math/tex; mode=display">
+B^* = sign(H^*), * \in \{v, t\} \\
+B^* \in {\{-1, 1\}}^{n \times K} \\</script><blockquote>
+<ul>
+<li>v：图像表示。</li>
+<li>t：文本表示。</li>
+</ul>
+</blockquote>
+<p>『algorithm步骤』<br><img src="/2019/11/07/deep_learning/paper/paper-Coupled-CycleGAN-Unsupervised-Hashing-Network-for-Cross-Modal-Retrieval/2.png" alt="algorithm"></p>
+<h1 id="more"><a href="#more" class="headerlink" title="more"></a>more</h1><h2 id="note"><a href="#note" class="headerlink" title="note"></a>note</h2><p>本文标题含有CycleGAN，却没有原CycleGAN的思维，仅是构建了一个网络结构看起来像环的网络。</p>
+<p>由于没提供代码，网络的复现时存在很多细节问题，难以构建。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+        
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/04/web/spring/spring-%E5%AD%A6%E4%B9%A04-MVC/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1408,193 +1636,6 @@
   
   
 
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/04/web/spring/spring-ApplicationContext/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="dejiang">
-      <meta itemprop="description" content="你根本不知道你什么都不知道">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="枫の故事">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/10/04/web/spring/spring-ApplicationContext/" class="post-title-link" itemprop="url">[spring] ApplicationContext</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-10-04 18:37:00" itemprop="dateCreated datePublished" datetime="2019-10-04T18:37:00+08:00">2019-10-04</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-12-26 14:34:40" itemprop="dateModified" datetime="2019-12-26T14:34:40+08:00">2019-12-26</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/java/" itemprop="url" rel="index">
-                    <span itemprop="name">java</span>
-                  </a>
-                </span>
-                  ，
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/java/spring/" itemprop="url" rel="index">
-                    <span itemprop="name">spring</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="ApplicationContext"><a href="#ApplicationContext" class="headerlink" title="ApplicationContext"></a>ApplicationContext</h1><p>在构建非web应用时，发现了些问题，比如理所当然的使用<code>@Autowired</code>在主函数想要获取bean，却失败了，得到了<code>null</code>。</p>
-<p>这是非web应用的细节问题，了解这些可以帮助构建一个非web应用，也可以帮助处理掉《spring实战》源码的运行。</p>
-<h2 id="app如何获取bean"><a href="#app如何获取bean" class="headerlink" title="app如何获取bean"></a>app如何获取bean</h2><p>在<code>非web</code>应用中，会发现一个问题，无法通过<code>@Autowired</code>获取到bean，这是由于非web应用无法知道bean，也没有提供相应的注解去处理，只能通过<code>ApplicationContext</code>应用上下文获取bean。而bean之间是可以通过<code>@Autowired</code>获取到的。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ApplicationContext context = <span class="keyword">new</span> AnnotationConfigApplicationContext(com.example.DemoConfig<span class="class">.<span class="keyword">class</span>)</span>;</span><br><span class="line">A a = (A) context.getBean(A<span class="class">.<span class="keyword">class</span>)</span>;</span><br></pre></td></tr></table></figure>
-<h2 id="web中为何能使用"><a href="#web中为何能使用" class="headerlink" title="web中为何能使用"></a>web中为何能使用</h2><p>相应的<code>web</code>应用中，我们通常使用<code>spring mvc</code>的<code>@Controller</code>去操作，而这已经是被封装过的了，对每个控制器实则是在写<code>控制器bean</code>。（源码<code>HandlerMethod.class</code>的<code>createWithResolvedBean</code>方法中<code>getBean</code>操作展示了出来）<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> HandlerMethod <span class="title">createWithResolvedBean</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Object handler = <span class="keyword">this</span>.bean;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.bean <span class="keyword">instanceof</span> String) &#123;</span><br><span class="line">        Assert.state(<span class="keyword">this</span>.beanFactory != <span class="keyword">null</span>, <span class="string">"Cannot resolve bean name without BeanFactory"</span>);</span><br><span class="line">        String beanName = (String) <span class="keyword">this</span>.bean;</span><br><span class="line">        handler = <span class="keyword">this</span>.beanFactory.getBean(beanName);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> HandlerMethod(<span class="keyword">this</span>, handler);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>组件扫描也是，需要通过设配置文件（xml配置或java配置）到<code>ApplicationContext</code>中，从上下文获取其它组件扫描到的bean。</p>
-<blockquote>
-<p>组件扫描的测试却可用<code>@ContextConfiguration</code>设置配置文件，从而处于可以直接使用<code>@Autowired</code>的上下文环境。</p>
-</blockquote>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p>HandlerMethod 331行 : <a href="https://github.com/spring-projects/spring-framework/blob/master/spring-web/src/main/java/org/springframework/web/method/HandlerMethod.java" target="_blank" rel="noopener">https://github.com/spring-projects/spring-framework/blob/master/spring-web/src/main/java/org/springframework/web/method/HandlerMethod.java</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-        
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block home" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/04/other/gradle%E6%89%93%E5%8C%85/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="dejiang">
-      <meta itemprop="description" content="你根本不知道你什么都不知道">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="枫の故事">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-          
-            <a href="/2019/10/04/other/gradle%E6%89%93%E5%8C%85/" class="post-title-link" itemprop="url">gradle打包</a>
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2019-10-04 18:09:00" itemprop="dateCreated datePublished" datetime="2019-10-04T18:09:00+08:00">2019-10-04</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2019-12-26 14:34:40" itemprop="dateModified" datetime="2019-12-26T14:34:40+08:00">2019-12-26</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/other/" itemprop="url" rel="index">
-                    <span itemprop="name">other</span>
-                  </a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="非web应用"><a href="#非web应用" class="headerlink" title="非web应用"></a>非web应用</h1><blockquote>
-<p>非web项目，很少有帖子讲解对此的打包和运行。（web项目就很容易通过添加<code>war</code>插件和<code>gradle build</code>打包）</p>
-</blockquote>
-<p>运行的方法尝试出了几种。</p>
-<h2 id="idead中直接运行"><a href="#idead中直接运行" class="headerlink" title="idead中直接运行"></a>idead中直接运行</h2><p>使用idea直接运行<code>main</code>类即可。</p>
-<h2 id="使用插件"><a href="#使用插件" class="headerlink" title="使用插件"></a>使用插件</h2><p>使用gradle，需要在<code>build.gradle</code>文件中，添加插件<code>application</code>，并设置好主函数的名称<code>mainClassName</code>。最后在项目根目录下（<code>build.gradle</code>同级目录）执行命令：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gradle run</span><br></pre></td></tr></table></figure></p>
-<h2 id="打包成多个jar文件"><a href="#打包成多个jar文件" class="headerlink" title="打包成多个jar文件"></a>打包成多个jar文件</h2><p>依然需要上一步的<code>application</code>插件和<code>mainClassName</code>配置，然后执行命令下载依赖库并发布：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gradle install</span><br></pre></td></tr></table></figure></p>
-<p>打开<code>build/install/项目名/</code>目录可以看到两个文件夹<code>bin/</code>和<code>lib/</code>，lib目录下是打包好的项目jar包和其它添加的依赖包，bin目录下是配置好的sh脚本，方便直接运行。</p>
-<blockquote>
-<p>这个sh脚本主要就是获取了lib的路径，将里面的所有jar包的路径都记录下，然后执行命令<code>java -classpath 绝对路径/lib/xxx.jar:绝对路径/lib/yyy.jar com.yww.Main</code>运行。</p>
-</blockquote>
-<h2 id="打包成单个jar文件"><a href="#打包成单个jar文件" class="headerlink" title="打包成单个jar文件"></a>打包成单个jar文件</h2><p>上一个方法打包出来，自己的项目打包的jar和依赖的jar都零散的堆在文件夹中，运行时，还需要指定所有的jar包路径<code>-classpath</code>，十分麻烦。找到在<code>build.gradle</code>配置打包方式，且不需要插件<code>application</code>和<code>mainClassName</code>配置。<br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">jar &#123;</span><br><span class="line">    <span class="keyword">from</span> &#123;</span><br><span class="line">        <span class="keyword">configurations</span>.<span class="keyword">runtime</span>.<span class="keyword">collect</span>&#123;zipTree(it)&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    manifest &#123;</span><br><span class="line">        attributes <span class="string">'Main-Class'</span>: <span class="string">'com.yww.Main'</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><br>找到目录<code>build/lib/</code>执行命令运行：<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar demo.jar</span><br></pre></td></tr></table></figure></p>
-<blockquote>
-<p>发现idea中可直接打包成单个文件，输出到<code>out/</code>目录下，但运行的方式不太一样，找不到主类，需要执行命令<code>java -classpath demo.jar com.yww.Main</code>运行。</p>
-</blockquote>
-<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ul>
-<li><a href="https://docs.gradle.org/current/userguide/building_java_projects.html" target="_blank" rel="noopener">https://docs.gradle.org/current/userguide/building_java_projects.html</a></li>
-<li><a href="https://www.jianshu.com/p/5bb1e87df15f" target="_blank" rel="noopener">https://www.jianshu.com/p/5bb1e87df15f</a></li>
-<li><a href="https://www.cnblogs.com/basenet855x/p/4302909.html" target="_blank" rel="noopener">https://www.cnblogs.com/basenet855x/p/4302909.html</a></li>
-<li><a href="https://my.oschina.net/u/2505383/blog/677301" target="_blank" rel="noopener">https://my.oschina.net/u/2505383/blog/677301</a></li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
   </div>
 
   
@@ -1645,14 +1686,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">36</span>
+          <span class="site-state-item-count">38</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-count">11</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
   </nav>
@@ -1813,6 +1854,54 @@
   
 
   
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
 
   
 
