@@ -153,8 +153,8 @@ $$
 \left(\frac{i+0.5}{\left|f_{k}\right|}, \frac{j+0.5}{\left|f_{k}\right|}\right)
 $$
 
-> - $|f_{k}|$: 第k个特征图的单元数量。
-> - i,j: $i, j \in[0,\left|f_{k}\right|)$。
+> - $f_{k}$ : 第k个特征图的单元数量。
+> - i,j: $i, j \in [0, \|f_{k}\|)$。
 
 
 ## 严重的负样本处理 (Hard negative mining)
