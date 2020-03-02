@@ -1,0 +1,92 @@
+I"<h1 id="背景">背景</h1>
+<ul>
+  <li>全连接的神经网络需要消耗大量计算资源。</li>
+  <li>全连接难以应用到较高分辨率的图片。</li>
+</ul>
+
+<h1 id="效果">效果</h1>
+<p><img src="/imgs/deep_learning/paper/paper-ImageNet-Classification-with-Deep-Convolutional-Neural-Networks/2.png" alt="effect" /></p>
+
+<h1 id="贡献">贡献</h1>
+<ul>
+  <li>在ImageNet子集上，训练了一个最大的卷积神经网络用于ILSVRC-2010和ILSVRC-2012比赛，获得最好成绩。</li>
+  <li>写了高优化的GPU实现2D卷积操作。</li>
+  <li><strong>网络使用许多新的方法改善，并减少训练时间。</strong></li>
+  <li><strong>使用有效的技术防止过拟合。</strong></li>
+</ul>
+
+<h1 id="网络">网络</h1>
+<p><img src="/imgs/deep_learning/paper/paper-ImageNet-Classification-with-Deep-Convolutional-Neural-Networks/1.png" alt="net" /></p>
+
+<ul>
+  <li>5层卷积</li>
+  <li>3层全连接</li>
+  <li>卷积后每层使用1层最大化池化层</li>
+  <li>每层使用ReLU(Rectified Linear Units)激活</li>
+  <li>LRU处理第1层（后来的论文证明无用）</li>
+</ul>
+
+<blockquote>
+  <p>ps:这里的网络，是将训练拆分成2部分，在2个GPU上跑，在第3层又映射到一起，后又拆分。</p>
+</blockquote>
+
+<h1 id="思路">思路</h1>
+<ul>
+  <li>1.卷积，ReLU激活，池化。(5层)</li>
+  <li>2.全连接，ReLU激活，softmax分类。</li>
+</ul>
+
+<h1 id="细节">细节</h1>
+<ul>
+  <li>1.线性激活和非线性(ReLU Nonlinearity)</li>
+  <li>
+    <ul>
+      <li>非线性的$f(x)=\tanh (x)$或$f(x)=\left(1+e^{-x}\right)^{-1}$饱和后梯度下降变慢。</li>
+    </ul>
+  </li>
+  <li>
+    <ul>
+      <li>ReLU训练速度更快。</li>
+    </ul>
+  </li>
+  <li>2.多GPU训练(Training on Multiple GPUs)</li>
+  <li>3.局部响应归一化(Local Response Normalization) - (2015 VGG指出LRN没有提升)</li>
+  <li>
+    <ul>
+      <li>在通道的维度上做LRN。</li>
+    </ul>
+  </li>
+  <li>4.减少过拟合(Reducing Overfitting)</li>
+  <li>
+    <ul>
+      <li>数据增强(Data Augmentation)：将256x256图片从4个角和中间裁减，和改变图像亮度强度等，增加数据量。</li>
+    </ul>
+  </li>
+  <li>
+    <ul>
+      <li>Dropout：训练过程中，0.5概率抛弃神经元，测试时，使用全部神经元。</li>
+    </ul>
+  </li>
+</ul>
+
+<h1 id="more">more</h1>
+<h2 id="note">note</h2>
+<p>网络结构基本同AlexNet，增加了许多细节优化。</p>
+
+<p>主要贡献在于让人们时隔几十年，又再次发掘卷积神经网络价值。</p>
+
+<p>卷积过滤器训练的是什么？</p>
+
+<p>(下图是卷积层1的参数可视化)
+<img src="/imgs/deep_learning/paper/paper-ImageNet-Classification-with-Deep-Convolutional-Neural-Networks/3.png" alt="conv1 filter" /></p>
+
+<p>可以看出是，低层的卷积过滤器提取到的是许多轮廓特征。</p>
+
+<h2 id="ref">ref</h2>
+
+<ul>
+  <li>可视化理解卷积网络论文：Visualizing and Understanding Convolutional Networks</li>
+  <li>卷积过滤器的可视化理解：https://zhuanlan.zhihu.com/p/56112920</li>
+</ul>
+
+:ET

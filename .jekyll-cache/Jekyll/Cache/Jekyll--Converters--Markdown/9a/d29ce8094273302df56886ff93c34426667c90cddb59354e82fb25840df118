@@ -1,0 +1,325 @@
+I"�t<h1 id="请求过程">请求过程</h1>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                            ┌─────────┐
+                           ↗│ 处理器映射│
+                         2/ └─────────┘
+                         /         3
+<span class="err">请求</span> 1 ┌─────────────────┐ --------------------&gt; ┌─────┐
+<span class="gd">-----&gt;│DispatcherServlet│ &lt;--┌─────────────┐  4 │控制器│
+</span>      └─────────────────┘    │模型及逻辑视图名│ ---│     │
+                      \  \   └─────────────┘    └─────┘
+                       \  \5   ┌────────┐
+                       6\  ---&gt;│视图解析器│
+                         ↘     └────────┘
+            响应 7      ┌────┐
+<span class="gd">&lt;----------------------│视图 │
+</span>                       └────┘
+</code></pre></div></div>
+
+<p>过程：</p>
+
+<ul>
+  <li>请求：请求离开浏览器时，会带有用户所请求内容的信息，至少会包含请求的URL。（还可能带有如表单信息）</li>
+  <li>DispatcherServlet：将请求发送给Spring MVC控制器（controller）</li>
+</ul>
+
+<blockquote>
+  <ul>
+    <li><code class="highlighter-rouge">DispatcherServlet</code>：与大多数基于Java的Web框架一样，Spring MVC所有的请求都会通过一个前端控制器（front controller）Servlet。在这里一个单例的Servlet将请求委托给应用程序的其他组件来执行实际的处理。在Spring MVC中，DispatcherServlet就是前端控制器。</li>
+    <li><code class="highlighter-rouge">DispatcherServlet</code>的任务是将请求发送给Spring MVC控制器（<code class="highlighter-rouge">controller</code>）。（控制器是一个用于处理请求的Spring组件。）</li>
+    <li><code class="highlighter-rouge">DispatcherServlet</code>需要知道应该将请求发送给哪个控制器。所以<code class="highlighter-rouge">DispatcherServlet</code>以会查询一个或多个<code class="highlighter-rouge">处理器映射（handler mapping</code>）来确定请求的下一站在哪里。处理器映射会根据请求所携带的URL信息来进行决策。</li>
+    <li>到了控制器，请求会卸下负载（用户提交的信息）并耐心等待控制器处理这些信息。（实际上，设计良好的控制器本身只处理很少甚至不处理工作，而是将业务逻辑委托给一个或多个服务对象进行处理）</li>
+    <li>控制器在完成逻辑处理后，通常会产生一些信息，这些信息需要返回给用户并在浏览器上显示。这些信息被称为模型（<code class="highlighter-rouge">model</code>）。</li>
+    <li>这些信息通常需要以用户友好的方式进行格式化，一般会是HTML。所以信息需要发送给一个视图（<code class="highlighter-rouge">view</code>），通常会是JSP。</li>
+  </ul>
+</blockquote>
+
+<blockquote>
+  <ul>
+    <li>控制器所做的最后一件事就是将模型数据打包，并且标识出用于渲染输出的视图名。它接下来会将请求连同<code class="highlighter-rouge">模型</code>和<code class="highlighter-rouge">视图名</code>发送回<code class="highlighter-rouge">DispatcherServlet</code>。</li>
+    <li>传递给<code class="highlighter-rouge">DispatcherServlet</code>的视图名并不直接表示某个特定的JSP。实际上它甚至不能确定视图就是JSP。相反，它仅仅传递了一个<code class="highlighter-rouge">逻辑名称</code>，这个名字将会用来查找产生结果的真正视图。</li>
+    <li><code class="highlighter-rouge">DispatcherServlet</code>将会使用<code class="highlighter-rouge">视图解析器（view resolver）</code>来将逻辑视图名匹配为一个特定的视图实现，它可能是也可能不是JSP。</li>
+    <li>视图将会使用模型数据渲染输出，这个输出会通过响应对象传递给客户端。</li>
+  </ul>
+</blockquote>
+
+<h1 id="配置dispatcherservlet">配置DispatcherServlet</h1>
+
+<p><code class="highlighter-rouge">DispatcherServlet</code>可以配置到<code class="highlighter-rouge">web.xml</code>文件中。</p>
+
+<h2 id="abstractannotationconfigdispatcherservletinitializer">AbstractAnnotationConfigDispatcherServletInitializer</h2>
+
+<p>在Servlet 3规范和Spring 3.1中，可以使用java将<code class="highlighter-rouge">DispatcherServlet</code>配置在<code class="highlighter-rouge">Servlet容器</code>中，需要继承<code class="highlighter-rouge">AbstractAnnotationConfigDispatcherServletInitializer</code>，重写3个方法。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww.config</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyWebAppInitializer</span> <span class="kd">extends</span> <span class="nc">AbstractAnnotationConfigDispatcherServletInitializer</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="nc">Class</span><span class="o">&lt;?&gt;[]</span> <span class="n">getRootConfigClasses</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nc">Class</span><span class="o">[]{</span> <span class="nc">RootConifg</span><span class="o">.</span><span class="na">class</span> <span class="o">};</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="nc">Class</span><span class="o">&lt;?&gt;[]</span> <span class="n">getServletConfigClasses</span><span class="o">()</span> <span class="o">{</span>    <span class="c1">// 指定配置类</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nc">Class</span><span class="o">[]{</span> <span class="nc">WebConfig</span><span class="o">.</span><span class="na">class</span> <span class="o">};</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="nc">String</span><span class="o">[]</span> <span class="nf">getServletMappings</span><span class="o">()</span> <span class="o">{</span>   <span class="c1">// 将DispatcherServlet映射到"/"</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nc">String</span><span class="o">[]{</span> <span class="s">"/"</span> <span class="o">};</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<ul>
+  <li><code class="highlighter-rouge">getServletMappings()</code>：会将一个或多个路径映射到<code class="highlighter-rouge">DispatcherServlet</code>上。本例中，它映射的是”<code class="highlighter-rouge">/</code>“，这表示它会是应用的默认Servlet。它会处理进入应用的所有请求。</li>
+  <li>要理解另2个方法，首先要理解<code class="highlighter-rouge">DispatcherServlet</code>和<code class="highlighter-rouge">Servlet监听器（ContextLoaderListener）</code>的关系。（如下）</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    AbstractAnnotationConfigDispatcherServletInitializer
+              |                            |
+             创建                          创建
+              |                            |
+              v                            v
+      DispatcherServlet               ContextLoaderListener
+              |                            |
+             加载                          加载
+              |                            |
+              v                            V
+          应用上下文                     应用上下文
+（查找@Configuration注解的类，      （查找@Configuration注解的类，
+  加载包含Web组件的bean。             加载应用中的其它bean。
+  如控制器,视图解析器,处理器映射等）     如自定义的业务所需的bean）
+
+</code></pre></div></div>
+
+<blockquote>
+  <p><strong><code class="highlighter-rouge">AbstractAnnotationConfigDispatcherServletInitializer</code>剖析</strong>：</p>
+  <ul>
+    <li>在Servlet 3.0环境中，容器会在类路径中查找实现<code class="highlighter-rouge">javax.servlet.ServletContainerInitializer</code>接口的类，如果能发现的话，就会用它来配置Servlet容器。</li>
+    <li>Spring提供了这个接口的实现，名为<code class="highlighter-rouge">SpringServletContainerInitializer</code>，这个类反过来又会查找实现<code class="highlighter-rouge">WebApplicationInitializer</code>的类并将配置的任务交给它们来完成。</li>
+    <li>Spring 3.2引入了一个便利的<code class="highlighter-rouge">WebApplicationInitializer</code>基础实现，也就是<code class="highlighter-rouge">AbstractAnnotationConfigDispatcherServletInitializer</code>。</li>
+    <li>当我们自定义的类继承了<code class="highlighter-rouge">AbstractAnnotationConfigDispatcherServletInitializer</code>，当部署到<code class="highlighter-rouge">Servlet 3.0容器</code>中的时候，容器会自动发现它，并用来配置<code class="highlighter-rouge">Servlet上下文</code>。</li>
+  </ul>
+</blockquote>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                        容器(Servlet 3.0)
+                                |类路径查找
+                                v
+            实现javax.servlet.ServletContainerInitializer接口的类
+                                |
+                                v
+              SpringServletContainerInitializer（Spring提供）
+                                |查找
+                                v
+        实现`WebApplicationInitializer`的类，将配置的任务交给它们完成
+                                |
+                AbstractDispatcherServletInitializer
+                  AbstractContextLoaderInitializer
+                                |
+                                v
+    AbstractAnnotationConfigDispatcherServletInitializer（Spring提供）
+                                |
+                                v
+                  自定义类继承，即可配置Servlet上下文
+</code></pre></div></div>
+
+<h2 id="servlet配置类">Servlet配置类</h2>
+
+<p>作用：启用Web MVC，启用组件扫描，配置视图解析器，配置静态资源的处理。</p>
+
+<p><code class="highlighter-rouge">WebConfig.java</code>在上面<code class="highlighter-rouge">getServletConfigClasses()</code>方法中设置。</p>
+
+<p><strong>最简单的配置</strong>：</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww.config</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Configuration</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.servlet.config.annotation.EnableWebMvc</span><span class="o">;</span>
+
+<span class="nd">@Configuration</span>
+<span class="nd">@EnableWebMvc</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">WebConfig</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>空配置的<code class="highlighter-rouge">WebConfig</code>尽管能启用Spring MVC，但有不少问题：</p>
+
+<ul>
+  <li>没有配置视图解析器。Spring默认会使用<code class="highlighter-rouge">BeanNameVire-Resolver</code>，这个视图解析器会查找ID与视图名称匹配的bean，并且查找bean要实现View接口，它以这样的方式解析视图。</li>
+  <li>没有启用组件扫描。Spring只能找到显式声明在配置类中的控制器。</li>
+  <li><code class="highlighter-rouge">DispatcherServlet</code>会映射为应用的默认Servlet，所以它会处理所有请求，包括对静态资源的请求。</li>
+</ul>
+
+<p><strong>最小但可用的Spring MVC配置</strong>：</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww.config</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Bean</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.ComponentScan</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Configuration</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.servlet.ViewResolver</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.servlet.config.annotation.EnableWebMvc</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.servlet.view.InternalResourceViewResolver</span><span class="o">;</span>
+
+<span class="nd">@Configuration</span>
+<span class="nd">@EnableWebMvc</span>       <span class="c1">// 启用Spring MVC</span>
+<span class="nd">@ComponentScan</span>      <span class="c1">// 启用组件扫描</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">WebConfig</span> <span class="kd">extends</span> <span class="nc">WebMvcConfigurationSupport</span> <span class="o">{</span>
+
+    <span class="c1">// 配置JSP视图解析器</span>
+    <span class="nd">@Bean</span>
+    <span class="kd">public</span> <span class="nc">ViewResolver</span> <span class="nf">viewResolver</span><span class="o">(){</span>
+        <span class="nc">InternalResourceViewResolver</span> <span class="n">resolver</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">InternalResourceViewResolver</span><span class="o">();</span>
+        <span class="n">resolver</span><span class="o">.</span><span class="na">setPrefix</span><span class="o">(</span><span class="s">"/WEB-INF/jsp/"</span><span class="o">);</span>
+        <span class="n">resolver</span><span class="o">.</span><span class="na">setSuffix</span><span class="o">(</span><span class="s">".jsp"</span><span class="o">);</span>
+        <span class="n">resolver</span><span class="o">.</span><span class="na">setExposeContextBeansAsAttributes</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">resolver</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 配置静态资源的处理</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">configureDefaultServletHandling</span><span class="o">(</span><span class="nc">DefaultServletHandlerConfigurer</span> <span class="n">configurer</span><span class="o">){</span>
+        <span class="n">configurer</span><span class="o">.</span><span class="na">enable</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">@ComponentScan</code>会找到带有<code class="highlighter-rouge">@Controller</code>注解的类，因此，我们不需要在配置类中显式声明控制器。</p>
+
+<p><code class="highlighter-rouge">ViewResolver</code>会按照设定的前后缀查找JSP文件。</p>
+
+<p><code class="highlighter-rouge">configureDefaultServletHandling()</code>方法通过调用<code class="highlighter-rouge">DefaultServletHandlerConfigurer</code>的<code class="highlighter-rouge">enable()</code>方法，要求<code class="highlighter-rouge">DispatcherServlet</code>将对静态资源的请求转发到<code class="highlighter-rouge">Servlet容器</code>中默认的Servlet上，而不是<code class="highlighter-rouge">DispatcherServlet</code>本身来处理此类要求。</p>
+
+<h2 id="root配置类">Root配置类</h2>
+
+<p>作用：加载自定义的业务组件。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww.config</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.ComponentScan</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.ComponentScan.Filter</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Configuration</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.FilterType</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.servlet.config.annotation.EnableWebMvc</span><span class="o">;</span>
+
+<span class="nd">@Configuration</span>
+<span class="nd">@ComponentScan</span><span class="o">(</span>
+        <span class="n">basePackages</span> <span class="o">=</span> <span class="o">{</span><span class="s">"com.yww"</span><span class="o">},</span>
+        <span class="n">excludeFilters</span> <span class="o">=</span> <span class="o">{</span><span class="nd">@Filter</span><span class="o">(</span><span class="n">type</span><span class="o">=</span> <span class="nc">FilterType</span><span class="o">.</span><span class="na">ANNOTATION</span><span class="o">,</span> <span class="n">value</span> <span class="o">=</span> <span class="nc">EnableWebMvc</span><span class="o">.</span><span class="na">class</span><span class="o">)}</span>
+<span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">RootConfig</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h1 id="webxml中声明dispatcherservlet">web.xml中声明DispatcherServlet</h1>
+
+<blockquote>
+  <p>使用java配置的方式，<code class="highlighter-rouge">AbstractAnnotationConfigDispatcherServletInitializer</code>会自动注册<code class="highlighter-rouge">DispatcherServlet</code>和<code class="highlighter-rouge">ContextLoaderListener</code>。而使用web.xml配置，需要手动配置。</p>
+</blockquote>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">&lt;!-- web.xml --&gt;</span>
+<span class="cp">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="nt">&lt;web-app</span> <span class="na">xmlns=</span><span class="s">"http://xmlns.jcp.org/xml/ns/javaee"</span>
+         <span class="na">xmlns:xsi=</span><span class="s">"http://www.w3.org/2001/XMLSchema-instance"</span>
+         <span class="na">xsi:schemaLocation=</span><span class="s">"http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"</span>
+         <span class="na">version=</span><span class="s">"4.0"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;context-param&gt;</span>
+        <span class="nt">&lt;param-name&gt;</span>contextConfigLocation<span class="nt">&lt;/param-name&gt;</span>
+        <span class="nt">&lt;param-value&gt;</span>/WEB-INF/applicationContext.xml<span class="nt">&lt;/param-value&gt;</span>
+    <span class="nt">&lt;/context-param&gt;</span>
+
+    <span class="nt">&lt;listener&gt;</span>
+        <span class="nt">&lt;listener-class&gt;</span>org.springframework.web.context.ContextLoaderListener<span class="nt">&lt;/listener-class&gt;</span>
+    <span class="nt">&lt;/listener&gt;</span>
+
+    <span class="nt">&lt;servlet&gt;</span>
+        <span class="nt">&lt;servlet-name&gt;</span>dispatcher<span class="nt">&lt;/servlet-name&gt;</span>
+        <span class="nt">&lt;servlet-class&gt;</span>org.springframework.web.servlet.DispatcherServlet<span class="nt">&lt;/servlet-class&gt;</span>
+        <span class="nt">&lt;load-on-startup&gt;</span>1<span class="nt">&lt;/load-on-startup&gt;</span>
+    <span class="nt">&lt;/servlet&gt;</span>
+
+    <span class="nt">&lt;servlet-mapping&gt;</span>
+        <span class="nt">&lt;servlet-name&gt;</span>dispatcher<span class="nt">&lt;/servlet-name&gt;</span>
+<span class="c">&lt;!--        &lt;url-pattern&gt;*.form&lt;/url-pattern&gt;--&gt;</span>
+        <span class="nt">&lt;url-pattern&gt;</span>/<span class="nt">&lt;/url-pattern&gt;</span>
+    <span class="nt">&lt;/servlet-mapping&gt;</span>
+<span class="nt">&lt;/web-app&gt;</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">ContextLoaderListener</code>和<code class="highlighter-rouge">DispatcherServlet</code>前面提到过，它们各自会加载一个Spring应用上下文。</p>
+
+<ul>
+  <li>
+    <p><strong><code class="highlighter-rouge">ContextLoaderListener</code></strong>：上下文参数<code class="highlighter-rouge">contextConfigLocation</code>指定了一个XML文件的地址，这个文件定义了根应用上下文，它会被<code class="highlighter-rouge">ContextLoaderListener</code>加载。根上下文会从<code class="highlighter-rouge">/WEB-INF/applicationContext.xml</code>中加载bean定义。</p>
+  </li>
+  <li>
+    <p><strong><code class="highlighter-rouge">DispatcherServlet</code></strong>：<code class="highlighter-rouge">DispatcherServlet</code>会根据Servlet的名字找到一个文件，并基于该文件加载应用上下文。这里Servlet的名字为<code class="highlighter-rouge">dispatcher</code>，因此<code class="highlighter-rouge">DispatcherServlet</code>会从<code class="highlighter-rouge">/WEB-INF/dispatcher-servlet.xml</code>文件中加载其应用上下文。（也可以使用<code class="highlighter-rouge">&lt;init-param&gt;</code>指定文件位置。如下）</p>
+  </li>
+</ul>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nt">&lt;servlet&gt;</span>
+        <span class="nt">&lt;servlet-name&gt;</span>dispatcher<span class="nt">&lt;/servlet-name&gt;</span>
+        <span class="nt">&lt;servlet-class&gt;</span>org.springframework.web.servlet.DispatcherServlet<span class="nt">&lt;/servlet-class&gt;</span>
+        <span class="nt">&lt;load-on-startup&gt;</span>1<span class="nt">&lt;/load-on-startup&gt;</span>
+        <span class="nt">&lt;init-param&gt;</span>
+            <span class="nt">&lt;param-name&gt;</span>contextConfigLocation<span class="nt">&lt;/param-name&gt;</span>
+            <span class="nt">&lt;param-value&gt;</span>/WEB-INF/spring/servlet-context.xml<span class="nt">&lt;/param-value&gt;</span>
+        <span class="nt">&lt;/init-param&gt;</span>
+    <span class="nt">&lt;/servlet&gt;</span>
+</code></pre></div></div>
+
+<h1 id="配置dispatcherservlet-更多">配置DispatcherServlet 更多</h1>
+<p>在<code class="highlighter-rouge">AbstractAnnotationConfigDispatcherServletInitializer</code>将<code class="highlighter-rouge">DispatcherServlet</code>注册到<code class="highlighter-rouge">Servlet容器</code>中之后，就会调用<code class="highlighter-rouge">customizeRegistration()</code>，并将Servlet注册后得到的<code class="highlighter-rouge">Registration.Dynamic</code>传递进来。通过重载<code class="highlighter-rouge">customizeRegistration()</code>方法，我们可以对<code class="highlighter-rouge">DispatcherServlet</code>进行额外的配置。</p>
+
+<blockquote>
+  <p>可用于开启对<code class="highlighter-rouge">multipart请求</code>和<code class="highlighter-rouge">文件上传</code>等。</p>
+</blockquote>
+
+<h2 id="添加其它的servlet和filter">添加其它的Servlet和Filter</h2>
+<p><code class="highlighter-rouge">AbstractAnnotationConfigDispatcherServletInitializer</code>会创建<code class="highlighter-rouge">DispatcherServlet</code>和<code class="highlighter-rouge">ContextLoaderListener</code>。</p>
+
+<p>如果自己想创建<code class="highlighter-rouge">Servlet</code>,<code class="highlighter-rouge">Filter</code>,<code class="highlighter-rouge">Listener</code>，（就是往<code class="highlighter-rouge">Web容器</code>中注册其它组件），只需要创建一个新的初始化器就可以了。最简单的方式就是实现Spring的<code class="highlighter-rouge">WebApplicationInitializer</code>接口。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// MyServletInitializer.java</span>
+<span class="kn">package</span> <span class="nn">com.yww.config</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.web.WebApplicationInitializer</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.servlet.ServletContext</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.servlet.ServletException</span><span class="o">;</span>
+
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyServletInitializer</span> <span class="kd">implements</span> <span class="nc">WebApplicationInitializer</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onStartup</span><span class="o">(</span><span class="nc">ServletContext</span> <span class="n">servletContext</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">ServletException</span> <span class="o">{</span>
+        <span class="c1">// 注册Servlet</span>
+        <span class="n">javax</span><span class="o">.</span><span class="na">servlet</span><span class="o">.</span><span class="na">ServletRegistration</span><span class="o">.</span><span class="na">Dynamic</span> <span class="n">myServlet</span> <span class="o">=</span> <span class="n">servletContext</span><span class="o">.</span><span class="na">addServlet</span><span class="o">(</span><span class="s">"myServlet"</span><span class="o">,</span> <span class="nc">MyServlet</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+        <span class="n">myServlet</span><span class="o">.</span><span class="na">addMapping</span><span class="o">(</span><span class="s">"/custom/**"</span><span class="o">);</span>
+
+        <span class="c1">// 注册Filter</span>
+        <span class="n">javax</span><span class="o">.</span><span class="na">servlet</span><span class="o">.</span><span class="na">FilterRegistration</span><span class="o">.</span><span class="na">Dynamic</span> <span class="n">myFilter</span> <span class="o">=</span> <span class="n">servletContext</span><span class="o">.</span><span class="na">addFilter</span><span class="o">(</span><span class="s">"myFilter"</span><span class="o">,</span> <span class="nc">MyFilter</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+<span class="c1">//        myFilter.addMappingForServletNames(null, false, "myServlet");</span>
+        <span class="n">myFilter</span><span class="o">.</span><span class="na">addMappingForUrlPatterns</span><span class="o">(</span><span class="kc">null</span><span class="o">,</span> <span class="kc">false</span><span class="o">,</span> <span class="s">"/custom/*"</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>如果只是注册<code class="highlighter-rouge">Filter</code>，并且该<code class="highlighter-rouge">Filter</code>只会映射到<code class="highlighter-rouge">DispatcherServlet</code>上的话。可以重载<code class="highlighter-rouge">AbstractAnnotationConfigDispatcherServletInitializer</code>的<code class="highlighter-rouge">getServletFilters()</code>方法。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// MyWebAppInitializer.java</span>
+<span class="kn">package</span> <span class="nn">com.yww.config</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">javax.servlet.Filter</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyWebAppInitializer</span> <span class="kd">extends</span> <span class="nc">AbstractAnnotationConfigDispatcherServletInitializer</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="nc">Filter</span><span class="o">[]</span> <span class="nf">getServletFilters</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nc">Filter</span><span class="o">[]{</span> <span class="k">new</span> <span class="nc">MyFilter</span><span class="o">()};</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+:ET

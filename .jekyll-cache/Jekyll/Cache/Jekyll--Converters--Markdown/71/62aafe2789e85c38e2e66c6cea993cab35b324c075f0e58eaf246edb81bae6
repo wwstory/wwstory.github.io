@@ -1,0 +1,112 @@
+I"�<h1 id="介绍">介绍</h1>
+<p>创建一个接受图片数据，发布数值数据的rospy程序。</p>
+
+<h1 id="项目结构">项目结构</h1>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>└── src/
+    ├── CMakeLists.txt -&gt; /opt/ros/melodic/share/catkin/cmake/toplevel.cmake
+    └── demo_detect_image/
+        ├── CMakeLists.txt
+        ├── msg/
+        │   └── Detection.msg
+        ├── package.xml
+        ├── scripts/
+        │   └── detect.py*
+        └── src/
+</code></pre></div></div>
+
+<h1 id="步骤">步骤</h1>
+<h2 id="创建项目">创建项目</h2>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir</span> <span class="nt">-p</span> catkin_ws/src
+<span class="nb">cd </span>catkin_ws
+catkin_make
+<span class="nb">.</span> devel/setup.bash
+<span class="nb">cd </span>src
+catkin_create_pkg demo rospy std_msgs message_generation
+<span class="nb">cd </span>demo
+</code></pre></div></div>
+
+<blockquote>
+  <p>message_generation：用于msg文件生成代码，以便用于后续直接导入。（可以在<code class="highlighter-rouge">devel/lib/python2.7/dist-packages/demo/msg/_Detection.py</code>或<code class="highlighter-rouge">devel/include/demo/Detection.h</code>看到生成的代码文件。）</p>
+</blockquote>
+
+<h2 id="添加msg文件">添加msg文件</h2>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir</span> <span class="nt">-p</span> msg/
+vim msg/Detection.msg
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>float32[] pos
+uint32 classes
+float32 scores
+</code></pre></div></div>
+
+<h2 id="修改cmakeliststxt">修改CMakeLists.txt</h2>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>vim CMakeLists.txt
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## Generate messages in the 'msg' folder
+add_message_files(
+  FILES
+  Detection.msg
+#   Message1.msg
+#   Message2.msg
+)
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>## Generate added messages and services with any dependencies listed here
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+</code></pre></div></div>
+
+<h2 id="代码">代码</h2>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">mkdir </span>scripts/
+vim scripts/detect.py
+</code></pre></div></div>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#!/usr/bin/env python3
+#coding=utf-8
+</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">sensor_msgs.msg</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">demo.msg</span> <span class="kn">import</span> <span class="n">Detection</span>  <span class="c1"># generate_messages的作用
+</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+
+<span class="k">class</span> <span class="nc">Detect</span><span class="p">:</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="s">'image_detect_node'</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span><span class="s">'/image_raw'</span><span class="p">,</span> <span class="n">Image</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">callback</span><span class="p">)</span>
+        <span class="c1"># rospy.Subscriber('/camera/color/image_raw', Image, self.callback)
+</span>        <span class="bp">self</span><span class="o">.</span><span class="n">pub</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Publisher</span><span class="p">(</span><span class="s">'image_detection'</span><span class="p">,</span> <span class="n">Detection</span> <span class="p">,</span> <span class="n">queue_size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">):</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">480</span><span class="p">,</span> <span class="mi">640</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="c1"># rospy.loginfo(img)
+</span>        <span class="bp">self</span><span class="o">.</span><span class="n">pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">Detection</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">],</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">2.</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">spin</span><span class="p">()</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">"__main__"</span><span class="p">:</span>
+    <span class="n">Detect</span><span class="p">()</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h2 id="test">test</h2>
+<p>需要为python文件添加可执行权限：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">chmod</span> +x detect.py
+</code></pre></div></div>
+
+<p>编译：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>catkin_make all clean
+catkin_make
+</code></pre></div></div>
+
+<p>执行：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rosrun demo detect.py
+</code></pre></div></div>
+
+<p>查看返回数据：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rostopic <span class="nb">echo</span> /image_detection
+</code></pre></div></div>
+
+:ET

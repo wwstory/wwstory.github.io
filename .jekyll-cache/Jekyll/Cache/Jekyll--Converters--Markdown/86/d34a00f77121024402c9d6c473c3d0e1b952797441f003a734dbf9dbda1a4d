@@ -1,0 +1,91 @@
+I"
+<h1 id="背景">背景</h1>
+<p>之前大多都是单模态检索，ANN，ANN + hash， MSH， CMH。</p>
+
+<h1 id="效果">效果</h1>
+<p>『DCMH模型在MIRFLICKR-25K数据集的MAP基准』
+<img src="/imgs/deep_learning/paper/paper-Deep-Cross-Modal-Hashing/4.png" alt="accuracy" /></p>
+
+<h1 id="贡献">贡献</h1>
+<p>提供深度学习实现图像和文本模态之间的检索方法。</p>
+
+<h1 id="网络">网络</h1>
+<p><img src="/imgs/deep_learning/paper/paper-Deep-Cross-Modal-Hashing/1.png" alt="net" /></p>
+
+<p>『网络结构的参数』
+<img src="/imgs/deep_learning/paper/paper-Deep-Cross-Modal-Hashing/2.png" alt="net param" /></p>
+
+<p>图片CNN模型采用的是Alexnet作预训练模型。</p>
+
+<p>『算法』
+<img src="/imgs/deep_learning/paper/paper-Deep-Cross-Modal-Hashing/3.png" alt="algorithm" /></p>
+
+<h1 id="思路">思路</h1>
+
+<p>损失函数：
+$$
+\min_{B,B^{x},B^{y},\theta_x,\theta_y} \mathcal{J}=-\sum_{i,j=1}^{n} {(S_{ij} \Theta_{ij} - log(1+e^{\Theta_{ij}}))} \</p>
+<ul>
+  <li>
+    <table>
+      <tbody>
+        <tr>
+          <td>\gamma(</td>
+          <td> </td>
+          <td>B^{(x)}-F</td>
+          <td> </td>
+          <td>_F^2 +</td>
+          <td> </td>
+          <td>B^{(y)}-G</td>
+          <td> </td>
+          <td>_F^2) \</td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+  <li>\eta(||F1||_F^2 + ||G1||_F^2) <br />
+{\text { s.t. }} B^{(x)} \in {-1, +1}^{c \times n}, <br />
+B^{(y)} \in {-1, +1}^{c \times n}, <br />
+B \in {-1, +1 }^{c \times n}, <br />
+B = B^{(x)} = B^{(y)}. <br />
+$$</li>
+</ul>
+
+<p>总损失 = 跨模态相似性（负对数似然） + 保持hash码匹配 + 使每个bit都发挥作用</p>
+
+<p>二值化为hash码：
+<script type="math/tex">% <![CDATA[
+\text{sign}(x) = \left \{ \begin{array}{}
+1 & x > 0, \\
+-1 & x < 0.
+\end{array}\right. %]]></script></p>
+
+<blockquote>
+  <ul>
+    <li>F：图像生成的特征码。</li>
+    <li>G：文本生成的特征码。</li>
+    <li>B：二进制哈希编码。</li>
+  </ul>
+</blockquote>
+
+<h1 id="细节">细节</h1>
+<p>使用第二范式计算误差。</p>
+
+<p>使用海明距离评估S的相似性。</p>
+
+<p>DCMH整合了特征学习和哈希编码学习。</p>
+
+<p>训练时，先训练图片模型，再训练文本模型：</p>
+<ul>
+  <li>固定$\Theta_y$和B，优化$\Theta_x$。</li>
+  <li>固定B和$\Theta_x$，优化$\Theta_y$。</li>
+  <li>固定$\Theta_y$和$\Theta_y$，优化$B$。</li>
+</ul>
+
+<h1 id="more">more</h1>
+<h2 id="note">note</h2>
+<p>使用深度学习的方法实现跨模态的索引。</p>
+
+<p>其所用损失函数考虑也很全面。</p>
+
+:ET

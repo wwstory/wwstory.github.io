@@ -1,0 +1,290 @@
+I"$m<h1 id="基本使用-1">基本使用 <sup>1</sup></h1>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#coding=utf-8
+</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">os</span>		<span class="c1"># 获取pid用
+</span><span class="kn">import</span> <span class="nn">time</span>		<span class="c1"># 延时用
+</span>
+<span class="c1"># 子进程要执行的函数
+</span><span class="k">def</span> <span class="nf">child_proc</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+	<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s">'child process {name} pid: {os.getpid()}'</span><span class="p">)</span>
+	<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+	<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s">'{name} finish'</span><span class="p">)</span>
+
+<span class="c1"># 主进程，必须在主模块中执行
+</span><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">'__main__'</span><span class="p">:</span>
+	<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s">'parent process {os.getpid()} is running'</span><span class="p">)</span>
+
+	<span class="c1"># 生成子进程
+</span>	<span class="n">p1</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span> <span class="o">=</span> <span class="n">child_proc</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="s">'child-1'</span><span class="p">,))</span>
+	<span class="n">p2</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Process</span><span class="p">(</span><span class="n">target</span> <span class="o">=</span> <span class="n">child_proc</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="s">'child-2'</span><span class="p">,))</span>
+	<span class="n">p1</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+	<span class="n">p2</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+	<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s">'parent process {os.getpid()} is end'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p><del>输出</del></p>
+  <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>parent process 20114 is running
+parent process 20114 is end
+child process child-1 pid: 20115
+child process child-2 pid: 20116
+child-1 finish
+child-2 finish
+</code></pre></div>  </div>
+</blockquote>
+
+<p><strong>注意!</strong> Python官方文档提到为何必须要使用<code class="highlighter-rouge">if __name__ = '__main__'</code>，由于该包的所有功能都需要将主模块导入到子模块中，但是IDLE无法将<code class="highlighter-rouge">__main__</code>模块导入子模块，所以只能在文件中编辑好程序执行
+<strong>更多</strong>：<a href="https://docs.python.org/3/library/multiprocessing.html?highlight=multiprocessing#module-multiprocessing">multiprocessing — Process-based parallelism</a></p>
+
+<hr />
+<h1 id="multiprocessing模块">multiprocessing模块</h1>
+<p><strong>注</strong>：根据查看<code class="highlighter-rouge">multiprocessing</code>模块声明，第一行注释显示<code class="highlighter-rouge"># Package analogous to 'threading.py' but using processes</code>，可以发现进程的操作与线程相似 <em>（甚至多进程的模块直接就是线程模块改过来的）</em></p>
+
+<p><strong>函数声明</strong>： class multiprocessing.<strong>Process</strong>(group=None, target=None, name=None, args=(), kwargs={}, <em>, daemon=None)
+*（group: 官方预留的参数）</em>
+target: 子线程要执行的函数
+name: 给子线程命名
+args: 传递参数到要执行的函数中 <em>（类型为元组）</em>
+daemon: 将线程设置为后台线程 <sup>2</sup></p>
+
+<blockquote>
+  <p>Thread类包含的方法：</p>
+  <ul>
+    <li><strong>start</strong>(): 开始进程，它会安排在单独的控制进程中使该对象的<code class="highlighter-rouge">run()</code>方法被调用 <em>(invoked)</em>  <em>（如果多次调用，会发生错误<code class="highlighter-rouge">AssertionError</code>）</em></li>
+    <li><strong>run</strong>(): 你可以在子类中重写这个方法，标准的<code class="highlighter-rouge">run()</code>方法会在构造器传递了<code class="highlighter-rouge">target</code>参数后调用它</li>
+    <li><strong>join</strong>(timeout=None): 阻塞当前进程，直到等待调用了<code class="highlighter-rouge">join()</code>的进程结束，或到达设置的超时<code class="highlighter-rouge">timeout</code>的参数为止</li>
+    <li><strong>name</strong>: 进程名</li>
+    <li><strong>is_alive</strong>(): 判断进程是否在运行</li>
+    <li><strong>daemon</strong>: 是否为后台进程的属性值</li>
+    <li><strong>pid</strong>: 返回进程的id</li>
+    <li><strong>terminate</strong>(): 结束进程
+<em>（在Unix上，使用<code class="highlighter-rouge">SIGTERM</code>信号量完成；在windows上使用TerminateProcess()）</em>
+ <em>（请注意，不会执行退出处理程序和最后的子句等。请注意，进程的后代进程不会被终止 - 它们将简单地变成孤立的。）</em> 
+ <em>（注：如果在关联进程使用管道或队列时使用此方法，则管道或队列可能会损坏，并可能被其他进程无法使用。 类似地，如果进程已获得锁或信号量等，则终止它可能导致其他进程死锁。）</em></li>
+    <li><strong>kill</strong>(): 杀掉进程，与terminate()相同，但在Unix中使用<code class="highlighter-rouge">SIGKILL</code>信号量</li>
+    <li><strong>close</strong>(): 关闭进程对象，释放所有与之相关的资源。如果是还在运行，会raised错误<code class="highlighter-rouge">ValueError</code>，第一次调用会返回成功，其它调用会raise错误<code class="highlighter-rouge">ValueError</code></li>
+    <li><strong>exitcode</strong>: 子进程的退出码。如果不是被terminate终止的，将会是<code class="highlighter-rouge">None</code>；如果被信号量<code class="highlighter-rouge">N</code>终止的，将会返回-N</li>
+    <li><strong>authkey</strong>: 进程的身份钥匙（1字节字符串）。当<code class="highlighter-rouge">multipriocessing</code>在主进程中被初始化时，会使用<code class="highlighter-rouge">os.urandom()</code>标记一个随机字符串。当一个进程对象被创建时，它将会从父进程继承这个身份钥匙，虽然它可能会被改为其它字节字符串</li>
+    <li><strong>sentinel</strong>: （哨兵）当进程结束时，一个数值的系统对象处理将变为<code class="highlighter-rouge">ready</code>。如果你想立即要等待几个事件，你能用这个值使用<code class="highlighter-rouge">multiprocessing.connection.wait()</code>，否则调用<code class="highlighter-rouge">join()</code>更简单。</li>
+  </ul>
+</blockquote>
+
+<hr />
+<h1 id="pool进程池">Pool进程池</h1>
+<p>如果进程太多，超过了CPU核数，会导致进程之间的来回切换，影响性能。可以通过创建进程池，把进程加入到里面，如果池中进程没满，就会创建一个进程来执行请求；如果池中进程达到规定的最大值，那么请求会等待
+<strong>函数声明</strong>： class multiprocessing.pool.<strong>Pool</strong>([processes[, initializer[, initargs[, maxtasksperchild[, context]]]]])
+processes: 指定池中进程数量，如果不指定，则为<code class="highlighter-rouge">None</code>，默认就会使用<code class="highlighter-rouge">os.cpu_count()</code>
+initializer: 如果不是<code class="highlighter-rouge">None</code>，每个进程在开始时都会调用<code class="highlighter-rouge">initializer(*initargs)</code>
+maxtasksperchild: 工作进程在退出和替换新的工作进程之前，可以完成的任务数量，以释放资源。默认为<code class="highlighter-rouge">None</code>，表示工作进程和这个池的生存时间一样长
+context: 用来指定工作进程的上下文</p>
+
+<p>下面有2种方法添加进程到进程池中，分别是<code class="highlighter-rouge">apply_async</code>和<code class="highlighter-rouge">apply</code></p>
+<h2 id="apply_async">apply_async</h2>
+<p><code class="highlighter-rouge">apply_async()</code>用来同步执行进程，允许多个进程同时进入池；是异步非阻塞的
+<strong>函数声明</strong>:  apply_async(func[, args[, kwds[, callback[, error_callback]]]])
+callback: 如果指定了回调，那么它应该是一个可调用的，它接受一个参数</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#coding=utf-8
+</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">time</span>		<span class="c1"># 延时用
+</span>
+<span class="c1"># 子进程要执行的函数
+</span><span class="k">def</span> <span class="nf">child_proc</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+	<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s">'{index} process is running'</span><span class="p">)</span>
+	<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+	<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s">'{index} process is end'</span><span class="p">)</span>
+
+<span class="c1"># 主进程，必须在主模块中执行
+</span><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">'__main__'</span><span class="p">:</span>
+	<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s">'all process start'</span><span class="p">)</span>
+
+	<span class="c1"># 生成进程池
+</span>	<span class="n">p</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Pool</span><span class="p">()</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+		<span class="n">p</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">func</span> <span class="o">=</span> <span class="n">child_proc</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span><span class="p">,))</span>
+	<span class="n">p</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+	<span class="n">p</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>	<span class="c1"># 注! 如果不执行此句，将会直接退出主进程
+</span>
+	<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s">'all process done!'</span><span class="p">)</span>
+</code></pre></div></div>
+<blockquote>
+  <p><del>输出</del></p>
+  <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>all process start
+0 process is running
+1 process is running
+2 process is running
+3 process is running
+4 process is running
+0 process is end
+3 process is end
+2 process is end
+4 process is end
+1 process is end
+all process done!
+</code></pre></div>  </div>
+</blockquote>
+
+<h2 id="apply">apply</h2>
+<p><code class="highlighter-rouge">apply()</code>: 只允许一个进程进入池，在一个进程结束后，另一个才能进入；是阻塞的
+<strong>函数声明</strong>:   apply(func[, args[, kwds]])</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">p</span><span class="o">.</span><span class="nb">apply</span><span class="p">(</span><span class="n">func</span> <span class="o">=</span> <span class="n">child_proc</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span><span class="p">,))</span>	<span class="c1"># 将上面代码中的apply_async换成apply即可
+</span></code></pre></div></div>
+<blockquote>
+  <p><del>输出</del></p>
+  <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>all process start
+0 process is running
+0 process is end
+1 process is running
+1 process is end
+2 process is running
+2 process is end
+3 process is running
+3 process is end
+4 process is running
+4 process is end
+all process done!
+</code></pre></div>  </div>
+  <p><del>分析：对比apply_async和apply的输出，可以发现，apply_async是同步执行的，而apply是一个一个进入池中执行的</del></p>
+</blockquote>
+
+<hr />
+<h1 id="数据共享">数据共享</h1>
+<p><a href="https://blog.csdn.net/lechunluo3/article/details/79005910">参考：Python多进程编程-进程间共享数据</a>
+<em>（<code class="highlighter-rouge">Pipe</code>、<code class="highlighter-rouge">Queue</code>都有一定的数据共享功能，但他们会阻塞进程）</em>
+<code class="highlighter-rouge">Queue</code>：采用共享队列的内存的方式共享数据
+<strong>注意</strong>：存在<code class="highlighter-rouge">queue.Queue</code>、<code class="highlighter-rouge">multiprocessing.Queue</code>两种队列
+queue.Queue：是进程内非阻塞队列，各进程私有
+multiprocessing.Queue：是跨进程通信队列，各个子进程共有</p>
+
+<p><strong>共享内存</strong>：使用multiprocessing的<code class="highlighter-rouge">Value</code>、<code class="highlighter-rouge">Array</code>类，实现共享内存的方式共享数据
+<strong>共享进程</strong>：使用multiprocessing的<code class="highlighter-rouge">Manager</code>类，实现共享进程的方式共享数据</p>
+
+<h2 id="获取返回值仅主进程获有数据">获取返回值（仅主进程获有数据）</h2>
+<p>针对进程池实现的方式，可以直接通过获取进程对象的返回值</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#coding=utf-8
+</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+
+<span class="c1"># 子进程要执行的函数
+</span><span class="k">def</span> <span class="nf">child_proc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+	<span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+
+<span class="c1"># 主进程，必须在主模块中执行
+</span><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">'__main__'</span><span class="p">:</span>
+	<span class="c1"># 生成进程池
+</span>	<span class="n">p</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Pool</span><span class="p">()</span>
+	<span class="n">z</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="nb">apply</span><span class="p">(</span><span class="n">func</span> <span class="o">=</span> <span class="n">child_proc</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+	<span class="k">print</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="queue">Queue</h2>
+<p>使用multiprocessing的<code class="highlighter-rouge">Queue</code>类，实现进程之间的数据共享</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#coding=utf-8
+</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Process</span><span class="p">,</span> <span class="n">Queue</span>
+
+<span class="c1"># 子进程要执行的函数
+</span><span class="k">def</span> <span class="nf">child_proc</span><span class="p">(</span><span class="n">queue</span><span class="p">):</span>
+	<span class="n">num</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+	<span class="n">num</span> <span class="o">+=</span> <span class="mi">10</span>
+	<span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+
+<span class="c1"># 主进程，必须在主模块中执行
+</span><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">'__main__'</span><span class="p">:</span>
+	<span class="c1"># 创建共享数据
+</span>	<span class="n">queue</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+	<span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+	<span class="c1"># 创建进程
+</span>	<span class="n">p1</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span> <span class="o">=</span> <span class="n">child_proc</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">queue</span><span class="p">,))</span>
+	<span class="n">p2</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span> <span class="o">=</span> <span class="n">child_proc</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">queue</span><span class="p">,))</span>
+	<span class="n">p1</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+	<span class="n">p2</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+	<span class="n">p1</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+	<span class="n">p2</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+	<span class="c1"># 打印结果
+</span>	<span class="k">print</span><span class="p">(</span><span class="n">queue</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+</code></pre></div></div>
+
+<h2 id="valuearray">Value、Array</h2>
+<p>共享内存有2个结构 - <code class="highlighter-rouge">Value</code>、<code class="highlighter-rouge">Array</code>，它们内部都实现了锁机制，因此是多进程安全的</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#coding=utf-8
+</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Process</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">Array</span>
+
+<span class="c1"># 子进程要执行的函数
+</span><span class="k">def</span> <span class="nf">child_proc</span><span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">li</span><span class="p">):</span>
+	<span class="n">num</span><span class="o">.</span><span class="n">value</span> <span class="o">+=</span> <span class="mi">100</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">li</span><span class="p">)):</span>
+		<span class="n">li</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">10</span>
+
+<span class="c1"># 主进程，必须在主模块中执行
+</span><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">'__main__'</span><span class="p">:</span>
+	<span class="c1"># 创建共享数据
+</span>	<span class="n">num</span> <span class="o">=</span> <span class="n">Value</span><span class="p">(</span><span class="s">'d'</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+	<span class="n">li</span> <span class="o">=</span> <span class="n">Array</span><span class="p">(</span><span class="s">'i'</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+
+	<span class="c1"># 创建进程
+</span>	<span class="n">p1</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span> <span class="o">=</span> <span class="n">child_proc</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">li</span><span class="p">))</span>
+	<span class="n">p2</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span> <span class="o">=</span> <span class="n">child_proc</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">num</span><span class="p">,</span> <span class="n">li</span><span class="p">))</span>
+	<span class="n">p1</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+	<span class="n">p2</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+	<span class="n">p1</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+	<span class="n">p2</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+	<span class="c1"># 打印结果
+</span>	<span class="k">print</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+	<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">li</span><span class="p">:</span>
+		<span class="k">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><strong>附</strong>：<code class="highlighter-rouge">Value</code>、<code class="highlighter-rouge">Array</code>都需要设置其中存放值的类型。d：double；i：int；c：char等
+<strong>详细</strong>：转到multiprocessing.<strong>sharedctypes</strong>可以查看到各种类型的字符串定义</p>
+
+<h2 id="manager">Manager</h2>
+<p><em>（上面的共享内存通过Value和Array结构实现，这些值在主进程中管理，很分散）</em>
+Manager通过共享内存来实现共享数据，支持的数据类型很多
+<strong>详细</strong>：<a href="https://docs.python.org/3/library/multiprocessing.html?highlight=managers#module-multiprocessing.managers">multiprocessing.managers</a></p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#coding=utf-8
+</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Process</span><span class="p">,</span> <span class="n">Manager</span>
+
+<span class="c1"># 子进程要执行的函数
+</span><span class="k">def</span> <span class="nf">child_proc</span><span class="p">(</span><span class="n">dict1</span><span class="p">,</span> <span class="n">list1</span><span class="p">):</span>
+	<span class="n">dict1</span><span class="p">[</span><span class="s">'yourname'</span><span class="p">]</span> <span class="o">+=</span> <span class="s">' snow'</span>
+	<span class="n">list1</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">10</span>
+
+<span class="c1"># 主进程，必须在主模块中执行
+</span><span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">'__main__'</span><span class="p">:</span>
+	<span class="c1"># 创建共享数据
+</span>	<span class="n">manager</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span>
+	<span class="n">dict1</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="nb">dict</span><span class="p">()</span>
+	<span class="n">list1</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+
+	<span class="n">dict1</span><span class="p">[</span><span class="s">'yourname'</span><span class="p">]</span> <span class="o">=</span> <span class="s">'youmux'</span>
+	<span class="n">list1</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+	<span class="c1"># 创建进程
+</span>	<span class="n">p1</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span> <span class="o">=</span> <span class="n">child_proc</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">dict1</span><span class="p">,</span> <span class="n">list1</span><span class="p">))</span>
+	<span class="n">p2</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span> <span class="o">=</span> <span class="n">child_proc</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">dict1</span><span class="p">,</span> <span class="n">list1</span><span class="p">))</span>
+	<span class="n">p1</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+	<span class="n">p2</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+	<span class="n">p1</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+	<span class="n">p2</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+	<span class="c1"># 打印结果
+</span>	<span class="k">print</span><span class="p">(</span><span class="n">dict1</span><span class="p">[</span><span class="s">'yourname'</span><span class="p">])</span>
+	<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">list1</span><span class="p">:</span>
+		<span class="k">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</code></pre></div></div>
+
+<hr />
+<p>1.参考书籍: 参考书籍：《Python并行编程手册》</p>
+
+<p>2.后台线程: 后台线程在主线程停止后就直接停止运行。他们资源（如打开的文件，数据库事务等）可能不会被正确的释放。如果你想要你的线程优美的停止，让他们不要变为后台和使用一个合适的信号机制如事件<code class="highlighter-rouge">Event</code></p>
+
+:ET

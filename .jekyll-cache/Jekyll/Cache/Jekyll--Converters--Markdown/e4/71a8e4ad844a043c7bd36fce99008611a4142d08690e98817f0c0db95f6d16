@@ -1,0 +1,32 @@
+I"{<p>安装ros：
+http://wiki.ros.org/melodic/Installation/Ubuntu</p>
+
+<p>安装realsense sdk：
+https://github.com/jetsonhacks/installRealSenseSDK
+处理<code class="highlighter-rouge">ddynamic_reconfigure</code>问题：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt <span class="nb">install </span>ros-melodic-ddynamic-reconfigure
+</code></pre></div></div>
+<p>处理<code class="highlighter-rouge">CMake Error cv_bridgeConfig.cmake:113</code>问题：
+https://github.com/ros-perception/vision_opencv/issues/209</p>
+
+<p>安装realsense-ros：
+https://github.com/IntelRealSense/realsense-ros</p>
+
+<h1 id="ref">ref</h1>
+<ul>
+  <li>安装realsense sdk：https://www.intelrealsense.com/developers/</li>
+  <li>在ros使用：https://github.com/IntelRealSense/realsense-ros#installation-instructions</li>
+  <li>错误处理[CMake Error. Could not find.”ddynamic_reconfigure”]：</li>
+  <li>
+    <ul>
+      <li>https://github.com/IntelRealSense/realsense-ros#installation-instructions . <code class="highlighter-rouge">Specifically, make sure that the ros package ddynamic_reconfigure is installed.</code></li>
+    </ul>
+  </li>
+  <li>
+    <ul>
+      <li>https://www.cnblogs.com/LoveBuzz/p/11568628.html</li>
+    </ul>
+  </li>
+  <li>xavier安装realsense： https://github.com/jetsonhacks/installRealSenseSDK</li>
+</ul>
+:ET

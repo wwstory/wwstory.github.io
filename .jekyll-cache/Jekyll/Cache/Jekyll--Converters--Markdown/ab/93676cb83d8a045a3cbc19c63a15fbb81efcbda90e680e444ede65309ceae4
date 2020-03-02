@@ -1,0 +1,65 @@
+I"�
+<h1 id="背景">背景</h1>
+<ul>
+  <li>DCMH,TDH,SPDQ,SSAN展示了深度跨模态hsh方法的有效性。</li>
+  <li>SSAN是在DCMH上加了GAN。UGACH也使用了GAN。</li>
+  <li>UDCMH自适应无分割学习策略来迭代学习哈希码。</li>
+</ul>
+
+<h1 id="效果">效果</h1>
+<p><img src="/imgs/deep_learning/paper/paper-Coupled-CycleGAN-Unsupervised-Hashing-Network-for-Cross-Modal-Retrieval/3.png" alt="effect" />
+<img src="/imgs/deep_learning/paper/paper-Coupled-CycleGAN-Unsupervised-Hashing-Network-for-Cross-Modal-Retrieval/4.png" alt="effect" /></p>
+
+<h1 id="贡献">贡献</h1>
+<p>使用2个GAN将跨模态索引问题，划分为2部分分开处理，1个GAN用于实现文本图像的表达，1个GAN用于生成hash码。</p>
+
+<h1 id="网络">网络</h1>
+<p><img src="/imgs/deep_learning/paper/paper-Coupled-CycleGAN-Unsupervised-Hashing-Network-for-Cross-Modal-Retrieval/1.png" alt="net" /></p>
+
+<h1 id="思路">思路</h1>
+<ul>
+  <li>建立2个环状网络，总计4个GAN，外圈（内圈）的文本（图像）的生成器（鉴别器）各自有一个。</li>
+  <li>外圈的生成器提取中间一层的输出，作内圈的网络的输入。</li>
+  <li>内圈的生成器再提取中间一层的输出，作hash编码的输入。</li>
+</ul>
+
+<h1 id="细节">细节</h1>
+
+<script type="math/tex; mode=display">\mathcal{L}_f = \mathcal{L}_{adv\_f} + \mathcal{L}_{rec\_f} + \mathcal{L}_{sim\_f} \\
+\mathcal{L}_z = \mathcal{L}_{adv\_z} + \mathcal{L}_{rec\_z} + \mathcal{L}_{sim\_z} \\
+\mathcal{L}_{Total} = \mathcal{L}_f + \mathcal{L}_z</script>
+
+<p>损失 = 对抗损失（鉴别器） + 重建损失（生成器损失） + 表达/hash码相似性损失</p>
+
+<p>生成器，鉴别器，2个模态编码间的相似性的损失，外圈内圈都是范式2计算误差损失。</p>
+
+<blockquote>
+  <ul>
+    <li>G：生成器。</li>
+    <li>f：（fake）生成的数据。</li>
+    <li>D：鉴别器。</li>
+    <li>Z：跨模态表示。</li>
+    <li>F：特征。</li>
+    <li>E：抽取特征的网络。</li>
+  </ul>
+</blockquote>
+
+<script type="math/tex; mode=display">B^* = sign(H^*), * \in \{v, t\} \\
+B^* \in {\{-1, 1\}}^{n \times K} \\</script>
+
+<blockquote>
+  <ul>
+    <li>v：图像表示。</li>
+    <li>t：文本表示。</li>
+  </ul>
+</blockquote>
+
+<p>『algorithm步骤』
+<img src="/imgs/deep_learning/paper/paper-Coupled-CycleGAN-Unsupervised-Hashing-Network-for-Cross-Modal-Retrieval/2.png" alt="algorithm" /></p>
+
+<h1 id="more">more</h1>
+<h2 id="note">note</h2>
+<p>本文标题含有CycleGAN，却没有原CycleGAN的思维，仅是构建了一个网络结构看起来像环的网络。</p>
+
+<p>由于没提供代码，网络的复现时存在很多细节问题，难以构建。</p>
+:ET

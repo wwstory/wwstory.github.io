@@ -1,0 +1,211 @@
+I"�<h1 id="背景">背景</h1>
+<ul>
+  <li>在原图上做假设边界框，需要太多计算。</li>
+  <li>对标YOLO，同是Single Shot，精度和速度更好。</li>
+</ul>
+
+<h1 id="效果">效果</h1>
+
+<blockquote>
+  <ul>
+    <li>SSD：300x300分辨率，74.3% mAP，59 FPS。（VOC2007数据集）</li>
+    <li>YOLO：300x300分辨率，63.4% mAP，45 FPS。（VOC2007数据集）</li>
+  </ul>
+</blockquote>
+
+<p>『目标检测网络速度精度对比』
+<img src="/imgs/deep_learning/paper/paper-SSD-Single-Shot-MultiBox-Detector/2.png" alt="速度精度" /></p>
+
+<p>『SSD512识别COCO数据集』
+<img src="/imgs/deep_learning/paper/paper-SSD-Single-Shot-MultiBox-Detector/4.png" alt="SSD检测效果" /></p>
+
+<h1 id="贡献">贡献</h1>
+<ul>
+  <li>1.<strong>使用不同比例的特征图预测。</strong></li>
+  <li>2.<strong>使用卷积分类。</strong></li>
+  <li>3.速度比yolo快。</li>
+  <li>4.端到端，高速度和精度。</li>
+  <li>5.对比试验。</li>
+</ul>
+
+<h1 id="网络">网络</h1>
+<p>『使用的是VGG16』
+<img src="/imgs/deep_learning/paper/paper-SSD-Single-Shot-MultiBox-Detector/1.png" alt="net" /></p>
+
+<p>『MultiBox是如何在feature map上操作』
+<img src="/imgs/deep_learning/paper/paper-SSD-Single-Shot-MultiBox-Detector/3.png" alt="MultiBox" /></p>
+
+<h1 id="思路">思路</h1>
+<h2 id="多个比例特征图识别-multi-scale-feature-maps-for-detection">多个比例特征图识别 (Multi-scale feature maps for detection)</h2>
+<p>渐近的减小特征图的尺寸，使用不同尺寸的特征图做预测。（6层）</p>
+
+<blockquote>
+  <p>YOLO只操作单一尺寸的特征图。</p>
+</blockquote>
+
+<h2 id="卷积预测分类-convolutional-predictors-for-detection">卷积预测分类 (Convolutional predictors for detection)</h2>
+<p>对于$m \times n$尺寸$p$通道的特征图，使用卷积核为其分类打分。</p>
+
+<blockquote>
+  <p>YOLO使用全连接做预测分类。</p>
+</blockquote>
+
+<h2 id="默认框长宽比-default-boxes-and-aspect-ratios">默认框，长宽比 (Default boxes and aspect ratios)</h2>
+
+<p>设有c个分类，其中背景也算一类。</p>
+
+<p>特征图分为$m \times n$尺寸的单元，每个单元有k个默认框（k种不同比例大小的框）。</p>
+
+<p>每个单元有4个位置偏移值$\Delta(c x, c y, w, h)$。</p>
+
+<p>于是总共有$(c+4) k$个过滤器，对于$m \times n$尺寸的特征图，共有$(c+4) k m n$个输出。</p>
+
+<blockquote>
+  <p>SSD预测输出的是对这个默认框的偏移量，为的是使用合适大小的边框框出对象。</p>
+</blockquote>
+
+<blockquote>
+  <p>论文中的默认框(default box)，按理解，应该是预置的边界框，类似滑动窗口的窗口。</p>
+</blockquote>
+
+<blockquote>
+  <p>本文中的默认框与Faster R-CNN中的anchor boxes相似。然而本文应用它们到几个不同分辨率的特征图。</p>
+</blockquote>
+
+<h1 id="细节">细节</h1>
+<h2 id="匹配策略-matching-strategy">匹配策略 (Matching strategy)</h2>
+<p>匹配默认框和标签的jaccard重合度(iou)大于阈值(0.5)。</p>
+
+<h2 id="损失函数-training-objective">损失函数 (Training objective)</h2>
+<h3 id="总损失">总损失</h3>
+<p><script type="math/tex">L(x, c, l, g)=\frac{1}{N}\left(L_{\operatorname{conf}}(x, c)+\alpha L_{\operatorname{loc}}(x, l, g)\right)</script></p>
+
+<p>L = 定位损失(loc) + 置信度损失(conf)。</p>
+
+<blockquote>
+  <ul>
+    <li>N:默认框匹配(iou&gt;0.5)的正样本数量。</li>
+    <li>c:置信度预测值。（分类类别的概率）</li>
+    <li>l:预测框位置（预测相对于默认框偏移量）。</li>
+    <li>g:位置标签。</li>
+    <li>$\alpha$:权值系数。</li>
+  </ul>
+</blockquote>
+
+<h3 id="定位损失">定位损失</h3>
+<p>定位使用的是L1损失，多分类使用的是softmax损失。</p>
+
+<p>L1损失：
+<script type="math/tex">L_{l o c}(x, l, g)=\sum_{i \in P o s}^{N} \sum_{m \in\{c x, c y, w, h\}} x_{i j}^{k} \operatorname{smooth}_{L 1}\left(l_{i}^{m}-\hat{g}_{j}^{m}\right)</script></p>
+
+<blockquote>
+  <p>$x_{i j}^{p}={1,0}$：匹配第i个默认框与p类第j个标签框的指示器。</p>
+</blockquote>
+
+<blockquote>
+  <p>使用L1而不是L2是为了2方面限制梯度：</p>
+  <ul>
+    <li>当默认框与标签框差别过大时，梯度值不至于过大。</li>
+    <li>当默认框与标签框差别过小时，梯度值足够小。</li>
+  </ul>
+</blockquote>
+
+<h3 id="分类损失">分类损失</h3>
+<p>softmax损失：
+<script type="math/tex">L_{c o n f}(x, c)=-\sum_{i \in P o s}^{N} x_{i j}^{p} \log \left(\hat{c}_{i}^{p}\right)-\sum_{i \in N e g} \log \left(\hat{c}_{i}^{0}\right) \quad \text { where } \quad \hat{c}_{i}^{p}=\frac{\exp \left(c_{i}^{p}\right)}{\sum_{p} \exp \left(c_{i}^{p}\right)}</script></p>
+
+<blockquote>
+  <p>与Faster R-CNN相似，预测的是默认框中心$(c x, c y)$和宽高$(w, h)$的偏移量。</p>
+</blockquote>
+
+<h3 id="偏移量计算">偏移量计算</h3>
+<p>偏移量的计算公式：
+<script type="math/tex">% <![CDATA[
+\begin{aligned}
+\hat{g}_{j}^{c x}=\left(g_{j}^{c x}-d_{i}^{c x}\right) / d_{i}^{w} & \quad \hat{g}_{j}^{c y}=\left(g_{j}^{c y}-d_{i}^{c y}\right) / d_{i}^{h} \\
+\hat{g}_{j}^{w}=\log \left(\frac{g_{j}^{w}}{d_{i}^{w}}\right) & \quad \hat{g}_{j}^{h}=\log \left(\frac{g_{j}^{h}}{d_{i}^{h}}\right)
+\end{aligned} %]]></script></p>
+
+<h2 id="选择默认框的比例和长宽比-choosing-scales-and-aspect-ratios-for-default-boxes">选择默认框的比例和长宽比 (Choosing scales and aspect ratios for default boxes)</h2>
+<p>选取的特征图是：Conv4_3，Conv7，Conv8_2，Conv9_2，Conv10_2，Conv11_2</p>
+
+<p>每层特征图的默认框比例计算：
+<script type="math/tex">s_{k}=s_{\min }+\frac{s_{\max }-s_{\min }}{m-1}(k-1), \quad k \in[1, m]</script></p>
+
+<blockquote>
+  <ul>
+    <li>m:选取做预测的特征图数量。</li>
+    <li>k:第几个特征图。</li>
+    <li>$s_{\min }$:最小比例。（0.2）</li>
+    <li>$s_{\max }$:最大比例。（0.9）</li>
+  </ul>
+</blockquote>
+
+<p>选用的长宽比：
+<script type="math/tex">a_{r} \in\left\{1,2,3, \frac{1}{2}, \frac{1}{3}, s_{k}^{\prime}=\sqrt{s_{k} s_{k+1}} \right\}</script></p>
+
+<blockquote>
+  <p>其中Conv4_3，Conv10_2，Conv11_2层仅使用4个默认框，不使用长宽比为3,1/3的默认框。</p>
+</blockquote>
+
+<blockquote>
+  <p>SSD总计预测：38 x 38 x 4 + 19 x 19 x 6 + 10 x 10 x 6 + 5 x 5 x 6 + 3 x 3 x 4 + 1 x 1 x 4 = 8732 个边界框。</p>
+</blockquote>
+
+<p>计算长和宽：
+<script type="math/tex">w_{k}^{a}=s_{k} \sqrt{a_{r}}, \quad h_{k}^{a}=s_{k} / \sqrt{a_{r}}</script></p>
+
+<p>设置默认框中心为：
+<script type="math/tex">\left(\frac{i+0.5}{\left|f_{k}\right|}, \frac{j+0.5}{\left|f_{k}\right|}\right)</script></p>
+
+<blockquote>
+  <ul>
+    <li>
+      <table>
+        <tbody>
+          <tr>
+            <td>$</td>
+            <td>f_{k}</td>
+            <td>$: 第k个特征图的单元数量。</td>
+          </tr>
+        </tbody>
+      </table>
+    </li>
+    <li>
+      <table>
+        <tbody>
+          <tr>
+            <td>i,j: $i, j \in[0,\left</td>
+            <td>f_{k}\right</td>
+            <td>)$。</td>
+          </tr>
+        </tbody>
+      </table>
+    </li>
+  </ul>
+</blockquote>
+
+<h2 id="严重的负样本处理-hard-negative-mining">严重的负样本处理 (Hard negative mining)</h2>
+<p>因为在一张图像中，往往只有几个目标对象，所以大部分都是背景，被当作负样本，这将会导致严重的样本不平衡。</p>
+
+<p>为了平衡样本，将所有的样本以分类的置信度排序，选取分数高的框，使负正样本比例为3:1。</p>
+
+<h2 id="数据增强-data-augmentation">数据增强 (Data augmentation)</h2>
+<ul>
+  <li>使用原图。</li>
+  <li>裁减。</li>
+  <li>缩放。</li>
+  <li>水平翻转。</li>
+</ul>
+
+<h1 id="more">more</h1>
+<h2 id="note">note</h2>
+<p>本文主要与yolo比较，创新点主要在使用卷积中的多层特征图做定位和分类，采用卷积做分类。</p>
+
+<h2 id="ref">ref</h2>
+<ul>
+  <li>https://zhuanlan.zhihu.com/p/31427288</li>
+  <li>https://zhuanlan.zhihu.com/p/33544892</li>
+  <li>https://www.zhihu.com/question/58200555</li>
+</ul>
+:ET

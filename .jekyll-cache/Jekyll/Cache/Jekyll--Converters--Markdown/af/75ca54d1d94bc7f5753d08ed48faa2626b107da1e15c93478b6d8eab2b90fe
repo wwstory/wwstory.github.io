@@ -1,0 +1,70 @@
+I"�<h1 id="问题">问题</h1>
+
+<p>使用flask提供json数据，用vue在前端获取json数据展示。</p>
+
+<p>发现无法获取到该json数据，但其它网站的api的json数据是可以拿到的。</p>
+
+<h1 id="解决">解决</h1>
+
+<p>后来，查到是由于遇到<code class="highlighter-rouge">跨域请求</code>的问题，通过设置flask允许其它域访问即可。</p>
+
+<p>域 = 协议名 + 主机名 + 端口号</p>
+
+<p>禁止不同域的访问是为了防止<code class="highlighter-rouge">CSRF</code>(跨站请求伪造)攻击。</p>
+
+<p>通过<code class="highlighter-rouge">CORS</code>(跨源资源共享)允许的请求。</p>
+
+<p>添加如下语句开启允许访问的资源：</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">CORS</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">resources</span><span class="o">=</span><span class="s">r'/*'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h1 id="示例">示例</h1>
+
+<p><code class="highlighter-rouge">demo.py</code></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span>
+<span class="kn">from</span> <span class="nn">flask_cors</span> <span class="kn">import</span> <span class="n">CORS</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">CORS</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">resources</span><span class="o">=</span><span class="s">r'/*'</span><span class="p">)</span>
+
+<span class="o">@</span><span class="n">app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s">'/'</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">hello_world</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s">'hello'</span><span class="p">:</span> <span class="s">'world!'</span><span class="p">}</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">'__main__'</span><span class="p">:</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">debug</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s">'0.0.0.0'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">test.html</code></p>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">"app"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;h2&gt;</span>
+        ----
+        
+    <span class="nt">&lt;/h2&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+
+<span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"https://unpkg.com/vue"</span><span class="nt">&gt;&lt;/script&gt;</span>
+
+<span class="nt">&lt;script&gt;</span>
+    <span class="kd">const</span> <span class="nx">app</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Vue</span><span class="p">({</span>
+        <span class="na">el</span><span class="p">:</span><span class="dl">'</span><span class="s1">#app</span><span class="dl">'</span><span class="p">,</span>
+        <span class="na">data</span><span class="p">:{</span>
+            <span class="na">info</span><span class="p">:</span><span class="dl">''</span>
+        <span class="p">},</span>
+        <span class="nx">created</span><span class="p">()</span> <span class="p">{</span>
+            <span class="nx">fetch</span><span class="p">(</span><span class="dl">'</span><span class="s1">http://127.0.0.1:5000</span><span class="dl">'</span><span class="p">)</span>
+            <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">response</span> <span class="o">=&gt;</span> <span class="nx">response</span><span class="p">.</span><span class="nx">json</span><span class="p">())</span>
+            <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">json</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">info</span> <span class="o">=</span> <span class="nx">json</span>
+            <span class="p">})</span>
+        <span class="p">},</span>
+    <span class="p">})</span>
+<span class="nt">&lt;/script&gt;</span>
+</code></pre></div></div>
+
+<h1 id="ps">PS</h1>
+
+<p>同理，不仅是flask会出现<code class="highlighter-rouge">跨域请求</code>的问题，其它语言为了安全性，也是有禁止跨域请求的。</p>
+:ET

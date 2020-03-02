@@ -1,0 +1,58 @@
+I"j<h1 id="非web应用">非web应用</h1>
+
+<blockquote>
+  <p>非web项目，很少有帖子讲解对此的打包和运行。（web项目就很容易通过添加<code class="highlighter-rouge">war</code>插件和<code class="highlighter-rouge">gradle build</code>打包）</p>
+</blockquote>
+
+<p>运行的方法尝试出了几种。</p>
+
+<h2 id="idead中直接运行">idead中直接运行</h2>
+
+<p>使用idea直接运行<code class="highlighter-rouge">main</code>类即可。</p>
+
+<h2 id="使用插件">使用插件</h2>
+<p>使用gradle，需要在<code class="highlighter-rouge">build.gradle</code>文件中，添加插件<code class="highlighter-rouge">application</code>，并设置好主函数的名称<code class="highlighter-rouge">mainClassName</code>。最后在项目根目录下（<code class="highlighter-rouge">build.gradle</code>同级目录）执行命令：</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gradle run
+</code></pre></div></div>
+
+<h2 id="打包成多个jar文件">打包成多个jar文件</h2>
+
+<p>依然需要上一步的<code class="highlighter-rouge">application</code>插件和<code class="highlighter-rouge">mainClassName</code>配置，然后执行命令下载依赖库并发布：</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>gradle <span class="nb">install</span>
+</code></pre></div></div>
+
+<p>打开<code class="highlighter-rouge">build/install/项目名/</code>目录可以看到两个文件夹<code class="highlighter-rouge">bin/</code>和<code class="highlighter-rouge">lib/</code>，lib目录下是打包好的项目jar包和其它添加的依赖包，bin目录下是配置好的sh脚本，方便直接运行。</p>
+
+<blockquote>
+  <p>这个sh脚本主要就是获取了lib的路径，将里面的所有jar包的路径都记录下，然后执行命令<code class="highlighter-rouge">java -classpath 绝对路径/lib/xxx.jar:绝对路径/lib/yyy.jar com.yww.Main</code>运行。</p>
+</blockquote>
+
+<h2 id="打包成单个jar文件">打包成单个jar文件</h2>
+
+<p>上一个方法打包出来，自己的项目打包的jar和依赖的jar都零散的堆在文件夹中，运行时，还需要指定所有的jar包路径<code class="highlighter-rouge">-classpath</code>，十分麻烦。找到在<code class="highlighter-rouge">build.gradle</code>配置打包方式，且不需要插件<code class="highlighter-rouge">application</code>和<code class="highlighter-rouge">mainClassName</code>配置。</p>
+<div class="language-gradle highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">jar</span> <span class="o">{</span>
+    <span class="n">from</span> <span class="o">{</span>
+        <span class="n">configurations</span><span class="o">.</span><span class="na">runtime</span><span class="o">.</span><span class="na">collect</span><span class="o">{</span><span class="n">zipTree</span><span class="o">(</span><span class="n">it</span><span class="o">)}</span>
+    <span class="o">}</span>
+    <span class="n">manifest</span> <span class="o">{</span>
+        <span class="n">attributes</span> <span class="s1">'Main-Class'</span><span class="o">:</span> <span class="s1">'com.yww.Main'</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>找到目录<code class="highlighter-rouge">build/lib/</code>执行命令运行：</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>java <span class="nt">-jar</span> demo.jar
+</code></pre></div></div>
+
+<blockquote>
+  <p>发现idea中可直接打包成单个文件，输出到<code class="highlighter-rouge">out/</code>目录下，但运行的方式不太一样，找不到主类，需要执行命令<code class="highlighter-rouge">java -classpath demo.jar com.yww.Main</code>运行。</p>
+</blockquote>
+
+<h1 id="参考">参考</h1>
+
+<ul>
+  <li>https://docs.gradle.org/current/userguide/building_java_projects.html</li>
+  <li>https://www.jianshu.com/p/5bb1e87df15f</li>
+  <li>https://www.cnblogs.com/basenet855x/p/4302909.html</li>
+  <li>https://my.oschina.net/u/2505383/blog/677301</li>
+</ul>
+:ET

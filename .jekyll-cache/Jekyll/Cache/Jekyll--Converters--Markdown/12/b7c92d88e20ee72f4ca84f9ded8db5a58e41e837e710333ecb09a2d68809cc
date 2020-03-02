@@ -1,0 +1,240 @@
+I"�]<h1 id="介绍-2">介绍 <sup>2</sup></h1>
+<p>除了<code class="highlighter-rouge">线性</code>、<code class="highlighter-rouge">并行</code>执行模式外，还有<code class="highlighter-rouge">异步</code>模式，它与事件编程一样，十分重要
+在并发的异步模式中，不同的任务在时间线上是相互交错的，而且一切都是在单一控制流（单线程）下进行的</p>
+
+<hr />
+<h1 id="1asyncio-过时">1.asyncio (过时)</h1>
+<h2 id="基本使用">基本使用</h2>
+<h3 id="11-使用asyncio实现事件循环管理">1.1 使用asyncio实现事件循环管理</h3>
+<p>什么是事件循环？
+在计算系统中，能够产生事件的实体被称为事件源（event source），而负责协商管理事件的实体被称为事件处理器（event handler）
+它实现了管理计算代码中所有事件的功能：在程序执行期间事件循环不断周期反复，追踪某个数据内部发生的事件，将其纳入队列，如果主线程空闲则调用事件处理器一个一个地处理这些事件</p>
+
+<p><strong>注</strong>：事件循环不能使用<code class="highlighter-rouge">@asyncio.coroutine</code>标为协程</p>
+
+<p>示例1：
+延迟3秒后执行</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="k">def</span> <span class="nf">A</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>   <span class="c1"># 使用run_forever()不能用ayncio.sleep()延时
+</span>    <span class="n">loop</span><span class="o">.</span><span class="n">call_soon</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'c'</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">B</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'b'</span><span class="p">)</span>
+    <span class="n">loop</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+
+<span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+<span class="c1"># loop.call_soon(A, 'a')
+</span><span class="n">loop</span><span class="o">.</span><span class="n">call_later</span><span class="p">(</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="s">'a'</span><span class="p">)</span>
+<span class="n">loop</span><span class="o">.</span><span class="n">run_forever</span><span class="p">()</span>
+<span class="n">loop</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">'end'</span><span class="p">)</span>
+</code></pre></div></div>
+<blockquote>
+  <p><del>输出：</del></p>
+  <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>a
+c
+b	
+end
+</code></pre></div>  </div>
+  <p><del>在A()中再利用loop调用其它函数B()时，A也并不停下来，实现协程效果</del></p>
+</blockquote>
+
+<h3 id="12使用asyncio实现协程">1.2使用asyncio实现协程</h3>
+<p>什么是协程？
+当程序变得冗长复杂时，将其划分成子例程的方式会使处理变得更加便利，每个子例程完成一个特定的任务
+子例程无法独立运行，只能在主程序的要求下才能运行，主程序负责协调子例程的使用，协程就是子例程的泛化。在协程中，可以暂停执行点，同时保持干预时的本地状态，便于后续继续执行
+协程相互交错的控制组件就是事件循环，事件循环追踪全部的协程，并安排其执行时间</p>
+
+<blockquote>
+  <p>协程的其它重要特点：
+	1. 协程支持多个进入点，可以多次生成（yield）
+	2. 协程能够执行转移至任何其它协程</p>
+
+  <p>生成(yield)这个术语用于描述那些暂停并将控制流传递给另一个协程的协程，协程可以同时传递控制流和值</p>
+</blockquote>
+
+<p>示例2：
+A()和B()类似并行</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">asyncio</span>
+
+<span class="o">@</span><span class="n">asyncio</span><span class="o">.</span><span class="n">coroutine</span>
+<span class="k">def</span> <span class="nf">A</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'a - start'</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="k">from</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'a - end'</span><span class="p">)</span>
+
+<span class="o">@</span><span class="n">asyncio</span><span class="o">.</span><span class="n">coroutine</span>
+<span class="k">def</span> <span class="nf">B</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'b - start'</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="k">yield</span> <span class="k">from</span> <span class="n">C</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="k">from</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s">'b :{result}'</span><span class="p">)</span>
+
+<span class="o">@</span><span class="n">asyncio</span><span class="o">.</span><span class="n">coroutine</span>
+<span class="k">def</span> <span class="nf">C</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'c - start'</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="k">from</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'c - end'</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s">'this is C return'</span>
+
+<span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+<span class="c1"># loop.run_until_complete(A())   # 只执行一个
+# loop.run_until_complete(asyncio.wait([A(), B('d')]))  # 并发执行方法1
+</span><span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span><span class="p">(</span><span class="n">A</span><span class="p">()),</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span><span class="p">(</span><span class="n">B</span><span class="p">(</span><span class="s">'b - end'</span><span class="p">))]</span>
+<span class="n">loop</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">tasks</span><span class="p">))</span>            <span class="c1"># 并发执行方法2
+</span><span class="n">loop</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'end'</span><span class="p">)</span>
+
+<span class="c1"># 类asyncio.Task(coroutine)用于调度协程的执行
+# asyncio.wait(tasks)将等待给定协程执行完毕
+</span></code></pre></div></div>
+<blockquote>
+  <p><del>输出：</del></p>
+  <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>a - start
+b - start
+c - start
+a - end
+c - end
+b - end
+b :this is C return
+end
+</code></pre></div>  </div>
+  <p><del>分析：<code class="highlighter-rouge">asyncio.sleep()</code>期间，主线程并未等待，而是去执行<code class="highlighter-rouge">EventLoop</code>中可执行的<code class="highlighter-rouge">coroutine</code></del></p>
+</blockquote>
+
+<p><strong>注</strong>：<code class="highlighter-rouge">@asyncio.coroutine</code>把一个generator标记为<code class="highlighter-rouge">coroutine</code>类型，再把这个coroutine放到EventLoop中执行（实测，可以不@标记）</p>
+
+<h2 id="相关方法">相关方法</h2>
+<p>loop = <strong>get_event_loop</strong>() : 获得当前上下文的事件循环
+如果close()关闭了后，重新打开需要以下操作：
+loop = asyncio.<strong>new_event_loop</strong>() : 创建新的时间循环对象
+asyncio.<strong>set_event_loop</strong>(loop) : 将当前上下文的时间循环设置为指定的循环</p>
+
+<p>loop.<strong>call_soon</strong>(callback, *args) : 立即调用回调对象，参数
+loop.<strong>call_later</strong>(delay, callback, *args) : 延时delay秒后，调用回调对象
+loop.<strong>call_at</strong>(when, callback, *args) : 在指定的时间调用回调对象，（when是绝对时间，可以参考loop.time()设置）</p>
+
+<p>loop.<strong>run_forever()</strong> : 一直执行，直到调用stop()
+loop.<strong>run_until_complete</strong>(future) : 运行指定的协程函数（Future<sup>3</sup>）</p>
+
+<p>loop.<strong>time</strong>() : 获取事件循环的内部时钟
+loop.<strong>close</strong>() : 关闭事件循环
+loop.<strong>is_running</strong>() : 是否运行中
+loop.<strong>is_close</strong>() : 是否关闭</p>
+
+<h2 id="使用示例">使用示例</h2>
+<p>示例：
+异步网络并行访问</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">asyncio</span>
+
+<span class="o">@</span><span class="n">asyncio</span><span class="o">.</span><span class="n">coroutine</span>
+<span class="k">def</span> <span class="nf">wget</span><span class="p">(</span><span class="n">host</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'wget </span><span class="si">%</span><span class="s">s...'</span> <span class="o">%</span> <span class="n">host</span><span class="p">)</span>
+    <span class="n">connect</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">open_connection</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="mi">80</span><span class="p">)</span>
+    <span class="n">reader</span><span class="p">,</span> <span class="n">writer</span> <span class="o">=</span> <span class="k">yield</span> <span class="k">from</span> <span class="n">connect</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="s">'GET / HTTP/1.0</span><span class="se">\r\n</span><span class="s">Host: </span><span class="si">%</span><span class="s">s</span><span class="se">\r\n\r\n</span><span class="s">'</span> <span class="o">%</span> <span class="n">host</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">header</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">))</span>
+    <span class="k">yield</span> <span class="k">from</span> <span class="n">writer</span><span class="o">.</span><span class="n">drain</span><span class="p">()</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="k">yield</span> <span class="k">from</span> <span class="n">reader</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="n">b</span><span class="s">'</span><span class="se">\r\n</span><span class="s">'</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">'</span><span class="si">%</span><span class="s">s header &gt; </span><span class="si">%</span><span class="s">s'</span> <span class="o">%</span> <span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s">'utf-8'</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()))</span>
+    <span class="c1"># Ignore the body, close the socket
+</span>    <span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+<span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">wget</span><span class="p">(</span><span class="n">host</span><span class="p">)</span> <span class="k">for</span> <span class="n">host</span> <span class="ow">in</span> <span class="p">[</span><span class="s">'www.baidu.com'</span><span class="p">,</span> <span class="s">'www.aliyun.com'</span><span class="p">,</span> <span class="s">'www.qq.com'</span><span class="p">]]</span>
+<span class="n">loop</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">tasks</span><span class="p">))</span>
+<span class="n">loop</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</code></pre></div></div>
+
+<hr />
+<h1 id="2asyncawait">2.async/await</h1>
+<h2 id="21-客户端使用">2.1 客户端使用</h2>
+<p>为了简化标识异步io，python3.5引入新语法<code class="highlighter-rouge">async</code>、<code class="highlighter-rouge">await</code>
+只需将2步替换：</p>
+<ol>
+  <li><code class="highlighter-rouge">asyncio.coroutine</code> -&gt; <code class="highlighter-rouge">async</code></li>
+  <li><code class="highlighter-rouge">yield from</code> -&gt; <code class="highlighter-rouge">await</code></li>
+</ol>
+
+<p>示例：</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">asyncio</span>
+
+<span class="o">@</span><span class="n">asyncio</span><span class="o">.</span><span class="n">coroutine</span>
+<span class="k">def</span> <span class="nf">A</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'a'</span><span class="p">)</span>
+    <span class="k">yield</span> <span class="k">from</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'c'</span><span class="p">)</span>
+
+<span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+<span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span><span class="p">(</span><span class="n">A</span><span class="p">())]</span>
+<span class="n">loop</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">tasks</span><span class="p">))</span>            <span class="c1"># 并发执行方法2
+</span><span class="n">loop</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'end'</span><span class="p">)</span>
+</code></pre></div></div>
+<p>替换为：</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">asyncio</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">A</span><span class="p">():</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'a'</span><span class="p">)</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'c'</span><span class="p">)</span>
+
+<span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+<span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span><span class="p">(</span><span class="n">A</span><span class="p">())]</span>
+<span class="n">loop</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">tasks</span><span class="p">))</span>
+<span class="n">loop</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'end'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="22-服务器端使用">2.2 服务器端使用</h2>
+<p><code class="highlighter-rouge">asyncio</code>可以实现单线程并发io操作，如果仅用于客户端，效果不大
+可以用在服务器端，由于HTTP连接就是io操作，因此可以使用单线程+协程实现多用户的高并发</p>
+
+<p><code class="highlighter-rouge">asyncio</code>实现了TCP、UDP、SSL等协议，aiohttp则是基于asyncio实现的HTTP框架</p>
+
+<p>示例：
+启动一个web服务，通过浏览器访问localhost:8000</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">asyncio</span>
+
+<span class="kn">from</span> <span class="nn">aiohttp</span> <span class="kn">import</span> <span class="n">web</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">web</span><span class="o">.</span><span class="n">Response</span><span class="p">(</span><span class="n">body</span><span class="o">=</span><span class="s">'&lt;h1&gt;Index&lt;/h1&gt;'</span><span class="p">)</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="s">'&lt;h1&gt;hello, </span><span class="si">%</span><span class="s">s!&lt;/h1&gt;'</span> <span class="o">%</span> <span class="n">request</span><span class="o">.</span><span class="n">match_info</span><span class="p">[</span><span class="s">'name'</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">web</span><span class="o">.</span><span class="n">Response</span><span class="p">(</span><span class="n">body</span><span class="o">=</span><span class="n">text</span><span class="p">)</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="n">loop</span><span class="p">):</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">web</span><span class="o">.</span><span class="n">Application</span><span class="p">(</span><span class="n">loop</span><span class="o">=</span><span class="n">loop</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">add_route</span><span class="p">(</span><span class="s">'GET'</span><span class="p">,</span> <span class="s">'/'</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">add_route</span><span class="p">(</span><span class="s">'GET'</span><span class="p">,</span> <span class="s">'/hello/{name}'</span><span class="p">,</span> <span class="n">hello</span><span class="p">)</span>
+    <span class="n">srv</span> <span class="o">=</span> <span class="k">await</span> <span class="n">loop</span><span class="o">.</span><span class="n">create_server</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">make_handler</span><span class="p">(),</span> <span class="s">'127.0.0.1'</span><span class="p">,</span> <span class="mi">8000</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'Server started at http://127.0.0.1:8000...'</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">srv</span>
+
+<span class="n">loop</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">get_event_loop</span><span class="p">()</span>
+<span class="n">loop</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">init</span><span class="p">(</span><span class="n">loop</span><span class="p">))</span>
+<span class="n">loop</span><span class="o">.</span><span class="n">run_forever</span><span class="p">()</span>
+</code></pre></div></div>
+
+<hr />
+<p>1.参考书籍: 参考书籍：《Python并行编程手册》</p>
+
+<p>2.参考文章1: 这篇主要参考：廖雪峰 - asyncio：https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/00143208573480558080fa77514407cb23834c78c6c7309000</p>
+
+<p>3.Future: Future：是Asyncio的一个类，与concurrent.futures.Futures非常相似，Futures类代表一个还不可用的结果，它是对尚未完成的任务的抽象表示；Python 3.2引入concurrent.futures模块，支持管理并发编程任务，如进程池和线程池、非确定性执行流、多进程、线程同步（这个目前没看出有什么特别的，池化管理不是多线程和多进程库自带吗？<del>concurrent.futures.ProcessPoolExecutor</del>）</p>
+:ET

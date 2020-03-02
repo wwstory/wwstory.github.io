@@ -1,0 +1,105 @@
+I"o.<h1 id="简述">简述</h1>
+<p>分布式计算的基本理念是将工作划分为一个一个小任务，分发给多台设备处理，再汇总结果。在分布式计算中，网络中的机器必须要保持可用（延迟误差、意外宕机等等），需要一个持续监控架构</p>
+
+<hr />
+<h1 id="分布式多进程-2">分布式多进程 <sup>2</sup></h1>
+<p><code class="highlighter-rouge">multiprocessing</code>的子模块<code class="highlighter-rouge">managers</code>还支持把多进程分布在多台机器上，<code class="highlighter-rouge">managers</code>模块已经封装好了网络通信的细节</p>
+
+<p><strong>实现方法</strong>：我们可以使用<code class="highlighter-rouge">managers</code>模块将<code class="highlighter-rouge">queue</code>队列通过网络暴露出去，让其它机器访问到这个队列，然后就可以通过它实现数据交换</p>
+
+<p>示例：
+服务器通过暴露queue到网络，放入数据到队列，让客户端取出数据处理，再放回结果
+服务器代码</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># task_master.py
+</span>
+<span class="kn">import</span> <span class="nn">random</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">queue</span>
+<span class="kn">from</span> <span class="nn">multiprocessing.managers</span> <span class="kn">import</span> <span class="n">BaseManager</span>
+
+<span class="c1"># 发送任务的队列:
+</span><span class="n">task_queue</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+<span class="c1"># 接收结果的队列:
+</span><span class="n">result_queue</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>
+
+<span class="c1"># 从BaseManager继承的QueueManager:
+</span><span class="k">class</span> <span class="nc">QueueManager</span><span class="p">(</span><span class="n">BaseManager</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="c1"># 把两个Queue都注册到网络上, callable参数关联了Queue对象:
+</span><span class="n">QueueManager</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">'get_task_queue'</span><span class="p">,</span> <span class="nb">callable</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">task_queue</span><span class="p">)</span>
+<span class="n">QueueManager</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">'get_result_queue'</span><span class="p">,</span> <span class="nb">callable</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="n">result_queue</span><span class="p">)</span>
+<span class="c1"># 绑定端口5000, 设置验证码'abc':
+</span><span class="n">manager</span> <span class="o">=</span> <span class="n">QueueManager</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="p">(</span><span class="s">''</span><span class="p">,</span> <span class="mi">5000</span><span class="p">),</span> <span class="n">authkey</span><span class="o">=</span><span class="n">b</span><span class="s">'abc'</span><span class="p">)</span>
+<span class="c1"># 启动Queue:
+</span><span class="n">manager</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="c1"># 获得通过网络访问的Queue对象:
+</span><span class="n">task</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">get_task_queue</span><span class="p">()</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">get_result_queue</span><span class="p">()</span>
+<span class="c1"># 放几个任务进去:
+</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'Put task </span><span class="si">%</span><span class="s">d...'</span> <span class="o">%</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">task</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<span class="c1"># 从result队列读取结果:
+</span><span class="k">print</span><span class="p">(</span><span class="s">'Try get results...'</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">'Result: </span><span class="si">%</span><span class="s">s'</span> <span class="o">%</span> <span class="n">r</span><span class="p">)</span>
+<span class="c1"># 关闭:
+</span><span class="n">manager</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'master exit.'</span><span class="p">)</span>
+</code></pre></div></div>
+<p>客户端代码</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># task_worker.py
+</span>
+<span class="kn">import</span> <span class="nn">time</span><span class="p">,</span> <span class="n">sys</span><span class="p">,</span> <span class="n">queue</span>
+<span class="kn">from</span> <span class="nn">multiprocessing.managers</span> <span class="kn">import</span> <span class="n">BaseManager</span>
+
+<span class="c1"># 创建类似的QueueManager:
+</span><span class="k">class</span> <span class="nc">QueueManager</span><span class="p">(</span><span class="n">BaseManager</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+<span class="c1"># 由于这个QueueManager只从网络上获取Queue，所以注册时只提供名字:
+</span><span class="n">QueueManager</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">'get_task_queue'</span><span class="p">)</span>
+<span class="n">QueueManager</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">'get_result_queue'</span><span class="p">)</span>
+
+<span class="c1"># 连接到服务器，也就是运行task_master.py的机器:
+</span><span class="n">server_addr</span> <span class="o">=</span> <span class="s">'127.0.0.1'</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'Connect to server </span><span class="si">%</span><span class="s">s...'</span> <span class="o">%</span> <span class="n">server_addr</span><span class="p">)</span>
+<span class="c1"># 端口和验证码注意保持与task_master.py设置的完全一致:
+</span><span class="n">m</span> <span class="o">=</span> <span class="n">QueueManager</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="p">(</span><span class="n">server_addr</span><span class="p">,</span> <span class="mi">5000</span><span class="p">),</span> <span class="n">authkey</span><span class="o">=</span><span class="n">b</span><span class="s">'abc'</span><span class="p">)</span>
+<span class="c1"># 从网络连接:
+</span><span class="n">m</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+<span class="c1"># 获取Queue的对象:
+</span><span class="n">task</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">get_task_queue</span><span class="p">()</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">get_result_queue</span><span class="p">()</span>
+<span class="c1"># 从task队列取任务,并把结果写入result队列:
+</span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">'run task </span><span class="si">%</span><span class="s">d * </span><span class="si">%</span><span class="s">d...'</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">n</span><span class="o">*</span><span class="n">n</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">Queue</span><span class="o">.</span><span class="n">Empty</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">'task queue is empty.'</span><span class="p">)</span>
+<span class="c1"># 处理结束:
+</span><span class="k">print</span><span class="p">(</span><span class="s">'worker exit.'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<hr />
+<h1 id="分布式架构库">分布式架构库</h1>
+<p><del>这篇仅是简单的分布式的简单操作，更多详情，搜索以下的内容作为关键字</del></p>
+
+<p>使用面向对象模式和远程调用模式实现分布式框架的库，如Celery、SCOOP、Pyro4、RPyC，还有使用MapReduce实现的PyCSP、Disco</p>
+
+<p>Celery：是一个用于管理分布式任务的Python框架
+SCOOP：（Scalable Concurrent Operations in Python）用于进行科学计算
+Pyro4：（Python Remote Object）远程调用方法，类似于java中远程方法调用(RMI)的库，支持调用远程对象（属于不同进程，或不同机器上）的方法，就好像它是本地对象
+PyCSP：是基于通信的顺序进程（communicating sequential processes，简称CSP）的一个Python模块，它是通过消息传递方式构建并发程序的一种编程范式，特点：进程间的消息交换、通过线程使用共享内存、通过通道完成信息交换
+Disco：是一个基于谷歌推出的MapReduce框架的Python模块，支持在计算机集群中管理大规模分布式数据</p>
+
+<hr />
+<p>1.参考书籍：《Python并行编程手册》</p>
+
+<p>2.分布式多进程: 这段代码完全参考：廖雪峰 -分布式进程 https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/001431929340191970154d52b9d484b88a7b343708fcc60000</p>
+:ET

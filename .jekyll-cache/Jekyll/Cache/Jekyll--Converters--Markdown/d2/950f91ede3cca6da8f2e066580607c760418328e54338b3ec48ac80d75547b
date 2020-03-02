@@ -1,0 +1,415 @@
+I"�3<h1 id="1基础网络">1.基础网络</h1>
+
+<h2 id="imagenet">ImageNet</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>net</th>
+      <th>year</th>
+      <th>detail</th>
+      <th>download</th>
+      <th>description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>LetNet</strong></td>
+      <td><code class="highlighter-rouge">IEEE 1998</code></td>
+      <td><em>Gradient-Based Learning Applied to Document Recognition</em></td>
+      <td><a href="https://ieeexplore.ieee.org/document/726791">pdf</a></td>
+      <td>CNN开山之作，手写体识别。</td>
+    </tr>
+    <tr>
+      <td><strong>AlexNet</strong></td>
+      <td><code class="highlighter-rouge">ILSVRC 2012</code></td>
+      <td><em>ImageNet Classification with Deep Convolutional Neural Networks</em></td>
+      <td><a href="http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf">pdf</a></td>
+      <td>ILSVRC 2012冠军，促进CNN发展。</td>
+    </tr>
+    <tr>
+      <td><strong>VGGNet</strong></td>
+      <td><code class="highlighter-rouge">ICLR 2015</code></td>
+      <td><em>VERY DEEP CONVOLUTIONAL NETWORKS FOR LARGE-SCALE IMAGE RECOGNITION</em></td>
+      <td><a href="https://arxiv.org/pdf/1409.1556.pdf">pdf</a></td>
+      <td>创建非常深的网络。</td>
+    </tr>
+    <tr>
+      <td><strong>Inception</strong></td>
+      <td><code class="highlighter-rouge">CVPR 2015</code></td>
+      <td><em>Going Deeper with Convolutions</em></td>
+      <td><a href="https://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Szegedy_Going_Deeper_With_2015_CVPR_paper.pdf">pdf</a></td>
+      <td>google设计，2014年的ImageNet冠军。</td>
+    </tr>
+    <tr>
+      <td><strong>ResNet</strong></td>
+      <td><code class="highlighter-rouge">CVPR 2015</code></td>
+      <td><em>Deep Residual Learning for Image Recognition</em></td>
+      <td><a href="https://arxiv.org/pdf/1512.03385.pdf">pdf</a></td>
+      <td>连接前后信息，可以训练更深的网络。</td>
+    </tr>
+    <tr>
+      <td><strong>DenseNet</strong></td>
+      <td><code class="highlighter-rouge">CVPR 2017</code></td>
+      <td><em>Densely Connected Convolutional Networks</em></td>
+      <td><a href="https://arxiv.org/pdf/1608.06993.pdf">pdf</a></td>
+      <td>与ResNet类似，所有层更加稠密的联系。</td>
+    </tr>
+    <tr>
+      <td><strong>MobileNets</strong></td>
+      <td><code class="highlighter-rouge">2017</code></td>
+      <td><em>MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications</em></td>
+      <td><a href="https://arxiv.org/pdf/1704.04861.pdf">pdf</a></td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td><strong>DilatedConv</strong></td>
+      <td><code class="highlighter-rouge">ICLR 2016</code></td>
+      <td><em>MULTI-SCALE CONTEXT AGGREGATION BY DILATED CONVOLUTIONS</em></td>
+      <td><a href="https://arxiv.org/pdf/1511.07122.pdf">pdf</a></td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="rnn">RNN</h2>
+<p>.|.|.|.|.</p>
+<ul>
+  <li>
+    <table>
+      <tbody>
+        <tr>
+          <td><em>**</em></td>
+          <td>``</td>
+          <td>**</td>
+          <td><a href="">pdf</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+</ul>
+
+<h2 id="unsupervised-learning">Unsupervised Learning</h2>
+<p>.|.|.|.|.</p>
+<ul>
+  <li>
+    <table>
+      <tbody>
+        <tr>
+          <td><em>**</em></td>
+          <td>``</td>
+          <td>**</td>
+          <td><a href="">pdf</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+</ul>
+
+<h2 id="gan">GAN</h2>
+<p>.|.|.|.|.</p>
+<ul>
+  <li>
+    <table>
+      <tbody>
+        <tr>
+          <td><strong>GAN</strong></td>
+          <td><code class="highlighter-rouge">2014</code></td>
+          <td><em>Generative Adversarial Nets</em></td>
+          <td><a href="http://papers.nips.cc/paper/5423-generative-adversarial-nets.pdf">pdf</a></td>
+          <td>创新性思维，通过2个网络相互对抗的形式来训练，分别得到鉴别网络和生成网络。</td>
+        </tr>
+        <tr>
+          <td><strong>LSGANs</strong></td>
+          <td><code class="highlighter-rouge">2016</code></td>
+          <td><em>Least Squares Generative Adversarial Networks</em></td>
+          <td><a href="https://arxiv.org/pdf/1611.04076v2.pdf">pdf</a></td>
+          <td> </td>
+        </tr>
+        <tr>
+          <td><strong>WGAN</strong></td>
+          <td><code class="highlighter-rouge">2017</code></td>
+          <td><em>Wasserstein GAN</em></td>
+          <td><a href="https://arxiv.org/pdf/1701.07875v1.pdf">pdf</a></td>
+          <td> </td>
+        </tr>
+        <tr>
+          <td><em>**</em></td>
+          <td>``</td>
+          <td>**</td>
+          <td><a href="">pdf</a></td>
+          <td> </td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+</ul>
+
+<h2 id="reinforcement-learning">Reinforcement Learning</h2>
+<p>.|.|.|.|.</p>
+<ul>
+  <li>
+    <table>
+      <tbody>
+        <tr>
+          <td><em>**</em></td>
+          <td>``</td>
+          <td>**</td>
+          <td><a href="">pdf</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+</ul>
+
+<h1 id="2优化">2.优化</h1>
+
+<h2 id="model">Model</h2>
+<p>.|.|.|.|.</p>
+<ul>
+  <li>
+    <table>
+      <tbody>
+        <tr>
+          <td><strong>Dropout</strong></td>
+          <td><code class="highlighter-rouge">2014</code></td>
+          <td><em>Dropout: A Simple Way to Prevent Neural Networks from Overfitting</em></td>
+          <td><a href="http://jmlr.org/papers/volume15/srivastava14a/srivastava14a.pdf">pdf</a></td>
+          <td> </td>
+        </tr>
+        <tr>
+          <td><strong>Batch Normalization</strong></td>
+          <td><code class="highlighter-rouge">2015</code></td>
+          <td><em>Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift</em></td>
+          <td><a href="https://arxiv.org/pdf/1502.03167.pdf">pdf</a></td>
+          <td> </td>
+        </tr>
+        <tr>
+          <td><strong>Attention</strong></td>
+          <td><code class="highlighter-rouge">ICLR 2015</code></td>
+          <td><em>Neural Machine Translation by Jointly Learning to Align and Translate</em></td>
+          <td><a href="https://arxiv.org/pdf/1409.0473v2.pdf">pdf</a></td>
+          <td>首次提出Attention，用于及其翻译，展示了attention对源语目标的对其效果，解释深度模型到底学到了什么。由于后续提出的概念，这个attention被称为soft/global attention。</td>
+        </tr>
+        <tr>
+          <td><strong>hard attention相关</strong></td>
+          <td><code class="highlighter-rouge">ICML 2015</code></td>
+          <td><em>Show, Attend and Tell: Neural Image Caption Generation with Visual Attention</em></td>
+          <td><a href="https://arxiv.org/abs/1502.03044">pdf</a></td>
+          <td>提出hard/soft attention的概念，在图像上的应用。</td>
+        </tr>
+        <tr>
+          <td><strong>local attention</strong></td>
+          <td><code class="highlighter-rouge">EMNLP 2015</code></td>
+          <td><em>Effective Approaches to Attention-based Neural Machine Translation</em></td>
+          <td><a href="https://arxiv.org/pdf/1508.04025v3.pdf">pdf</a></td>
+          <td>提出global/local attention的概念，对Attention的变化，其中multiplicative attention结构被广泛使用。</td>
+        </tr>
+        <tr>
+          <td><strong>self-attention</strong></td>
+          <td>``</td>
+          <td><em>Hierarchical Attention Networks for Document Classification</em></td>
+          <td><a href="https://www.cs.cmu.edu/~hovy/papers/16HLT-hierarchical-attention-networks.pdf">pdf</a></td>
+          <td> </td>
+        </tr>
+        <tr>
+          <td><strong>transformer</strong></td>
+          <td><code class="highlighter-rouge">2017</code></td>
+          <td><em>Attention Is All You Need</em></td>
+          <td><a href="https://arxiv.org/pdf/1706.03762.pdf">pdf</a></td>
+          <td>google提出的Transformer结构，完全摒弃递归结构，依赖注意力机制，可并行。（以往nlp中大量使用encoder-decoder结构，由于前后隐藏状态的依赖性，无法并行计算。）</td>
+        </tr>
+        <tr>
+          <td><em>**</em></td>
+          <td>``</td>
+          <td>**</td>
+          <td><a href="">pdf</a></td>
+          <td> </td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+</ul>
+
+<h2 id="optimization">Optimization</h2>
+<p>.|.|.|.|.</p>
+<ul>
+  <li>
+    <table>
+      <tbody>
+        <tr>
+          <td><strong>Adam</strong></td>
+          <td><code class="highlighter-rouge">ICLR 2014</code></td>
+          <td><em>ADAM: A METHOD FOR STOCHASTIC OPTIMIZATION</em></td>
+          <td><a href="https://arxiv.org/pdf/1412.6980.pdf">pdf</a></td>
+        </tr>
+        <tr>
+          <td><em>**</em></td>
+          <td>``</td>
+          <td>**</td>
+          <td><a href="">pdf</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+</ul>
+
+<h2 id="loss-function">Loss Function</h2>
+<p>.|.|.|.|.</p>
+<ul>
+  <li>
+    <table>
+      <tbody>
+        <tr>
+          <td><em>**</em></td>
+          <td>``</td>
+          <td>**</td>
+          <td><a href="">pdf</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+</ul>
+
+<h2>?</h2>
+<p>.|.|.|.|.</p>
+<ul>
+  <li>
+    <table>
+      <tbody>
+        <tr>
+          <td><em>**</em></td>
+          <td>``</td>
+          <td>**</td>
+          <td><a href="">pdf</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+</ul>
+
+<h1 id="3应用">3.应用</h1>
+
+<h2 id="nlp">NLP</h2>
+<p>.|.|.|.|.</p>
+<ul>
+  <li>
+    <table>
+      <tbody>
+        <tr>
+          <td><em>**</em></td>
+          <td>``</td>
+          <td>**</td>
+          <td><a href="">pdf</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+</ul>
+
+<h2 id="object-detection">Object Detection</h2>
+<p>.|.|.|.|.</p>
+<ul>
+  <li>
+    <table>
+      <tbody>
+        <tr>
+          <td><strong>-</strong></td>
+          <td><code class="highlighter-rouge">2013</code></td>
+          <td><em>Deep Neural Networks for Object Detection</em></td>
+          <td><a href="http://papers.nips.cc/paper/5207-deep-neural-networks-for-object-detection.pdf">pdf</a></td>
+        </tr>
+        <tr>
+          <td><strong>RCNN</strong></td>
+          <td><code class="highlighter-rouge">CVPR 2014</code></td>
+          <td><em>Rich feature hierarchies for accurate object detection and semantic segmentation</em></td>
+          <td><a href="https://www.cv-foundation.org/openaccess/content_cvpr_2014/papers/Girshick_Rich_Feature_Hierarchies_2014_CVPR_paper.pdf">pdf</a></td>
+        </tr>
+        <tr>
+          <td><strong>SPPNet</strong></td>
+          <td><code class="highlighter-rouge">2014</code></td>
+          <td><em>Spatial Pyramid Pooling in Deep Convolutional Networks for Visual Recognition</em></td>
+          <td><a href="https://arxiv.org/pdf/1406.4729.pdf">pdf</a></td>
+        </tr>
+        <tr>
+          <td><strong>Fast R-CNN</strong></td>
+          <td><code class="highlighter-rouge">IEEE 2015</code></td>
+          <td><em>Fast R-CNN</em></td>
+          <td><a href="https://arxiv.org/pdf/1504.08083.pdf">pdf</a></td>
+        </tr>
+        <tr>
+          <td><strong>Faster R-CNN</strong></td>
+          <td><code class="highlighter-rouge">2015</code></td>
+          <td><em>Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks</em></td>
+          <td><a href="https://arxiv.org/pdf/1506.01497.pdf">pdf</a></td>
+        </tr>
+        <tr>
+          <td><strong>YOLO</strong></td>
+          <td><code class="highlighter-rouge">2015</code></td>
+          <td><em>You Only Look Once: Unified, Real-Time Object Detection</em></td>
+          <td><a href="">pdf</a></td>
+        </tr>
+        <tr>
+          <td><strong>SSD</strong></td>
+          <td><code class="highlighter-rouge">2015</code></td>
+          <td><em>SSD: Single Shot MultiBox Detector</em></td>
+          <td><a href="https://arxiv.org/pdf/1512.02325.pdf">pdf</a></td>
+        </tr>
+        <tr>
+          <td><strong>R-FCN</strong></td>
+          <td><code class="highlighter-rouge">2016</code></td>
+          <td><em>R-FCN: Object Detection via Region-based Fully Convolutional Networks</em></td>
+          <td><a href="https://arxiv.org/pdf/1605.06409.pdf">pdf</a></td>
+        </tr>
+        <tr>
+          <td><strong>Mask R-CNN</strong></td>
+          <td><code class="highlighter-rouge">2017</code></td>
+          <td><em>Mask R-CNN</em></td>
+          <td><a href="https://arxiv.org/pdf/1703.06870.pdf">pdf</a></td>
+        </tr>
+        <tr>
+          <td><em>**</em></td>
+          <td>``</td>
+          <td>**</td>
+          <td><a href="">pdf</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+</ul>
+
+<h2 id="face">face</h2>
+<p>.|.|.|.|.</p>
+<ul>
+  <li>
+    <table>
+      <tbody>
+        <tr>
+          <td><em>**</em></td>
+          <td>``</td>
+          <td>**</td>
+          <td><a href="">pdf</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+</ul>
+
+<h2 id="vqa">VQA</h2>
+<p>.|.|.|.|.</p>
+<ul>
+  <li>
+    <table>
+      <tbody>
+        <tr>
+          <td><em>**</em></td>
+          <td>``</td>
+          <td>**</td>
+          <td><a href="">pdf</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+</ul>
+
+:ET

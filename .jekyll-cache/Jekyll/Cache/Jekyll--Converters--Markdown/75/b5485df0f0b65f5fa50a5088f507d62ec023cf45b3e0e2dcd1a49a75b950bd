@@ -1,0 +1,44 @@
+I"�<h1 id="应用场景">应用场景</h1>
+
+<p>当我们对设置bean的作用域<code class="highlighter-rouge">@Scope</code>时，有个购物车场景，通常我们将商城的bean设为<code class="highlighter-rouge">Singleton</code>单例，购物车对于每个用户毫无疑问是单独所有的，设购物车的bean为<code class="highlighter-rouge">Session</code>。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Component</span>
+<span class="nd">@Scope</span><span class="o">(</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nc">WebApplicationContext</span><span class="o">.</span><span class="na">SCOPE_SEESION</span><span class="o">,</span>
+        <span class="n">proxyMode</span> <span class="o">=</span> <span class="nc">ScopedProxyMode</span><span class="o">.</span><span class="na">TARGET_CLASS</span>
+<span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">ShoppingCart</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Component</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">StoreService</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="nc">ShoppingCart</span> <span class="n">shoppingCart</span><span class="o">;</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setShoppingCart</span><span class="o">(</span><span class="nc">ShoppingCart</span> <span class="n">shoppingCart</span><span class="o">){</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">shoppingCart</span> <span class="o">=</span> <span class="n">shoppingCart</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h1 id="问题">问题</h1>
+
+<p>因为<code class="highlighter-rouge">StoreService</code>是一个单例的bean，会在Spring应用上下文加载的时候创建。当它创建的时候，Spring会试图将<code class="highlighter-rouge">ShoppingCart</code>的bean注入到setShoppingCart()方法中。</p>
+
+<p>但是<code class="highlighter-rouge">ShoppingCart</code>的bean是会话作用域的，此时并不存在。直到某个用户进入系统，创建了会话之后，才会出现<code class="highlighter-rouge">ShoppingCart</code>实例。</p>
+
+<p>另外，系统中将会有多个<code class="highlighter-rouge">ShoppingCart</code>实例：每个用户一个。我们并不想让Spring注入某个固定的<code class="highlighter-rouge">ShoppingCart</code>实例到<code class="highlighter-rouge">StoreService</code>中。因为每个用户应该持有自己哪个购物车。</p>
+
+<h1 id="解决">解决</h1>
+
+<p>通过给<code class="highlighter-rouge">@Scope</code>设置<code class="highlighter-rouge">proxyMode</code>参数。Spring将不会将实际的<code class="highlighter-rouge">ShoppingCart</code>的bean注入到<code class="highlighter-rouge">StoreService</code>中。</p>
+
+<p>Spring会注入到一个<code class="highlighter-rouge">ShoppingCart</code>的bean的代理。这个代理会暴露与<code class="highlighter-rouge">ShoppingCart</code>相同的方法，所以<code class="highlighter-rouge">StoreService</code>会认为它就是一个购物车。但是，当<code class="highlighter-rouge">StoreService</code>调用<code class="highlighter-rouge">ShoppingCart</code>的方法时，代理会对其进行懒解析并将调用委托给会话作用域内真正的<code class="highlighter-rouge">ShoppingCart</code>的bean。</p>
+
+<h1 id="注意">注意</h1>
+
+<p><code class="highlighter-rouge">ScopedProxyMode.INTERFACES</code>是用于接口的。</p>
+
+<p>具体的类，需要使用<code class="highlighter-rouge">ScopedProxyMode.TARGET_CLASS</code>。</p>
+:ET

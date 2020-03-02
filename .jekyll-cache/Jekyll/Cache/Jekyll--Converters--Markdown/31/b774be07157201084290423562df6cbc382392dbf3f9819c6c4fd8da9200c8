@@ -1,0 +1,695 @@
+I"Ţ<h1 id="简介">简介</h1>
+
+<p>典型的应用场景就是日志，我们需要在某段业务代码的前后做一些日志输出的话，如果我们将日志代码与业务代码混在一起，是非常难以解耦合的。</p>
+
+<p>aop就是应对这种情况产生的技术。</p>
+
+<h1 id="概念">概念</h1>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        通知
+         |
+         |切点
+         ↓
+    ——*——*——*——程序执行→
+      ↑  ↑    ↑
+       连接点
+</code></pre></div></div>
+
+<h2 id="通知">通知</h2>
+
+<p>切面的工作被称为通知。</p>
+
+<blockquote>
+  <p>通知以日志为例，就是想要插入到业务代码的日志程序。</p>
+</blockquote>
+
+<p>Spring切面的5种类型的通知：</p>
+
+<ul>
+  <li>前置通知（Before）</li>
+  <li>后置通知（After）</li>
+  <li>返回通知（After-returning）</li>
+  <li>异常通知（After-throwing）</li>
+  <li>环绕通知（Around）</li>
+</ul>
+
+<blockquote>
+  <p>在什么时候执行通知。</p>
+</blockquote>
+
+<h2 id="连接点">连接点</h2>
+
+<p>连接点是在应用执行过程中能够插入切面的一个点。</p>
+
+<blockquote>
+  <p>这个点就是触发执行通知的时机：如调用方法时，抛出异常时，修改字段时。</p>
+</blockquote>
+
+<h2 id="切点">切点</h2>
+
+<p>一个切面并不需要通知应用的所有连接点，切点有助于缩小切面所通知的连接点的范围。</p>
+
+<blockquote>
+  <p>相对于连接点而言，连接点是所有可以供通知切入的地方，切点就是满足设定条件的连接点。</p>
+</blockquote>
+
+<h2 id="切面">切面</h2>
+
+<p>切面 = 通知 + 切点</p>
+
+<h2 id="引入">引入</h2>
+
+<p>向现有类添加新方法或属性。</p>
+
+<h2 id="织入">织入</h2>
+
+<p>把切面应用到目标对象，并创建新的代理对象的过程。</p>
+
+<p>在目标对象的生命周期里可织入的点：</p>
+
+<ul>
+  <li>编译期</li>
+  <li>类加载期</li>
+  <li>运行期</li>
+</ul>
+
+<h2 id="aop支持">AOP支持</h2>
+
+<p>Spring提供的4种类型的AOP支持：</p>
+
+<ul>
+  <li>基于代理的经典Spring AOP（过于笨重复杂，直接使用ProxyFactory Bean。）</li>
+  <li>纯POJO切面</li>
+  <li>@AspectJ注解驱动的切面</li>
+  <li>注入式AspectJ切面</li>
+</ul>
+
+<blockquote>
+  <p>如需更负责的AOP需求，如构造器和属性拦截，需要使用<code class="highlighter-rouge">AspectJ</code>实现。</p>
+</blockquote>
+
+<blockquote>
+  <p>Spring的AspectJ自动代理仅仅使用<code class="highlighter-rouge">@AspectJ</code>作为创建切面的指导，切面依然是基于代理的。在本质上，它依然是Spring基于代理的切面。这意味着尽管使用的是<code class="highlighter-rouge">@AspectJ</code>注解，但仍然限于代理方法的调用。（如果想利用AspectJ的所有能力，我们必须在运行时使用AspectJ并且不依赖Spring来创建基于代理的切面）</p>
+</blockquote>
+
+<p><strong>Spring只支持方法级别的连接点</strong></p>
+
+<p>因为Spring基于动态代理，所以Spring只支持方法连接点。</p>
+
+<p><strong>Spring在运行时通知对象</strong></p>
+
+<p>不使用AOP：</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>┌─────┐      ┌───────┐
+│调用者│-----&gt;│目标对象│
+└─────┘      └───────┘
+</code></pre></div></div>
+
+<p>使用AOP：</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>              ┌─────────┐
+              │代理类    │
+┌─────┐       │┌───────┐│
+│调用者│-----&gt; ││目标对象││
+└─────┘       │└───────┘│
+              └─────────┘ 
+</code></pre></div></div>
+
+<p>通过在代理类中包裹切面，Spring在运行期把切面织入到Spring管理的bean中。代理类封装了目标类，并拦截被通知方法的调用，再把调用转发给真正的目标bean。当代理拦截到方法调用时，再调用目标bean方法之前，会执行切面逻辑。</p>
+
+<h2 id="通过切点选择连接点">通过切点选择连接点</h2>
+
+<p>spring借助AspectJ的切点表达式语言来定义Spring切面</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>AspectJ指示器</th>
+      <th>描述</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>execution()</td>
+      <td>用于匹配是连接点的执行方法</td>
+    </tr>
+    <tr>
+      <td>arg()</td>
+      <td>限制连接点匹配参数为指定类型的执行方法</td>
+    </tr>
+    <tr>
+      <td>@args()</td>
+      <td>限制连接点匹配参数由指定注解标注的执行方法</td>
+    </tr>
+    <tr>
+      <td>this()</td>
+      <td>限制连接点匹配AOP代理的bean引用为指定类型的类</td>
+    </tr>
+    <tr>
+      <td>target</td>
+      <td>限制连接点匹配目标对象为指定类型的类</td>
+    </tr>
+    <tr>
+      <td>@target()</td>
+      <td>限制连接点匹配特定的执行对象，这些对象对应的类要具有指定类型的注解</td>
+    </tr>
+    <tr>
+      <td>within()</td>
+      <td>限制连接点匹配指定的类型</td>
+    </tr>
+    <tr>
+      <td>@within()</td>
+      <td>限制连接点匹配指定注解所标注的类型（当使用Spring AOP时，方法定义在由指定的注解所标注的类里）</td>
+    </tr>
+    <tr>
+      <td>@annotation</td>
+      <td>限定匹配带有指定注解的连接点</td>
+    </tr>
+  </tbody>
+</table>
+
+<blockquote>
+  <p>在Spring中尝试使用AspectJ其它指示器时，将会抛出<code class="highlighter-rouge">IllegalArgument-Exception</code>异常。</p>
+</blockquote>
+
+<p>上述指示器，只有<code class="highlighter-rouge">execution</code>指示器是实际执行匹配的，而其它的都是用来限制的。</p>
+
+<h2 id="对于xml配置">对于xml配置</h2>
+
+<p>采用注解和自动代理的方式创建切面，是十分便利的方式。</p>
+
+<p>但面向注解的切面声明有一个明显的劣势：你必须能够为通知类添加注解。为了做到这一点，必须要有源码。</p>
+
+<p>没有通知类的源码，只能采用xml配置文件声明切面。</p>
+
+<h1 id="详细">详细</h1>
+
+<h2 id="切点-1">切点</h2>
+
+<p><strong>编写切点</strong></p>
+
+<p>expression：</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>execution(modifiers-pattern? ret-type-pattern? declaring-type-pattern? name-pattern(param-pattern) throws-pattern?)
+</code></pre></div></div>
+<ul>
+  <li>modifiers-pattern:修饰符</li>
+  <li>ret-type-pattern:返回类型</li>
+  <li>declaring-type-pattern:类路径</li>
+  <li>name-pattern:方法名</li>
+  <li>param-pattern:参数</li>
+  <li>throws-pattern:异常类型</li>
+</ul>
+
+<blockquote>
+  <p>修饰符和返回类型可以使用一个<code class="highlighter-rouge">*</code>表示。</p>
+</blockquote>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  在方法执行时触发  方法所属的类  方法
+    ┌───────┐    ┌─────────┐ ┌──┐
+    execution( * com.yww.Log.info(..) )
+              └─┘                └──┘
+            返回任意类型         使用任意参数
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>            执行Log.info()方法              当com.yww包下的任意类的方法被调用时
+    ┌─────────────────────────────────┐    ┌───────────────┐
+    execution( * com.yww.Log.info(..) ) &amp;&amp; within(com.yww.*)
+                                       └──┘
+                                  与(and)操作
+</code></pre></div></div>
+
+<blockquote>
+  <p><code class="highlighter-rouge">&amp;</code>在xml中由特殊含义，所以spring在xml的配置中可以使用<code class="highlighter-rouge">and</code>替代<code class="highlighter-rouge">&amp;&amp;</code>，同理<code class="highlighter-rouge">or</code>,<code class="highlighter-rouge">not</code>替代<code class="highlighter-rouge">||</code>,<code class="highlighter-rouge">!</code>。</p>
+</blockquote>
+
+<p><strong>在切点中选择bean</strong></p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>execution(* com.yww.Login.info()) and bean('work')
+
+execution(* com.yww.Login.info()) and !bean('work')
+</code></pre></div></div>
+
+<h2 id="切面-1">切面</h2>
+
+<h1 id="代码">代码</h1>
+
+<p>示例几种使用：</p>
+
+<ul>
+  <li>基本使用</li>
+  <li>处理通知中的参数</li>
+  <li>通过注解引入新功能</li>
+</ul>
+
+<h2 id="基本使用">基本使用</h2>
+
+<h3 id="目录结构">目录结构</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>.
+├── build.gradle
+├── settings.gradle
+└── src
+    ├── main
+    │   ├── java
+    │   │   └── com
+    │   │       └── yww
+    │   │           ├── Config.java
+    │   │           ├── Log.java
+    │   │           ├── Main.java
+    │   │           └── Work.java
+    │   └── resources
+    └── test
+        ├── java
+        └── resources
+</code></pre></div></div>
+
+<h3 id="buildgradle">build.gradle</h3>
+
+<p><code class="highlighter-rouge">build.gradle</code>:引入的库.</p>
+
+<div class="language-gradle highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">plugins</span> <span class="o">{</span>
+    <span class="n">id</span> <span class="s1">'java'</span>
+<span class="o">}</span>
+
+<span class="n">group</span> <span class="s1">'com.yww'</span>
+<span class="n">version</span> <span class="s1">'1.0-SNAPSHOT'</span>
+
+<span class="n">sourceCompatibility</span> <span class="o">=</span> <span class="mf">1.8</span>
+
+<span class="k">repositories</span> <span class="o">{</span>
+    <span class="n">mavenCentral</span><span class="o">()</span>
+<span class="o">}</span>
+
+<span class="n">ext</span><span class="o">{</span>
+    <span class="n">springVersion</span> <span class="o">=</span> <span class="s1">'5.2.0.RELEASE'</span>
+<span class="o">}</span>
+
+<span class="k">dependencies</span> <span class="o">{</span>
+    <span class="n">compile</span> <span class="s2">"org.springframework:spring-core:$springVersion"</span>
+    <span class="n">compile</span> <span class="s2">"org.springframework:spring-context:$springVersion"</span>
+    <span class="n">compile</span> <span class="s2">"org.springframework:spring-beans:$springVersion"</span>
+    <span class="n">compile</span> <span class="s2">"org.springframework:spring-expression:$springVersion"</span>
+    <span class="n">compile</span> <span class="s2">"org.springframework:spring-aop:$springVersion"</span>
+    <span class="n">compile</span> <span class="s2">"org.springframework:spring-aspects:$springVersion"</span>
+
+    <span class="n">testCompile</span> <span class="s2">"junit:junit:4.12"</span>
+    <span class="n">testCompile</span> <span class="s2">"org.springframework:spring-test:$springVersion"</span>
+<span class="o">}</span>
+
+<span class="n">jar</span> <span class="o">{</span>
+    <span class="n">from</span> <span class="o">{</span>
+        <span class="n">configurations</span><span class="o">.</span><span class="na">runtime</span><span class="o">.</span><span class="na">collect</span><span class="o">{</span><span class="n">zipTree</span><span class="o">(</span><span class="n">it</span><span class="o">)}</span>
+    <span class="o">}</span>
+    <span class="n">manifest</span> <span class="o">{</span>
+        <span class="n">attributes</span> <span class="s1">'Main-Class'</span><span class="o">:</span> <span class="s1">'com.yww.Main'</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="业务代码">业务代码</h3>
+
+<p><code class="highlighter-rouge">Work.java</code>：将这个类的功能作为业务代码为例。就是一个普通的bean。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.stereotype.Component</span><span class="o">;</span>
+
+<span class="nd">@Component</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Work</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">working</span><span class="o">(){</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"-w-o-r-k-i-n-g-"</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="切面-2">切面</h3>
+
+<p><code class="highlighter-rouge">Log.java</code>：使用<code class="highlighter-rouge">@Aspect</code>声明切面。</p>
+
+<p>写通知，在通知方法上使用<code class="highlighter-rouge">@Before</code>和<code class="highlighter-rouge">@After</code>等声明切点。</p>
+
+<p>也可以使用<code class="highlighter-rouge">@Pointcut</code>声明切点位置，减少重复。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.aspectj.lang.ProceedingJoinPoint</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.aspectj.lang.annotation.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.stereotype.Component</span><span class="o">;</span>
+
+<span class="nd">@Aspect</span>
+<span class="nd">@Component</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Log</span> <span class="o">{</span>
+
+    <span class="nd">@Pointcut</span><span class="o">(</span><span class="s">"execution(* com.yww.Work.working())"</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">working</span><span class="o">(){}</span>
+
+    <span class="nd">@Before</span><span class="o">(</span><span class="s">"working()"</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">infoStart</span><span class="o">(){</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"start"</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@After</span><span class="o">(</span><span class="s">"working()"</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">infoEnd</span><span class="o">(){</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"end"</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Around</span><span class="o">(</span><span class="s">"working()"</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">infoAround</span><span class="o">(</span><span class="nc">ProceedingJoinPoint</span> <span class="n">jp</span><span class="o">){</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"---&gt;"</span><span class="o">);</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">jp</span><span class="o">.</span><span class="na">proceed</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">Throwable</span> <span class="n">throwable</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">throwable</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"&lt;---"</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p><code class="highlighter-rouge">@Component</code>直接将其注册为Bean，给AspectJ代理使用。</p>
+</blockquote>
+
+<blockquote>
+  <p><code class="highlighter-rouge">ProceedingJoinPoint</code>可以不调用<code class="highlighter-rouge">proceed()</code>，以阻塞对被通知方法的调用。</p>
+</blockquote>
+
+<h3 id="启用aspectj代理">启用AspectJ代理</h3>
+
+<p><code class="highlighter-rouge">LogConfig.java</code>：使用<code class="highlighter-rouge">@EnableAspectJAutoProxy</code>开启AspectJ自动代理。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.ComponentScan</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Configuration</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.EnableAspectJAutoProxy</span><span class="o">;</span>
+
+<span class="nd">@Configuration</span>
+<span class="nd">@ComponentScan</span>
+<span class="nd">@EnableAspectJAutoProxy</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">LogConfig</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="main">Main</h3>
+
+<p><code class="highlighter-rouge">Main.java</code>：主函数，这是一个普通的应用，通过上下文加载java配置类启动<code class="highlighter-rouge">组件扫描</code>和<code class="highlighter-rouge">AspectJ自动代理</code>功能。</p>
+
+<p>执行业务代码后，定义在切面的通知也会在适当时机执行。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.context.ApplicationContext</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.AnnotationConfigApplicationContext</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Main</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">ApplicationContext</span> <span class="n">context</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">AnnotationConfigApplicationContext</span><span class="o">(</span><span class="n">com</span><span class="o">.</span><span class="na">yww</span><span class="o">.</span><span class="na">LogConfig</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+        <span class="nc">Work</span> <span class="n">work</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="na">getBean</span><span class="o">(</span><span class="nc">Work</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+        <span class="n">work</span><span class="o">.</span><span class="na">working</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="处理通知中的参数">处理通知中的参数</h2>
+
+<p>作用：获取业务方法的参数，在通知中做额外处理。</p>
+
+<p>需要：在切点表达式中声明参数，这个参数传入到通知方法中。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  在方法执行时触发  方法所属的类   方法
+    ┌───────┐    ┌──────────┐ ┌───┐
+    execution( * com.yww.Work.clock(String) ) &amp;&amp; args(username)
+              └─┘                   └────┘       └────────────┘
+            返回任意类型       接受String类型的参数      指定参数
+</code></pre></div></div>
+
+<h3 id="目录结构-1">目录结构</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>.
+├── build.gradle
+└── src
+    ├── main
+    │   ├── java
+    │   │   └── com
+    │   │       └── yww
+    │   │           ├── Counter.java
+    │   │           ├── Config.java
+    │   │           ├── Main.java
+    │   │           └── Work.java
+    │   └── resources
+    └── test
+        ├── java
+        └── resources
+</code></pre></div></div>
+
+<h3 id="业务代码-1">业务代码</h3>
+
+<p><code class="highlighter-rouge">Work.java</code>：业务代码。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.stereotype.Component</span><span class="o">;</span>
+
+<span class="nd">@Component</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Work</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">clock</span><span class="o">(</span><span class="nc">String</span> <span class="n">username</span><span class="o">){</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">username</span> <span class="o">+</span> <span class="s">" 打卡"</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="切面-3">切面</h3>
+
+<p><code class="highlighter-rouge">Counter.java</code>：在业务代码执行<code class="highlighter-rouge">clock()</code>方法时，在通知里记录用户打卡次数。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.aspectj.lang.annotation.Aspect</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.aspectj.lang.annotation.Before</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.aspectj.lang.annotation.Pointcut</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.stereotype.Component</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.util.HashMap</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.Map</span><span class="o">;</span>
+
+<span class="nd">@Aspect</span>
+<span class="nd">@Component</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Counter</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Integer</span><span class="o">&gt;</span> <span class="n">counter</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;&gt;();</span>
+
+    <span class="nd">@Pointcut</span><span class="o">(</span><span class="s">"execution(* com.yww.Work.clock(String)) &amp;&amp; args(username)"</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">clock</span><span class="o">(</span><span class="nc">String</span> <span class="n">username</span><span class="o">){}</span>
+
+    <span class="cm">/**
+     * 记录打卡次数
+     */</span>
+    <span class="nd">@Before</span><span class="o">(</span><span class="s">"clock(username)"</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">count</span><span class="o">(</span><span class="nc">String</span> <span class="n">username</span><span class="o">){</span>
+        <span class="kt">int</span> <span class="n">curCount</span> <span class="o">=</span> <span class="n">getCount</span><span class="o">(</span><span class="n">username</span><span class="o">);</span>
+        <span class="n">counter</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">username</span><span class="o">,</span> <span class="n">curCount</span><span class="o">+</span><span class="mi">1</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**
+     * 获取打卡次数
+     */</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getCount</span><span class="o">(</span><span class="nc">String</span> <span class="n">username</span><span class="o">){</span>
+        <span class="k">return</span> <span class="n">counter</span><span class="o">.</span><span class="na">containsKey</span><span class="o">(</span><span class="n">username</span><span class="o">)</span> <span class="o">?</span> <span class="n">counter</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">username</span><span class="o">)</span> <span class="o">:</span> <span class="mi">0</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="启用aspectj代理-1">启用AspectJ代理</h3>
+
+<p><code class="highlighter-rouge">LogConfig.java</code>：使用<code class="highlighter-rouge">@EnableAspectJAutoProxy</code>开启AspectJ自动代理。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.ComponentScan</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Configuration</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.EnableAspectJAutoProxy</span><span class="o">;</span>
+
+<span class="nd">@Configuration</span>
+<span class="nd">@ComponentScan</span>
+<span class="nd">@EnableAspectJAutoProxy</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">LogConfig</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="main-1">Main</h3>
+
+<p><code class="highlighter-rouge">Main.java</code>：主函数。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.context.ApplicationContext</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.AnnotationConfigApplicationContext</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Main</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">ApplicationContext</span> <span class="n">context</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">AnnotationConfigApplicationContext</span><span class="o">(</span><span class="n">com</span><span class="o">.</span><span class="na">yww</span><span class="o">.</span><span class="na">Config</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+        <span class="nc">Work</span> <span class="n">work</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="na">getBean</span><span class="o">(</span><span class="nc">Work</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+        <span class="nc">Counter</span> <span class="n">counter</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="na">getBean</span><span class="o">(</span><span class="nc">Counter</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+        <span class="n">work</span><span class="o">.</span><span class="na">clock</span><span class="o">(</span><span class="s">"zhangsan"</span><span class="o">);</span>
+        <span class="n">work</span><span class="o">.</span><span class="na">clock</span><span class="o">(</span><span class="s">"lisi"</span><span class="o">);</span>
+        <span class="n">work</span><span class="o">.</span><span class="na">clock</span><span class="o">(</span><span class="s">"lisi"</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">counter</span><span class="o">.</span><span class="na">getCount</span><span class="o">(</span><span class="s">"lisi"</span><span class="o">));</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="通过注解引入新功能">通过注解引入新功能</h2>
+
+<p>通过代理暴露新接口的方式，让切面所通知的bean看起来像是实现了新接口。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                      ┌─────────────┐
+                      │代理         │
+        现有方法       │┌───────────┐│
+              ┌-----&gt; ││被通知的Bean││
+┌─────┐-------┘       │└───────────┘│
+│调用者│               │             │
+└─────┘-------┐       │┌───────────┐│
+              └-----&gt; ││ 引入的代理 ││
+        被引入的方法    │└───────────┘│
+                      └─────────────┘ 
+</code></pre></div></div>
+
+<h3 id="目录结构-2">目录结构</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>.
+├── build.gradle
+└── src
+    ├── main
+    │   ├── java
+    │   │   └── com
+    │   │       └── yww
+    │   │           ├── Config.java
+    │   │           ├── EnhancePerson.java
+    │   │           ├── Main.java
+    │   │           ├── Man.java
+    │   │           ├── Person.java
+    │   │           ├── WalkImpl.java
+    │   │           └── Walk.java
+    │   └── resources
+    └── test
+        ├── java
+        └── resources
+</code></pre></div></div>
+
+<h3 id="业务类">业务类</h3>
+
+<p><code class="highlighter-rouge">Person.java</code>：业务的接口。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Person</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getName</span><span class="o">();</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">Man.java</code>：业务的实现。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.stereotype.Component</span><span class="o">;</span>
+
+<span class="nd">@Component</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Man</span> <span class="kd">implements</span> <span class="nc">Person</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">getName</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"a man"</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="新增的功能">新增的功能</h3>
+
+<p><code class="highlighter-rouge">Walk.java</code>：新增功能的接口。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Walk</span> <span class="o">{</span>
+    <span class="kt">void</span> <span class="nf">walk</span><span class="o">();</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>`WalkImpl.java：新增功能的实现。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">WalkImpl</span> <span class="kd">implements</span> <span class="nc">Walk</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">walk</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"新增 walk"</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="切面配置">切面配置</h3>
+
+<p><code class="highlighter-rouge">EnhancePerson.java</code>：给业务类<code class="highlighter-rouge">Person</code>新增<code class="highlighter-rouge">Walk</code>功能。尽管没有真正的添加方法，但通过代理的方式，也可看成了功能的添加。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.aspectj.lang.annotation.Aspect</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.aspectj.lang.annotation.Before</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.aspectj.lang.annotation.DeclareParents</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.aspectj.lang.annotation.Pointcut</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.stereotype.Component</span><span class="o">;</span>
+
+<span class="nd">@Aspect</span>
+<span class="nd">@Component</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">EnhancePerson</span> <span class="o">{</span>
+    <span class="nd">@DeclareParents</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">"com.yww.Person+"</span><span class="o">,</span> <span class="n">defaultImpl</span> <span class="o">=</span> <span class="nc">WalkImpl</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="nc">Walk</span> <span class="n">walk</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p><code class="highlighter-rouge">@DeclareParents</code>注解由三部分组成：</p>
+
+  <ul>
+    <li>value属性指定了哪种类型的bean要引入该接口。(此处是所有实现了<code class="highlighter-rouge">Person</code>接口的类型)。标记符后面的加号<code class="highlighter-rouge">+</code>表示是<code class="highlighter-rouge">Person</code>的所有子类型，而不是<code class="highlighter-rouge">Person</code>本身。</li>
+    <li>defaultImpl属性指定了为引入功能提供实现的类。</li>
+    <li><code class="highlighter-rouge">@Declarearents</code>注解所标注的静态属性指明了要引入的接口。</li>
+  </ul>
+</blockquote>
+
+<h3 id="main-2">Main</h3>
+
+<p><code class="highlighter-rouge">Main.java</code>:主函数，如何使用新增的功能。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.context.ApplicationContext</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.AnnotationConfigApplicationContext</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Main</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">ApplicationContext</span> <span class="n">context</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">AnnotationConfigApplicationContext</span><span class="o">(</span><span class="n">com</span><span class="o">.</span><span class="na">yww</span><span class="o">.</span><span class="na">Config</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+        <span class="c1">// 方式一</span>
+        <span class="nc">Person</span> <span class="n">person</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="na">getBean</span><span class="o">(</span><span class="nc">Person</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+        <span class="n">person</span><span class="o">.</span><span class="na">getName</span><span class="o">();</span>
+        <span class="nc">Walk</span> <span class="n">w1</span> <span class="o">=</span> <span class="o">(</span><span class="nc">Walk</span><span class="o">)</span> <span class="n">person</span><span class="o">;</span>
+        <span class="n">w1</span><span class="o">.</span><span class="na">walk</span><span class="o">();</span>
+
+        <span class="c1">// 方式二</span>
+        <span class="nc">Walk</span> <span class="n">w2</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="na">getBean</span><span class="o">(</span><span class="s">"man"</span><span class="o">,</span> <span class="nc">Walk</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+        <span class="n">w2</span><span class="o">.</span><span class="na">walk</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h1 id="附">附:</h1>
+
+<h2 id="aspectj">AspectJ</h2>
+
+<p>AspectJ声明的切面将其声明为bean，与Spring中声明为bean的配置无太多区别，最大的不同在于使用了<code class="highlighter-rouge">factory-method</code>属性。</p>
+
+<p>因为Spring bean由Spring容器初始化,但AspectJ切面是由AspectJ在运行期创建的。等到Spring有机会为其注入依赖时，该切面已实例化了。</p>
+
+<p>所以Spring需要通过aspectOf()工厂方法获得切面的引用，然后像bean规定的那样在该对象上执行依赖注入。</p>
+:ET

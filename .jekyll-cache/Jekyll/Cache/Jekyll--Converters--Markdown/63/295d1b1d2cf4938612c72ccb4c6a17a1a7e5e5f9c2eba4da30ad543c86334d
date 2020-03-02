@@ -1,0 +1,64 @@
+I"�<h1 id="背景">背景</h1>
+<p>传统生成网络使用马尔科夫链做生成网络。</p>
+
+<h1 id="效果">效果</h1>
+<p><img src="/imgs/deep_learning/paper/paper-Generative-Adversarial-Nets/3.png" alt="effect" /></p>
+
+<h1 id="贡献">贡献</h1>
+<p>提供全新的网络模型，同时得到生成网络和鉴别网络。</p>
+
+<h1 id="网络">网络</h1>
+<p>『对抗网络算法思路』
+<img src="/imgs/deep_learning/paper/paper-Generative-Adversarial-Nets/1.png" alt="algorithm" /></p>
+
+<h1 id="思路">思路</h1>
+<p>构建2个网络，生成网络+鉴别网络，本文将其类比造假团队和鉴别警察。</p>
+
+<p>开始时2者都比较弱，造假团队造出的赝品比较粗糙，鉴别警察鉴别假货的能力也比较差。</p>
+
+<blockquote>
+  <p>2个网络的关键在于，鉴别网络一开始必须要略强于生成网络。</p>
+</blockquote>
+
+<p>开始时造假团队造的假货基本能被鉴别警察查出来。</p>
+
+<p>后来，造假团队吸取经验（鉴别网络反馈生成网络哪些部分没做好），造假能力变强，鉴别警察变得无法看出假货。</p>
+
+<p>鉴别警察也开始吸取经验（鉴别网络反馈真假品之间有哪些区别），鉴别假货的能力变强，假货也越来越多被鉴别出来。</p>
+
+<p>重复上2步，造假团队（生成）和警察（鉴别）之间互相博弈，能力互相增进。</p>
+
+<p>博弈到最后，造假团队造出的假货，鉴别警察只有50%的识别率。即达到平衡。</p>
+
+<h2 id="公式">公式</h2>
+<p><script type="math/tex">\min_G \max_D V(D,G) = \mathbb{E}_{x \sim p_{data}(x)} [log D(x)] + \mathbb{E}_{z \sim p_z(z)} [log(1 - D(G(z)))]</script></p>
+
+<blockquote>
+  <ul>
+    <li>data：真实数据。</li>
+    <li>$p_{data}$：真实数据的分布。</li>
+    <li>z：噪音。</li>
+    <li>$p_z$：原始噪音的分布。</li>
+    <li>$p_g$：经过生成器后的数据分布。</li>
+    <li>G：生成器网络。</li>
+    <li>D：鉴别器网络。</li>
+  </ul>
+</blockquote>
+
+<h1 id="细节">细节</h1>
+<p>『生成网络生成数据的假设空间，鉴别器的真伪判别』
+<img src="/imgs/deep_learning/paper/paper-Generative-Adversarial-Nets/2.png" alt="假设空间映射" /></p>
+
+<ul>
+  <li>2个网络博弈开始初期，基本都比较弱，但鉴别网络要略胜于生成网络，否则无法推动2者互相增强。</li>
+  <li>2个网络博弈到最终，应该达到一个平衡，鉴别网络只能鉴别一半的生成网络生成的假数据。</li>
+  <li>2个网络互相交叉训练，优化1次D，再优化1次G。（也可以优化2次D，再优化1次G）</li>
+  <li>生成网络和鉴别网络的参数分开，训练也是分开的。</li>
+</ul>
+
+<h1 id="more">more</h1>
+<h2 id="note">note</h2>
+<p>Goodfellow创造性的GAN网络，使用博弈论的原理，让2个网络互相博弈互相增强，也提供了新的生成网络模型。</p>
+
+<p>本文主要讲述了整个GAN网络的思路，和其算法的推理。</p>
+:ET

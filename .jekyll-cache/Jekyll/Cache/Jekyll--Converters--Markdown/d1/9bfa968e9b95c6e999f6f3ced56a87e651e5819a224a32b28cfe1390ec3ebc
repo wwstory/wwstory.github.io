@@ -1,0 +1,641 @@
+I"��<h1 id="jdbc">JDBC</h1>
+
+<h2 id="项目结构">项目结构</h2>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>.
+├── build.gradle
+└── src
+    └── main
+        ├── java
+        │   └── com
+        │       └── yww
+        │           ├── config
+        │           │   └── DatabaseConfig.java
+        │           ├── JdbcController.java
+        │           ├── JdbcTemplateController.java
+        │           ├── sql
+        │           │   ├── schema.sql
+        │           │   └── test-data.sql
+        │           └── User.java
+        ├── resources
+        │   └── application.properties
+        └── webapp
+            ├── index.jsp
+            └── WEB-INF
+                ├── applicationContext.xml
+                ├── dispatcher-servlet.xml
+                ├── jsp
+                │   └── show.jsp
+                ├── sql
+                │   ├── schema.sql
+                │   └── test-data.sql
+                └── web.xml
+</code></pre></div></div>
+
+<h2 id="传统方式">传统方式</h2>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">java.sql.*</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Main</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">){</span>
+        <span class="nc">Connection</span> <span class="n">connection</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="nc">PreparedStatement</span> <span class="n">preparedStatement</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="nc">ResultSet</span> <span class="n">resultSet</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="c1">// 加载数据库驱动</span>
+            <span class="nc">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">"com.mysql.jdbc.Driver"</span><span class="o">);</span>
+            <span class="c1">// 通过驱动管理获取数据库连接</span>
+            <span class="n">connection</span> <span class="o">=</span> <span class="nc">DriverManager</span><span class="o">.</span><span class="na">getConnection</span><span class="o">(</span>
+                    <span class="s">"jdbc:mysql://localhost:3306/demo_db"</span><span class="o">,</span>
+                    <span class="s">"root"</span><span class="o">,</span>
+                    <span class="s">"123456"</span><span class="o">);</span>
+            <span class="c1">// 获取预处理</span>
+            <span class="n">preparedStatement</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="na">prepareStatement</span><span class="o">(</span><span class="s">"select * from user_t where id = ?"</span><span class="o">);</span>
+            <span class="c1">// 设置参数</span>
+            <span class="n">preparedStatement</span><span class="o">.</span><span class="na">setString</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="s">"1001"</span><span class="o">);</span>
+            <span class="c1">// 执行查询语句</span>
+            <span class="n">resultSet</span> <span class="o">=</span> <span class="n">preparedStatement</span><span class="o">.</span><span class="na">executeQuery</span><span class="o">();</span>
+            <span class="c1">// 遍历查询结果集</span>
+            <span class="k">while</span> <span class="o">(</span><span class="n">resultSet</span><span class="o">.</span><span class="na">next</span><span class="o">()){</span>
+                <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">resultSet</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">"name"</span><span class="o">));</span>
+            <span class="o">}</span>
+
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">ClassNotFoundException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">SQLException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+            <span class="c1">//释放资源</span>
+            <span class="k">if</span><span class="o">(</span><span class="n">resultSet</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">){</span>
+                <span class="k">try</span> <span class="o">{</span>
+                    <span class="n">resultSet</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+                <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">SQLException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+            <span class="k">if</span><span class="o">(</span><span class="n">preparedStatement</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">){</span>
+                <span class="k">try</span> <span class="o">{</span>
+                    <span class="n">preparedStatement</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+                <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">SQLException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+            <span class="k">if</span><span class="o">(</span><span class="n">connection</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">){</span>
+                <span class="k">try</span> <span class="o">{</span>
+                    <span class="n">connection</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+                <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">SQLException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="spring的数据访问哲学">Spring的数据访问哲学</h2>
+
+<h3 id="异常体系">异常体系</h3>
+<p>不同于JDBC，Spring提供了多个数据访问异常。</p>
+
+<p>这些异常都继承自<code class="highlighter-rouge">DataAccessException</code>，是非检查型异常（可以不捕获）。</p>
+
+<h2 id="数据访问模板">数据访问模板</h2>
+<p>Spring将数据访问过程中<code class="highlighter-rouge">固定的</code>和<code class="highlighter-rouge">可变的</code>部分明确划分为2部分：模板（template）和回调（callback）。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>模板</th>
+      <th>回调</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1.准备事务 <br /> 2.开始事务                 -&gt;</td>
+      <td>3.在事务中执行</td>
+    </tr>
+    <tr>
+      <td>5.提交/回滚事务 <br /> 6.关闭资源和处理错误</td>
+      <td>&lt;-   4.返回数据</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Spring所提供的部分数据访问模板及用途：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>模板类（org.springframework.*）</th>
+      <th>用途</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>jdbc.core.JdbcTemplate</td>
+      <td>JDBC连接</td>
+    </tr>
+    <tr>
+      <td>jdbc.core.namedparam.NamedParameterJdbcTemplate</td>
+      <td>支持命名参数的JDBC连接</td>
+    </tr>
+    <tr>
+      <td>orm.hibernate3.HibernateTemplate</td>
+      <td>Hibernate 3.x以上的Session</td>
+    </tr>
+    <tr>
+      <td>orm.jpa.JpaTemplate</td>
+      <td>Java持久化API的实体管理器</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="数据库">数据库</h2>
+<blockquote>
+  <p>示例用的数据库，表。（账号：root，密码：123456）</p>
+</blockquote>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">DROP</span> <span class="k">DATABASE</span> <span class="n">demo_db</span><span class="p">;</span>
+
+<span class="k">CREATE</span> <span class="k">DATABASE</span> <span class="n">if</span> <span class="k">NOT</span> <span class="k">exists</span> <span class="n">demo_db</span><span class="p">;</span>
+<span class="n">use</span> <span class="n">demo_db</span><span class="p">;</span>
+<span class="k">create</span> <span class="k">table</span> <span class="n">if</span> <span class="k">NOT</span> <span class="k">exists</span> <span class="n">user_t</span><span class="p">(</span>
+    <span class="n">id</span> <span class="nb">int</span> <span class="n">auto_increment</span><span class="p">,</span>
+    <span class="n">name</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span>
+    <span class="n">passwd</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
+    <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="p">(</span><span class="n">id</span><span class="p">)</span>
+<span class="p">)</span> <span class="n">engine</span><span class="o">=</span><span class="n">InnoDB</span><span class="p">;</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">user_t</span><span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">passwd</span><span class="p">)</span>
+<span class="k">VALUES</span>
+<span class="p">(</span><span class="mi">1001</span><span class="p">,</span> <span class="nv">"admin"</span><span class="p">,</span> <span class="nv">"123456"</span><span class="p">),</span>
+<span class="p">(</span><span class="mi">1002</span><span class="p">,</span> <span class="nv">"yww"</span><span class="p">,</span> <span class="nv">"123456"</span><span class="p">);</span>
+
+<span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="n">user_t</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h2 id="配置数据源">配置数据源</h2>
+<p>无论那种数据访问方式，都需要配置一个数据源引用。</p>
+
+<p>Spring提供了在Spring上下文中配置数据源bean的多种方式：</p>
+<ul>
+  <li>通过<code class="highlighter-rouge">JDBC驱动程序定义</code>的数据源。</li>
+  <li>通过<code class="highlighter-rouge">JNDI查找</code>的数据源。</li>
+  <li><code class="highlighter-rouge">连接池</code>的数据源。</li>
+</ul>
+
+<h3 id="jndi数据源">JNDI数据源</h3>
+
+<p>java方式：</p>
+
+<p>[<code class="highlighter-rouge">DatabaseConfig.java</code>]</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww.config</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Bean</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Configuration</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.jndi.JndiObjectFactoryBean</span><span class="o">;</span>
+
+<span class="nd">@Configuration</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">DatabaseConfig</span> <span class="o">{</span>
+
+    <span class="nd">@Bean</span>
+    <span class="kd">public</span> <span class="nc">JndiObjectFactoryBean</span> <span class="nf">dataSource</span><span class="o">(){</span>
+        <span class="nc">JndiObjectFactoryBean</span> <span class="n">jndiObjectFactoryBean</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">JndiObjectFactoryBean</span><span class="o">();</span>
+        <span class="n">jndiObjectFactoryBean</span><span class="o">.</span><span class="na">setJndiName</span><span class="o">(</span><span class="s">"jdbc/MyDS"</span><span class="o">);</span>
+        <span class="n">jndiObjectFactoryBean</span><span class="o">.</span><span class="na">setResourceRef</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+        <span class="n">jndiObjectFactoryBean</span><span class="o">.</span><span class="na">setProxyInterface</span><span class="o">(</span><span class="n">javax</span><span class="o">.</span><span class="na">sql</span><span class="o">.</span><span class="na">DataSource</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">jndiObjectFactoryBean</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">jndi-name</code>指定JNDI中资源的名称。如果应用程序运行在java应用服务器中，需要将<code class="highlighter-rouge">resource-ref</code>设置为true，这样给定的<code class="highlighter-rouge">jndi-name</code>将会自动添加<code class="highlighter-rouge">"java:/comp/env/"</code>前缀。</p>
+
+<p>xml方式：</p>
+
+<p>[<code class="highlighter-rouge">applicationContext.xml</code>]</p>
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="nt">&lt;beans</span> <span class="na">xmlns=</span><span class="s">"http://www.springframework.org/schema/beans"</span>
+       <span class="na">xmlns:xsi=</span><span class="s">"http://www.w3.org/2001/XMLSchema-instance"</span> <span class="na">xmlns:jee=</span><span class="s">"http://www.springframework.org/schema/jee"</span>
+       <span class="na">xsi:schemaLocation=</span><span class="s">"http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;jee:jndi-lookup</span> <span class="na">id=</span><span class="s">"dataSource"</span> <span class="na">jndi-name=</span><span class="s">"/jdbc/MyDS"</span> <span class="na">resource-ref=</span><span class="s">"true"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/beans&gt;</span>
+</code></pre></div></div>
+
+<h3 id="数据源连接池java方式">数据源连接池java方式：</h3>
+
+<p>需要在<code class="highlighter-rouge">build.gradle</code>中添加<code class="highlighter-rouge">apache.commons.dbcp</code>（这里使用的dbcp2）。</p>
+
+<div class="language-gradle highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">compile</span> <span class="s2">"org.apache.commons:commons-dbcp2:2.7.0"</span>
+</code></pre></div></div>
+
+<p>java方式：</p>
+
+<p>[<code class="highlighter-rouge">DatabaseConfig.java</code>]</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww.config</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.apache.commons.dbcp2.BasicDataSource</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Bean</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Configuration</span><span class="o">;</span>
+
+<span class="nd">@Configuration</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">DatabaseConfig</span> <span class="o">{</span>
+
+    <span class="nd">@Bean</span>
+    <span class="kd">public</span> <span class="nc">BasicDataSource</span> <span class="nf">dataSource</span><span class="o">(){</span>
+        <span class="nc">BasicDataSource</span> <span class="n">ds</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">BasicDataSource</span><span class="o">();</span>
+        <span class="n">ds</span><span class="o">.</span><span class="na">setDriverClassName</span><span class="o">(</span><span class="s">"com.mysql.jdbc.Driver"</span><span class="o">);</span>
+        <span class="n">ds</span><span class="o">.</span><span class="na">setUrl</span><span class="o">(</span><span class="s">"jdbc:mysql://localhost:3306/demo_db"</span><span class="o">);</span>
+        <span class="n">ds</span><span class="o">.</span><span class="na">setUsername</span><span class="o">(</span><span class="s">"root"</span><span class="o">);</span>
+        <span class="n">ds</span><span class="o">.</span><span class="na">setPassword</span><span class="o">(</span><span class="s">"123456"</span><span class="o">);</span>
+        <span class="n">ds</span><span class="o">.</span><span class="na">setInitialSize</span><span class="o">(</span><span class="mi">5</span><span class="o">);</span>
+        <span class="n">ds</span><span class="o">.</span><span class="na">setMaxTotal</span><span class="o">(</span><span class="mi">10</span><span class="o">);</span>
+
+        <span class="k">return</span> <span class="n">ds</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>xml方式：</p>
+
+<p>[<code class="highlighter-rouge">applicationContext.xml</code>]</p>
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="nt">&lt;beans</span> <span class="na">xmlns=</span><span class="s">"http://www.springframework.org/schema/beans"</span>
+       <span class="na">xmlns:xsi=</span><span class="s">"http://www.w3.org/2001/XMLSchema-instance"</span>
+       <span class="na">xmlns:p=</span><span class="s">"http://www.springframework.org/schema/p"</span>
+       <span class="na">xsi:schemaLocation=</span><span class="s">"http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;bean</span> <span class="na">id=</span><span class="s">"dataSource"</span>
+          <span class="na">class=</span><span class="s">"org.apache.commons.dbcp2.BasicDataSource"</span>
+          <span class="na">p:driverClassName=</span><span class="s">"com.mysql.jdbc.Driver"</span>
+          <span class="na">p:url=</span><span class="s">"jdbc:mysql://localhost:3306/demo_db"</span>
+          <span class="na">p:username=</span><span class="s">"root"</span>
+          <span class="na">p:password=</span><span class="s">"123456"</span>
+          <span class="na">p:initialSize=</span><span class="s">"5"</span>
+          <span class="na">p:maxTotal=</span><span class="s">"10"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/beans&gt;</span>
+</code></pre></div></div>
+
+<h3 id="基于jdbc驱动的数据源">基于JDBC驱动的数据源</h3>
+
+<p>这是最简单的方式。</p>
+
+<p>Spring提供了3个数据源类（位于org.springframework.jdbc.datasource）：</p>
+<ul>
+  <li><code class="highlighter-rouge">DriverManagerDataSource</code>：每次连接请求时都会返回一个新建的连接。</li>
+  <li><code class="highlighter-rouge">SimpleDriverDataSource</code>：与上一个类似，但直接使用JDBC驱动，来解决特定环境下类的加载问题。</li>
+  <li><code class="highlighter-rouge">SingleConnectionDataSource</code>：每次请求都会返回同一个连接。</li>
+</ul>
+
+<p>java方式：</p>
+
+<p>[<code class="highlighter-rouge">DatabaseConfig.java</code>]</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww.config</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Bean</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Configuration</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.jdbc.datasource.DriverManagerDataSource</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">javax.sql.DataSource</span><span class="o">;</span>
+
+<span class="nd">@Configuration</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">DatabaseConfig</span> <span class="o">{</span>
+
+    <span class="nd">@Bean</span>
+    <span class="kd">public</span> <span class="nc">DataSource</span> <span class="nf">dataSource</span><span class="o">(){</span>
+        <span class="nc">DriverManagerDataSource</span> <span class="n">ds</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">DriverManagerDataSource</span><span class="o">();</span>
+        <span class="n">ds</span><span class="o">.</span><span class="na">setDriverClassName</span><span class="o">(</span><span class="s">"com.mysql.jdbc.Driver"</span><span class="o">);</span>
+        <span class="n">ds</span><span class="o">.</span><span class="na">setUrl</span><span class="o">(</span><span class="s">"jdbc:mysql://localhost:3306/demo_db"</span><span class="o">);</span>
+        <span class="c1">// ds.setUrl("jdbc:mysql://localhost:3306/demo_db?characterEncoding=utf8&amp;useSSL=false");    // xml中&amp;转义为&amp;amp;</span>
+        <span class="n">ds</span><span class="o">.</span><span class="na">setUsername</span><span class="o">(</span><span class="s">"root"</span><span class="o">);</span>
+        <span class="n">ds</span><span class="o">.</span><span class="na">setPassword</span><span class="o">(</span><span class="s">"123456"</span><span class="o">);</span>
+
+        <span class="k">return</span> <span class="n">ds</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>xml方式：</p>
+
+<p>[<code class="highlighter-rouge">applicationContext.xml</code>]</p>
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="nt">&lt;beans</span> <span class="na">xmlns=</span><span class="s">"http://www.springframework.org/schema/beans"</span>
+       <span class="na">xmlns:xsi=</span><span class="s">"http://www.w3.org/2001/XMLSchema-instance"</span>
+       <span class="na">xmlns:p=</span><span class="s">"http://www.springframework.org/schema/p"</span>
+       <span class="na">xsi:schemaLocation=</span><span class="s">"http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;bean</span> <span class="na">id=</span><span class="s">"dataSource"</span>
+          <span class="na">class=</span><span class="s">"org.springframework.jdbc.datasource.DriverManagerDataSource"</span>
+          <span class="na">p:driverClassName=</span><span class="s">"com.mysql.jdbc.Driver"</span>
+          <span class="na">p:url=</span><span class="s">"jdbc:mysql://localhost:3306/demo_db"</span>
+          <span class="na">p:username=</span><span class="s">"root"</span>
+          <span class="na">p:password=</span><span class="s">"123456"</span> <span class="nt">/&gt;</span>
+
+<span class="nt">&lt;/beans&gt;</span>
+</code></pre></div></div>
+
+<h3 id="嵌入式数据源">嵌入式数据源</h3>
+
+<p>需要在<code class="highlighter-rouge">build.gradle</code>中添加<code class="highlighter-rouge">h2</code>。</p>
+
+<div class="language-gradle highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">compile</span> <span class="s2">"com.h2database:h2:1.4.200"</span>
+</code></pre></div></div>
+
+<p>java方式：</p>
+
+<p>[<code class="highlighter-rouge">DatabaseConfig.java</code>]</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww.config</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Bean</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Configuration</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">javax.sql.DataSource</span><span class="o">;</span>
+
+<span class="nd">@Configuration</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">DatabaseConfig</span> <span class="o">{</span>
+    <span class="nd">@Bean</span>
+    <span class="kd">public</span> <span class="nc">DataSource</span> <span class="nf">dataSource</span><span class="o">(){</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">EmbeddedDatabaseBuilder</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">setType</span><span class="o">(</span><span class="nc">EmbeddedDatabaseType</span><span class="o">.</span><span class="na">H2</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">addScript</span><span class="o">((</span><span class="s">"classpath:com/yww/sql/schema.sql"</span><span class="o">))</span>
+                <span class="o">.</span><span class="na">addScript</span><span class="o">(</span><span class="s">"classpath:com/yww/sql/test-data.sql"</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>xml方式：</p>
+
+<p>[<code class="highlighter-rouge">applicationContext.xml</code>]</p>
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="nt">&lt;beans</span> <span class="na">xmlns=</span><span class="s">"http://www.springframework.org/schema/beans"</span>
+       <span class="na">xmlns:xsi=</span><span class="s">"http://www.w3.org/2001/XMLSchema-instance"</span>
+       <span class="na">xmlns:jdbc=</span><span class="s">"http://www.springframework.org/schema/jdbc"</span>
+       <span class="na">xsi:schemaLocation=</span><span class="s">"http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;jdbc:embedded-database</span> <span class="na">id=</span><span class="s">"dataSource"</span> <span class="na">type=</span><span class="s">"H2"</span><span class="nt">&gt;</span>
+<span class="c">&lt;!--        &lt;jdbc:script location="classpath:com/yww/sql/schema.sql" /&gt;--&gt;</span>
+        <span class="nt">&lt;jdbc:script</span> <span class="na">location=</span><span class="s">"./WEB-INF/sql/schema.sql"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;jdbc:script</span> <span class="na">location=</span><span class="s">"file:WEB-INF/sql/test-data.sql"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/jdbc:embedded-database&gt;</span>
+<span class="nt">&lt;/beans&gt;</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>sql文件的路径，可使用类路径或文件路径。</p>
+</blockquote>
+
+<h3 id="profile选择数据源">profile选择数据源</h3>
+
+<p>需要在<code class="highlighter-rouge">application.properties</code>文件中配置：</p>
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="py">spring.profiles.default</span><span class="p">=</span><span class="s">dev</span>
+<span class="py">spring.profiles.active</span><span class="p">=</span><span class="s">production</span>
+</code></pre></div></div>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww.config</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Bean</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Configuration</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.context.annotation.Profile</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.jndi.JndiObjectFactoryBean</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">javax.sql.DataSource</span><span class="o">;</span>
+
+<span class="nd">@Configuration</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">DatabaseConfig</span> <span class="o">{</span>
+    <span class="nd">@Profile</span><span class="o">(</span><span class="s">"dev"</span><span class="o">)</span>
+    <span class="nd">@Bean</span>
+    <span class="kd">public</span> <span class="nc">DataSource</span> <span class="nf">embeddedDataSource</span><span class="o">(){</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">EmbeddedDatabaseBuilder</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">setType</span><span class="o">(</span><span class="nc">EmbeddedDatabaseType</span><span class="o">.</span><span class="na">H2</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">addScript</span><span class="o">((</span><span class="s">"classpath:com/yww/sql/schema.sql"</span><span class="o">))</span>
+                <span class="o">.</span><span class="na">addScript</span><span class="o">(</span><span class="s">"classpath:com/yww/sql/test-data.sql"</span><span class="o">)</span>
+                <span class="o">.</span><span class="na">build</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Profile</span><span class="o">(</span><span class="s">"production"</span><span class="o">)</span>
+    <span class="nd">@Bean</span>
+    <span class="kd">public</span> <span class="nc">DataSource</span> <span class="nf">dataSource</span><span class="o">(){</span>
+        <span class="nc">JndiObjectFactoryBean</span> <span class="n">jndiObjectFactoryBean</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">JndiObjectFactoryBean</span><span class="o">();</span>
+        <span class="n">jndiObjectFactoryBean</span><span class="o">.</span><span class="na">setJndiName</span><span class="o">(</span><span class="s">"jdbc/MyDS"</span><span class="o">);</span>
+        <span class="n">jndiObjectFactoryBean</span><span class="o">.</span><span class="na">setResourceRef</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+        <span class="n">jndiObjectFactoryBean</span><span class="o">.</span><span class="na">setProxyInterface</span><span class="o">(</span><span class="n">javax</span><span class="o">.</span><span class="na">sql</span><span class="o">.</span><span class="na">DataSource</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+        <span class="k">return</span> <span class="o">(</span><span class="nc">DataSource</span><span class="o">)</span><span class="n">jndiObjectFactoryBean</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="jdbc-1">JDBC</h2>
+
+<h3 id="传统用法">传统用法</h3>
+
+<p>[<code class="highlighter-rouge">JdbcController.java</code>]</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.stereotype.Controller</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.ui.ModelMap</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.RequestMapping</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.RequestMethod</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.beans.factory.annotation.Autowired</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">javax.sql.DataSource</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.sql.Connection</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.sql.PreparedStatement</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.sql.ResultSet</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.sql.SQLException</span><span class="o">;</span>
+
+<span class="nd">@Controller</span>
+<span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">"/show"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">JdbcController</span> <span class="o">{</span>
+
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="n">method</span> <span class="o">=</span> <span class="nc">RequestMethod</span><span class="o">.</span><span class="na">GET</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">showData</span><span class="o">(</span><span class="nc">ModelMap</span> <span class="n">model</span><span class="o">){</span>
+        <span class="nc">String</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">query</span><span class="o">(</span><span class="mi">1001</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">msg</span><span class="o">);</span>
+        <span class="n">model</span><span class="o">.</span><span class="na">addAttribute</span><span class="o">(</span><span class="s">"msg"</span><span class="o">,</span> <span class="n">msg</span><span class="o">);</span>
+        <span class="k">return</span> <span class="s">"show"</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="nc">DataSource</span> <span class="n">dataSource</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">query</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">){</span>
+        <span class="nc">Connection</span> <span class="n">conn</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="nc">PreparedStatement</span> <span class="n">stmt</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="nc">ResultSet</span> <span class="n">resultSet</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="nc">String</span> <span class="n">result</span> <span class="o">=</span> <span class="s">""</span><span class="o">;</span>
+        <span class="k">try</span><span class="o">{</span>
+            <span class="n">conn</span> <span class="o">=</span> <span class="n">dataSource</span><span class="o">.</span><span class="na">getConnection</span><span class="o">();</span>  <span class="c1">// 获取连接</span>
+            <span class="nc">String</span> <span class="n">sql</span> <span class="o">=</span> <span class="s">"select * from user_t where id = ?"</span><span class="o">;</span>
+            <span class="n">stmt</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="na">prepareStatement</span><span class="o">(</span><span class="n">sql</span><span class="o">);</span>  <span class="c1">// 创建语句</span>
+            <span class="n">stmt</span><span class="o">.</span><span class="na">setString</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="nc">String</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">id</span><span class="o">));</span>  <span class="c1">// 绑定参数</span>
+            <span class="n">resultSet</span> <span class="o">=</span> <span class="n">stmt</span><span class="o">.</span><span class="na">executeQuery</span><span class="o">();</span>     <span class="c1">// 执行语句</span>
+            <span class="k">while</span> <span class="o">(</span><span class="n">resultSet</span><span class="o">.</span><span class="na">next</span><span class="o">())</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">resultSet</span><span class="o">.</span><span class="na">getInt</span><span class="o">(</span><span class="s">"id"</span><span class="o">)</span> <span class="o">+</span> <span class="n">resultSet</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">"name"</span><span class="o">)</span> <span class="o">+</span> <span class="n">resultSet</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">"passwd"</span><span class="o">);</span>
+        <span class="o">}</span><span class="k">catch</span> <span class="o">(</span><span class="nc">SQLException</span> <span class="n">e</span><span class="o">){</span>    <span class="c1">// 处理异常</span>
+        <span class="o">}</span><span class="k">finally</span> <span class="o">{</span>  <span class="c1">// 清理资源</span>
+            <span class="k">try</span><span class="o">{</span>
+                <span class="k">if</span><span class="o">(</span><span class="n">resultSet</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
+                    <span class="n">resultSet</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+                <span class="k">if</span><span class="o">(</span><span class="n">stmt</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
+                    <span class="n">stmt</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+                <span class="k">if</span><span class="o">(</span><span class="n">conn</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
+                    <span class="n">conn</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+            <span class="o">}</span><span class="k">catch</span> <span class="o">(</span><span class="nc">SQLException</span> <span class="n">e</span><span class="o">){</span>    <span class="c1">// 处理异常</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+
+        <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="jdbc模板">JDBC模板</h3>
+<p>Spring为JDBC提供了三个模板类供选择：</p>
+<ul>
+  <li><code class="highlighter-rouge">JdbcTemplate</code>：最基本的Spring JDBC模板，这个模板支持简单的JDBC数据库访问功能以及基于索引参数的查询。</li>
+  <li><code class="highlighter-rouge">NamedParameterJdbcTemplate</code>：可以在执行查询时，将值以命名参数的形式绑定到SQL中，而不是使用简单的索引参数。</li>
+  <li><code class="highlighter-rouge">SimpleJdbcTemplate</code>：利用一些如自动装箱，范型以及可变参数列表来简化JDBC模板的使用。</li>
+</ul>
+
+<p>首先需要配置一个jdbc模板的Bean。
+[<code class="highlighter-rouge">DatabaseConfig.java</code>]</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nd">@Bean</span>
+    <span class="kd">public</span> <span class="nc">JdbcTemplate</span> <span class="nf">jdbcTemplate</span><span class="o">(</span><span class="nc">DataSource</span> <span class="n">dataSource</span><span class="o">){</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">JdbcTemplate</span><span class="o">(</span><span class="n">dataSource</span><span class="o">);</span>
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p><code class="highlighter-rouge">JdbcOperations</code>是一个接口，定义了<code class="highlighter-rouge">JdbcTemplate</code>所实现的操作。</p>
+</blockquote>
+
+<p>[<code class="highlighter-rouge">JdbcTemplateController.java</code>]</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.beans.factory.annotation.Autowired</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.jdbc.core.JdbcOperations</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.jdbc.core.JdbcTemplate</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.jdbc.core.RowMapper</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.stereotype.Controller</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.ui.ModelMap</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.RequestMapping</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.RequestMethod</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">javax.sql.DataSource</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.sql.Connection</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.sql.PreparedStatement</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.sql.ResultSet</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.sql.SQLException</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.Random</span><span class="o">;</span>
+
+<span class="nd">@Controller</span>
+<span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">"/show_t"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">JdbcTemplateController</span> <span class="o">{</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="kd">private</span> <span class="nc">JdbcOperations</span> <span class="n">jdbcOperations</span><span class="o">;</span>
+
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="n">method</span> <span class="o">=</span> <span class="nc">RequestMethod</span><span class="o">.</span><span class="na">GET</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">showData</span><span class="o">(</span><span class="nc">ModelMap</span> <span class="n">model</span><span class="o">){</span>
+        <span class="nc">Random</span> <span class="n">random</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Random</span><span class="o">();</span>
+        <span class="nc">User</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">User</span><span class="o">(</span><span class="n">random</span><span class="o">.</span><span class="na">nextInt</span><span class="o">(</span><span class="mi">10000</span><span class="o">),</span> <span class="s">"yww"</span><span class="o">,</span> <span class="s">"123456"</span><span class="o">);</span>
+        <span class="n">addUser</span><span class="o">(</span><span class="n">user</span><span class="o">);</span>
+        <span class="nc">User</span> <span class="n">userFound</span> <span class="o">=</span> <span class="n">findOne</span><span class="o">(</span><span class="mi">1001</span><span class="o">);</span>
+        <span class="n">model</span><span class="o">.</span><span class="na">addAttribute</span><span class="o">(</span><span class="s">"msg"</span><span class="o">,</span> <span class="n">userFound</span><span class="o">);</span>
+        <span class="k">return</span> <span class="s">"show"</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 添加</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">addUser</span><span class="o">(</span><span class="nc">User</span> <span class="n">user</span><span class="o">){</span>
+        <span class="nc">String</span> <span class="n">sql</span> <span class="o">=</span> <span class="s">"insert into user_t (id, name, passwd) values (?, ?, ?)"</span><span class="o">;</span>
+        <span class="n">jdbcOperations</span><span class="o">.</span><span class="na">update</span><span class="o">(</span><span class="n">sql</span><span class="o">,</span>
+                <span class="n">user</span><span class="o">.</span><span class="na">getId</span><span class="o">(),</span>
+                <span class="n">user</span><span class="o">.</span><span class="na">getName</span><span class="o">(),</span>
+                <span class="n">user</span><span class="o">.</span><span class="na">getPasswd</span><span class="o">());</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 查询</span>
+    <span class="kd">public</span> <span class="nc">User</span> <span class="nf">findOne</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">){</span>
+        <span class="nc">String</span> <span class="n">sql</span> <span class="o">=</span> <span class="s">"select * from user_t where id = ?"</span><span class="o">;</span>
+        <span class="k">return</span> <span class="n">jdbcOperations</span><span class="o">.</span><span class="na">queryForObject</span><span class="o">(</span><span class="n">sql</span><span class="o">,</span>
+                <span class="k">new</span> <span class="nf">UserRowMapper</span><span class="o">(),</span>    <span class="c1">// 指定映射</span>
+<span class="c1">//                (rs, rowNum) -&gt; {</span>
+<span class="c1">//                    return new User(</span>
+<span class="c1">//                            rs.getInt("id"),</span>
+<span class="c1">//                            rs.getString("name"),</span>
+<span class="c1">//                            rs.getString("passwd")</span>
+<span class="c1">//                    );</span>
+<span class="c1">//                },    // 指定映射(java 8 lambda,函数式编程)</span>
+<span class="c1">//                this::mapUser,  // 指定映射(Java 8 方法引用)</span>
+                <span class="n">id</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 映射类</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">UserRowMapper</span> <span class="kd">implements</span> <span class="nc">RowMapper</span><span class="o">&lt;</span><span class="nc">User</span><span class="o">&gt;{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="nc">User</span> <span class="nf">mapRow</span><span class="o">(</span><span class="nc">ResultSet</span> <span class="n">rs</span><span class="o">,</span> <span class="kt">int</span> <span class="n">rowNum</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">SQLException</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="nf">User</span><span class="o">(</span>
+                <span class="n">rs</span><span class="o">.</span><span class="na">getInt</span><span class="o">(</span><span class="s">"id"</span><span class="o">),</span>
+                <span class="n">rs</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">"name"</span><span class="o">),</span>
+                <span class="n">rs</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">"passwd"</span><span class="o">)</span>
+            <span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 映射方法</span>
+    <span class="kd">public</span> <span class="nc">User</span> <span class="nf">mapUser</span><span class="o">(</span><span class="nc">ResultSet</span> <span class="n">rs</span><span class="o">,</span> <span class="kt">int</span> <span class="n">row</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">SQLException</span><span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">User</span><span class="o">(</span>
+                <span class="n">rs</span><span class="o">.</span><span class="na">getInt</span><span class="o">(</span><span class="s">"id"</span><span class="o">),</span>
+                <span class="n">rs</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">"name"</span><span class="o">),</span>
+                <span class="n">rs</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">"passwd"</span><span class="o">)</span>
+        <span class="o">);</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>因为<code class="highlighter-rouge">RowMapper</code>接口只声明了<code class="highlighter-rouge">addRow()</code>一个方法，因此它完全符合<code class="highlighter-rouge">函数式接口</code>的标准，可以使用<code class="highlighter-rouge">Lambda</code>表达式。或使用java 8中的方法引用，在单独的方法中定义映射逻辑。（可以不必显式实现<code class="highlighter-rouge">RowMapper</code>接口，只需Lambda表达式或方法接受相同参数，返回相同类型）</p>
+</blockquote>
+
+<blockquote>
+  <p>简单描述一下<code class="highlighter-rouge">NamedParameterJdbcTemplate</code>的用法，先声明一个它的Bean，使用时，sql语句不用<code class="highlighter-rouge">?</code>，和放入的参数为<code class="highlighter-rouge">字典Map</code>类型。如下：</p>
+  <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">addUserByName</span><span class="o">(</span><span class="nc">User</span> <span class="n">user</span><span class="o">){</span>
+        <span class="nc">String</span> <span class="n">sql</span> <span class="o">=</span> <span class="s">"insert into user_t (id, name, passwd) values (:id, :name, :passwd)"</span><span class="o">;</span>
+        <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Object</span><span class="o">&gt;</span> <span class="n">paramMap</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;&gt;();</span>
+        <span class="n">paramMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"id"</span><span class="o">,</span> <span class="n">user</span><span class="o">.</span><span class="na">getId</span><span class="o">());</span>
+        <span class="n">paramMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"name"</span><span class="o">,</span> <span class="n">user</span><span class="o">.</span><span class="na">getName</span><span class="o">());</span>
+        <span class="n">paramMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"passwd"</span><span class="o">,</span> <span class="n">user</span><span class="o">.</span><span class="na">getPasswd</span><span class="o">());</span>
+        <span class="n">jdbcOperations</span><span class="o">.</span><span class="na">update</span><span class="o">(</span><span class="n">sql</span><span class="o">,</span> <span class="n">paramMap</span><span class="o">);</span>
+    <span class="o">}</span>
+</code></pre></div>  </div>
+</blockquote>
+
+<h1 id="orm">ORM</h1>
+<p>将对象属性映射到数据库的列上，并且需要自动生成语句和查询，需要更复杂的特性：</p>
+<ul>
+  <li>延迟加载(Lazy loading)：允许我们只在需要的时候获取数据。避免获取无用的关联数据。</li>
+  <li>预先抓取(Eager fetching)：与延迟加载相对，可以使用一个查询获取完整的关联对象。节省多次查询的成本。</li>
+  <li>级联(Cascading)：更改某个表，也能同时更改其关联的其它表。</li>
+</ul>
+
+<h2 id="项目结构-1">项目结构</h2>
+
+<p>##</p>
+
+<h1 id="jpa">JPA</h1>
+
+<h1 id="mongodb">MongoDB</h1>
+
+<h1 id="redis">Redis</h1>
+
+:ET

@@ -1,0 +1,304 @@
+I"~X<h1 id="jdbc">JDBC</h1>
+
+<p>传统的jdbc程序。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">java.sql.*</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Main</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">){</span>
+        <span class="nc">Connection</span> <span class="n">connection</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="nc">PreparedStatement</span> <span class="n">preparedStatement</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="nc">ResultSet</span> <span class="n">resultSet</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="c1">// 加载数据库驱动</span>
+            <span class="nc">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">"com.mysql.jdbc.Driver"</span><span class="o">);</span>
+            <span class="c1">// 通过驱动管理获取数据库连接</span>
+            <span class="n">connection</span> <span class="o">=</span> <span class="nc">DriverManager</span><span class="o">.</span><span class="na">getConnection</span><span class="o">(</span>
+                    <span class="s">"jdbc:mysql://localhost:3306/demo_db"</span><span class="o">,</span>
+                    <span class="s">"root"</span><span class="o">,</span>
+                    <span class="s">"123456"</span><span class="o">);</span>
+            <span class="c1">// 获取预处理</span>
+            <span class="n">preparedStatement</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="na">prepareStatement</span><span class="o">(</span><span class="s">"select * from user_t where id = ?"</span><span class="o">);</span>
+            <span class="c1">// 设置参数</span>
+            <span class="n">preparedStatement</span><span class="o">.</span><span class="na">setString</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="s">"1001"</span><span class="o">);</span>
+            <span class="c1">// 执行查询语句</span>
+            <span class="n">resultSet</span> <span class="o">=</span> <span class="n">preparedStatement</span><span class="o">.</span><span class="na">executeQuery</span><span class="o">();</span>
+            <span class="c1">// 遍历查询结果集</span>
+            <span class="k">while</span> <span class="o">(</span><span class="n">resultSet</span><span class="o">.</span><span class="na">next</span><span class="o">()){</span>
+                <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">resultSet</span><span class="o">.</span><span class="na">getString</span><span class="o">(</span><span class="s">"name"</span><span class="o">));</span>
+            <span class="o">}</span>
+
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">ClassNotFoundException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">SQLException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+            <span class="c1">//释放资源</span>
+            <span class="k">if</span><span class="o">(</span><span class="n">resultSet</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">){</span>
+                <span class="k">try</span> <span class="o">{</span>
+                    <span class="n">resultSet</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+                <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">SQLException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+            <span class="k">if</span><span class="o">(</span><span class="n">preparedStatement</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">){</span>
+                <span class="k">try</span> <span class="o">{</span>
+                    <span class="n">preparedStatement</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+                <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">SQLException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+            <span class="k">if</span><span class="o">(</span><span class="n">connection</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">){</span>
+                <span class="k">try</span> <span class="o">{</span>
+                    <span class="n">connection</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+                <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">SQLException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h1 id="mybatis">Mybatis</h1>
+
+<p>使用mybatis做ORM映射的程序。</p>
+
+<h2 id="目录结构">目录结构</h2>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>.
+├── build.gradle
+├── settings.gradle
+└── src/
+    ├── main/
+    │   ├── java/
+    │   │   └── com/
+    │   │       └── yww/
+    │   │           ├── dao/
+    │   │           │   └── UserDao.java
+    │   │           ├── Main.java
+    │   │           └── po/
+    │   │               └── User.java
+    │   └── resources/
+    │       ├── com/
+    │       │   └── yww/
+    │       │       └── dao/
+    │       │           └── user-mapper.xml
+    │       └── mybatis-config.xml
+    └── test/
+        ├── java/
+        └── resources/
+</code></pre></div></div>
+
+<h2 id="准备数据库">准备数据库</h2>
+
+<ul>
+  <li>设置账户：root</li>
+  <li>设置密码：123456</li>
+</ul>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">DROP</span> <span class="k">DATABASE</span> <span class="n">demo_db</span><span class="p">;</span>
+
+<span class="k">CREATE</span> <span class="k">DATABASE</span> <span class="n">if</span> <span class="k">NOT</span> <span class="k">exists</span> <span class="n">demo_db</span><span class="p">;</span>
+<span class="n">use</span> <span class="n">demo_db</span><span class="p">;</span>
+<span class="k">create</span> <span class="k">table</span> <span class="n">if</span> <span class="k">NOT</span> <span class="k">exists</span> <span class="n">user_t</span><span class="p">(</span>
+    <span class="n">id</span> <span class="nb">int</span> <span class="n">auto_increment</span><span class="p">,</span>
+    <span class="n">name</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span>
+    <span class="n">passwd</span> <span class="nb">VARCHAR</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span>
+    <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="p">(</span><span class="n">id</span><span class="p">)</span>
+<span class="p">)</span> <span class="n">engine</span><span class="o">=</span><span class="n">InnoDB</span><span class="p">;</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">user_t</span><span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">passwd</span><span class="p">)</span>
+<span class="k">VALUES</span>
+<span class="p">(</span><span class="mi">1001</span><span class="p">,</span> <span class="nv">"admin"</span><span class="p">,</span> <span class="nv">"123456"</span><span class="p">),</span>
+<span class="p">(</span><span class="mi">1002</span><span class="p">,</span> <span class="nv">"yww"</span><span class="p">,</span> <span class="nv">"123456"</span><span class="p">);</span>
+
+<span class="k">SELECT</span> <span class="o">*</span> <span class="k">from</span> <span class="n">user_t</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h2 id="代码">代码</h2>
+
+<ul>
+  <li>build.gradle</li>
+</ul>
+
+<div class="language-gradle highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">plugins</span> <span class="o">{</span>
+    <span class="n">id</span> <span class="s1">'java'</span>
+<span class="o">}</span>
+
+<span class="n">group</span> <span class="s1">'com.yww'</span>
+<span class="n">version</span> <span class="s1">'1.0-SNAPSHOT'</span>
+
+<span class="n">sourceCompatibility</span> <span class="o">=</span> <span class="mf">1.8</span>
+
+<span class="k">repositories</span> <span class="o">{</span>
+    <span class="n">mavenCentral</span><span class="o">()</span>
+<span class="o">}</span>
+
+<span class="k">dependencies</span> <span class="o">{</span>
+    <span class="n">compile</span> <span class="s2">"mysql:mysql-connector-java:5.1.48"</span>
+    <span class="n">compile</span> <span class="s2">"org.mybatis:mybatis:3.5.2"</span>
+
+    <span class="n">testCompile</span> <span class="s2">"junit:junit:4.12"</span>
+<span class="o">}</span>
+
+<span class="n">jar</span> <span class="o">{</span>
+    <span class="n">from</span> <span class="o">{</span>
+        <span class="n">configurations</span><span class="o">.</span><span class="na">runtime</span><span class="o">.</span><span class="na">collect</span><span class="o">{</span><span class="n">zipTree</span><span class="o">(</span><span class="n">it</span><span class="o">)}</span>
+    <span class="o">}</span>
+    <span class="n">manifest</span> <span class="o">{</span>
+        <span class="n">attributes</span> <span class="s1">'Main-Class'</span><span class="o">:</span> <span class="s1">'com.yww.Main'</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<ul>
+  <li>User.java</li>
+</ul>
+
+<p>映射类</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww.po</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">User</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">id</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">name</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">passwd</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getId</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">id</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setId</span><span class="o">(</span><span class="kt">int</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">id</span> <span class="o">=</span> <span class="n">id</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">getName</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">name</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setName</span><span class="o">(</span><span class="nc">String</span> <span class="n">name</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">getPasswd</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">passwd</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setPasswd</span><span class="o">(</span><span class="nc">String</span> <span class="n">passwd</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">passwd</span> <span class="o">=</span> <span class="n">passwd</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<ul>
+  <li>UserDao.java</li>
+</ul>
+
+<p>映射方法</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww.dao</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">com.yww.po.User</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">UserDao</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">insert</span><span class="o">(</span><span class="nc">User</span> <span class="n">user</span><span class="o">);</span>
+
+    <span class="kd">public</span> <span class="nc">User</span> <span class="nf">findUserById</span><span class="o">(</span><span class="kt">int</span> <span class="n">userId</span><span class="o">);</span>
+
+    <span class="kd">public</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">User</span><span class="o">&gt;</span> <span class="nf">findALLUsers</span><span class="o">();</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<ul>
+  <li>mybatis-config.xml</li>
+</ul>
+
+<p>mybatis配置文件（文件名任意），这里主要配置了mysql的连接。</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="UTF-8" ?&gt;</span>
+<span class="cp">&lt;!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd"&gt;</span>
+<span class="nt">&lt;configuration&gt;</span>
+
+    <span class="nt">&lt;environments</span> <span class="na">default=</span><span class="s">"development"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;environment</span> <span class="na">id=</span><span class="s">"development"</span><span class="nt">&gt;</span>
+<span class="c">&lt;!--            配置事务管理器的类型--&gt;</span>
+            <span class="nt">&lt;transactionManager</span> <span class="na">type=</span><span class="s">"JDBC"</span><span class="nt">/&gt;</span>
+<span class="c">&lt;!--            配置数据源的类型，以及数据库连接的相关信息--&gt;</span>
+            <span class="nt">&lt;dataSource</span> <span class="na">type=</span><span class="s">"POOLED"</span><span class="nt">&gt;</span>
+
+              <span class="nt">&lt;property</span> <span class="na">name=</span><span class="s">"driver"</span> <span class="na">value=</span><span class="s">"com.mysql.jdbc.Driver"</span><span class="nt">/&gt;</span>
+              <span class="nt">&lt;property</span> <span class="na">name=</span><span class="s">"url"</span> <span class="na">value=</span><span class="s">"jdbc:mysql://localhost:3306/demo_db"</span><span class="nt">/&gt;</span>
+              <span class="nt">&lt;property</span> <span class="na">name=</span><span class="s">"username"</span> <span class="na">value=</span><span class="s">"root"</span><span class="nt">/&gt;</span>
+              <span class="nt">&lt;property</span> <span class="na">name=</span><span class="s">"password"</span> <span class="na">value=</span><span class="s">"123456"</span><span class="nt">/&gt;</span>
+
+            <span class="nt">&lt;/dataSource&gt;</span>
+        <span class="nt">&lt;/environment&gt;</span>
+    <span class="nt">&lt;/environments&gt;</span>
+
+    <span class="c">&lt;!-- 映射文件 --&gt;</span>
+    <span class="nt">&lt;mappers&gt;</span>
+        <span class="nt">&lt;mapper</span> <span class="na">resource=</span><span class="s">"com/yww/dao/user-mapper.xml"</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/mappers&gt;</span>
+
+<span class="nt">&lt;/configuration&gt;</span>
+</code></pre></div></div>
+
+<ul>
+  <li>user-mapper.xml</li>
+</ul>
+
+<p>映射配置文件。</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="UTF-8" ?&gt;</span>
+<span class="cp">&lt;!DOCTYPE mapper
+        PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"
+        "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd"&gt;</span>
+
+<span class="nt">&lt;mapper</span> <span class="na">namespace=</span><span class="s">"com.yww.dao.UserDao"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;select</span> <span class="na">id=</span><span class="s">"findUserById"</span> <span class="na">resultType=</span><span class="s">"com.yww.po.User"</span><span class="nt">&gt;</span>
+      select * from user_t where id = #{id}
+    <span class="nt">&lt;/select&gt;</span>
+
+<span class="nt">&lt;/mapper&gt;</span>
+</code></pre></div></div>
+
+<ul>
+  <li>Main.java</li>
+</ul>
+
+<p>主函数展示如何使用mybatis。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">com.yww.dao.UserDao</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">com.yww.po.User</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.apache.ibatis.io.Resources</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.apache.ibatis.session.SqlSession</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.apache.ibatis.session.SqlSessionFactory</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.apache.ibatis.session.SqlSessionFactoryBuilder</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.io.InputStream</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Main</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+
+        <span class="nc">InputStream</span> <span class="n">inputStream</span> <span class="o">=</span> <span class="nc">Resources</span><span class="o">.</span><span class="na">getResourceAsStream</span><span class="o">(</span><span class="s">"mybatis-config.xml"</span><span class="o">);</span>
+        <span class="nc">SqlSessionFactory</span> <span class="n">sessionFactory</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">SqlSessionFactoryBuilder</span><span class="o">().</span><span class="na">build</span><span class="o">(</span><span class="n">inputStream</span><span class="o">);</span>
+        <span class="nc">SqlSession</span> <span class="n">sqlSession</span> <span class="o">=</span> <span class="n">sessionFactory</span><span class="o">.</span><span class="na">openSession</span><span class="o">();</span>
+        <span class="nc">UserDao</span> <span class="n">userMapper</span> <span class="o">=</span> <span class="n">sqlSession</span><span class="o">.</span><span class="na">getMapper</span><span class="o">(</span><span class="nc">UserDao</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+        <span class="nc">User</span> <span class="n">user</span> <span class="o">=</span> <span class="n">userMapper</span><span class="o">.</span><span class="na">findUserById</span><span class="o">(</span><span class="mi">1001</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">user</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+:ET

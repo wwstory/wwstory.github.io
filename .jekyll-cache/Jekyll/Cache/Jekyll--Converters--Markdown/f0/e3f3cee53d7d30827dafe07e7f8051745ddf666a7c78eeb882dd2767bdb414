@@ -1,0 +1,456 @@
+I"��<h1 id="multipart">multipart</h1>
+
+<h2 id="项目结构">项目结构</h2>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>.
+├── build.gradle
+└── src
+    └── main
+        ├── java
+        │   └── com
+        │       └── yww
+        │           └── UploadsController.java
+        ├── resources
+        │   └── application.properties
+        └── webapp
+            ├── index.jsp
+            └── WEB-INF
+                ├── applicationContext.xml
+                ├── dispatcher-servlet.xml
+                ├── jsp
+                │   └── uploads.jsp
+                └── web.xml
+</code></pre></div></div>
+
+<p>最简的设置只需要<code class="highlighter-rouge">web.xml</code>中配置，和<code class="highlighter-rouge">UploadsController.java</code>使用<code class="highlighter-rouge">@RequestPart</code>即可。</p>
+
+<h2 id="multipart解析器">multipart解析器</h2>
+
+<p><code class="highlighter-rouge">DispatcherServlet</code>并没有实现任何解析multipart请求数据的功能。它将该任务委托给了Spring中<code class="highlighter-rouge">MultipartResolver</code>接口实现，通过该实现类解析multipart请求中的内容。</p>
+
+<p>PS: <code class="highlighter-rouge">Part</code>方式不需要配置<code class="highlighter-rouge">MultipartResolver</code>。</p>
+
+<p>Spring内置2个<code class="highlighter-rouge">MultipartResolver</code>实现：</p>
+<ul>
+  <li><del><code class="highlighter-rouge">CommonsMultipartResolver</code>：使用Jakarta Commons FileUpload解析multipart请求。（不建议使用）</del></li>
+  <li><code class="highlighter-rouge">StandardServletMultipartResolver</code>：依赖于Servlet 3.0对multipart请求的支持。（需Spring 3.1以上版本）</li>
+</ul>
+
+<h2 id="配置multipart解析器">配置multipart解析器</h2>
+
+<p>最简单的配置，只需声明为Bean即可。（使用<code class="highlighter-rouge">Part</code>可省）</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="nd">@Bean</span>
+    <span class="kd">public</span> <span class="nc">MultipartResolver</span> <span class="nf">multipartResolver</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">IOException</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">StandardServletMultipartResolver</span><span class="o">();</span>
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<p>更多的设置。我们需要在<code class="highlighter-rouge">Servlet</code>中配置，使用<code class="highlighter-rouge">web.xml</code>配置比较直观简便。指定了上传位置，文件大小，请求大小。</p>
+
+<p>[<code class="highlighter-rouge">web.xml</code>]</p>
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="nt">&lt;web-app</span> <span class="na">xmlns=</span><span class="s">"http://xmlns.jcp.org/xml/ns/javaee"</span>
+         <span class="na">xmlns:xsi=</span><span class="s">"http://www.w3.org/2001/XMLSchema-instance"</span>
+         <span class="na">xsi:schemaLocation=</span><span class="s">"http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"</span>
+         <span class="na">version=</span><span class="s">"4.0"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;context-param&gt;</span>
+        <span class="nt">&lt;param-name&gt;</span>contextConfigLocation<span class="nt">&lt;/param-name&gt;</span>
+        <span class="nt">&lt;param-value&gt;</span>/WEB-INF/applicationContext.xml<span class="nt">&lt;/param-value&gt;</span>
+    <span class="nt">&lt;/context-param&gt;</span>
+    <span class="nt">&lt;listener&gt;</span>
+        <span class="nt">&lt;listener-class&gt;</span>org.springframework.web.context.ContextLoaderListener<span class="nt">&lt;/listener-class&gt;</span>
+    <span class="nt">&lt;/listener&gt;</span>
+    <span class="nt">&lt;servlet&gt;</span>
+        <span class="nt">&lt;servlet-name&gt;</span>dispatcher<span class="nt">&lt;/servlet-name&gt;</span>
+        <span class="nt">&lt;servlet-class&gt;</span>org.springframework.web.servlet.DispatcherServlet<span class="nt">&lt;/servlet-class&gt;</span>
+        <span class="nt">&lt;load-on-startup&gt;</span>1<span class="nt">&lt;/load-on-startup&gt;</span>
+        <span class="nt">&lt;multipart-config&gt;</span>
+            <span class="nt">&lt;location&gt;</span>/tmp/uploads<span class="nt">&lt;/location&gt;</span>
+            <span class="nt">&lt;max-file-size&gt;</span>2048000<span class="nt">&lt;/max-file-size&gt;</span>
+            <span class="nt">&lt;max-request-size&gt;</span>4096000<span class="nt">&lt;/max-request-size&gt;</span>
+        <span class="nt">&lt;/multipart-config&gt;</span>
+    <span class="nt">&lt;/servlet&gt;</span>
+    <span class="nt">&lt;servlet-mapping&gt;</span>
+        <span class="nt">&lt;servlet-name&gt;</span>dispatcher<span class="nt">&lt;/servlet-name&gt;</span>
+        <span class="c">&lt;!--        &lt;url-pattern&gt;*.form&lt;/url-pattern&gt;--&gt;</span>
+        <span class="nt">&lt;url-pattern&gt;</span>/<span class="nt">&lt;/url-pattern&gt;</span>
+    <span class="nt">&lt;/servlet-mapping&gt;</span>
+<span class="nt">&lt;/web-app&gt;</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>使用java配置，在实现<code class="highlighter-rouge">WebApplicationInitializer</code>类的<code class="highlighter-rouge">onStartup()</code>方法中，或继承<code class="highlighter-rouge">AbstractAnnotationConfigDispatcherServletInitializer</code>类的<code class="highlighter-rouge">customizeRegistration</code>方法中设置<code class="highlighter-rouge">registration.setMultipartConfig()</code>配置。</p>
+</blockquote>
+
+<h2 id="处理multipart请求">处理multipart请求</h2>
+
+<h3 id="表单">表单</h3>
+
+<p>设置<code class="highlighter-rouge">enctype</code>为`multipart/form-data’，这会告诉浏览器以multipart数据的形式提交表单。</p>
+
+<p>[<code class="highlighter-rouge">WEB-INF/jsp/uploads.jsp</code>]</p>
+<div class="language-jsp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">"en"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">"UTF-8"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;title&gt;</span>Title<span class="nt">&lt;/title&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;h1&gt;</span>uploads<span class="nt">&lt;/h1&gt;</span>
+    <span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">"post"</span> <span class="na">enctype=</span><span class="s">"multipart/form-data"</span> <span class="nt">&gt;</span>
+        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"file"</span> <span class="na">name=</span><span class="s">"img"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"submit"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/form&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre></div></div>
+
+<h3 id="控制器">控制器</h3>
+
+<p><code class="highlighter-rouge">@RequestPart</code>指定请求中对应part数据。如果提交表单时没有选择文件，那么这个数组会是空，而不是null。</p>
+
+<p>[<code class="highlighter-rouge">UploadsController.java</code>]</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.stereotype.Controller</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.validation.Errors</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.RequestMapping</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.RequestMethod</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.RequestPart</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">javax.servlet.http.Part</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.io.IOException</span><span class="o">;</span>
+
+<span class="nd">@Controller</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UploadsController</span> <span class="o">{</span>
+
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">"/uploads"</span><span class="o">,</span> <span class="n">method</span> <span class="o">=</span> <span class="nc">RequestMethod</span><span class="o">.</span><span class="na">GET</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">uploads</span><span class="o">(){</span>
+        <span class="k">return</span> <span class="s">"uploads"</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">"/uploads"</span><span class="o">,</span> <span class="n">method</span> <span class="o">=</span> <span class="nc">RequestMethod</span><span class="o">.</span><span class="na">POST</span><span class="o">)</span>
+<span class="c1">//    public String processImage(@RequestPart("img") byte[] img) {</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">processImage</span><span class="o">(</span><span class="nd">@RequestPart</span><span class="o">(</span><span class="s">"img"</span><span class="o">)</span> <span class="nc">Part</span> <span class="n">img</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">img</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="s">"/tmp/"</span> <span class="o">+</span> <span class="n">img</span><span class="o">.</span><span class="na">getSubmittedFileName</span><span class="o">());</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="s">"uploads"</span><span class="o">;</span>
+    <span class="o">}</span>
+    
+<span class="o">}</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p><code class="highlighter-rouge">web.xml</code>和<code class="highlighter-rouge">UploadsController.java</code>中都设置了写入的路径，但最后是以控制器中的为准。</p>
+</blockquote>
+
+<p>使用上传文件的原始<code class="highlighter-rouge">byte[]</code>比较简单但功能有限。因此，Spring还提供了2种接口处理：<code class="highlighter-rouge">Part</code>,<code class="highlighter-rouge">MultipartFile</code>，二者方法十分相似。</p>
+
+<h2 id="html页面">html页面</h2>
+
+<p>[<code class="highlighter-rouge">uploads.jsp</code>]</p>
+<div class="language-jsp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html</span> <span class="na">lang=</span><span class="s">"en"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;head&gt;</span>
+    <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">"UTF-8"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;title&gt;</span>Title<span class="nt">&lt;/title&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+<span class="nt">&lt;body&gt;</span>
+    <span class="nt">&lt;h1&gt;</span>uploads<span class="nt">&lt;/h1&gt;</span>
+    <span class="nt">&lt;form</span> <span class="na">method=</span><span class="s">"post"</span> <span class="na">enctype=</span><span class="s">"multipart/form-data"</span> <span class="nt">&gt;</span>
+        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"file"</span> <span class="na">name=</span><span class="s">"img"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"submit"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/form&gt;</span>
+<span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre></div></div>
+
+<h1 id="异常">异常</h1>
+
+<p>不管是否正常运行，Servlet请求的输出都是一个Servlet响应。如果在请求处理的时候出现了异常，那它的输出依然会是Servlet响应。异常必须要以某种方式转换为响应。</p>
+
+<p>Spring提供了多种方式将异常转换为响应：</p>
+<ul>
+  <li>特定的Spring异常会自动映射为指定的HTTP状态码。</li>
+  <li>异常上可以添加@ResponseStatus注解，从而将其映射为某一个HTTP状态码。</li>
+  <li>在方法上可以添加@ExceptionHandle注解，使其用来处理异常。</li>
+</ul>
+
+<h2 id="项目结构-1">项目结构</h2>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>.
+├── build.gradle
+└── src
+    └── main
+        ├── java
+        │   └── com
+        │       └── yww
+        │           ├── UserController.java
+        │           ├── User.java
+        │           ├── UserNotFoundException.java
+        │           └── UserNotFoundHandler.java
+        ├── resources
+        │   └── application.properties
+        └── webapp
+            ├── index.jsp
+            └── WEB-INF
+                ├── applicationContext.xml
+                ├── dispatcher-servlet.xml
+                ├── jsp
+                │   └── error
+                │       └── usernotfound.jsp
+                └── web.xml
+</code></pre></div></div>
+
+<h2 id="异常映射http状态码">异常映射HTTP状态码</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Spring异常</th>
+      <th>HTTP状态码</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>BindException</td>
+      <td>400 - Bad Request</td>
+    </tr>
+    <tr>
+      <td>ConversionNotSupportedException</td>
+      <td>500 - Internal Server Error</td>
+    </tr>
+    <tr>
+      <td>HttpMediaTypeNotAcceptableException</td>
+      <td>406 - Not Acceptable</td>
+    </tr>
+    <tr>
+      <td>HttpMediaTypeNotSupportedException</td>
+      <td>415 - Unsupported Media Type</td>
+    </tr>
+    <tr>
+      <td>HttpMessageNotReadableException</td>
+      <td>400 - Bad Request</td>
+    </tr>
+    <tr>
+      <td>HttpMessageNotWritableException</td>
+      <td>500 - Internal Server Error</td>
+    </tr>
+    <tr>
+      <td>HttpRequestMethodNotSupportedException</td>
+      <td>405 - Method Not Allowed</td>
+    </tr>
+    <tr>
+      <td>MethodArgumentNotValidException</td>
+      <td>400 - Bad Request</td>
+    </tr>
+    <tr>
+      <td>MissingServletRequestParameterException</td>
+      <td>400 - Bad Request</td>
+    </tr>
+    <tr>
+      <td>MissingServletRequestPartException</td>
+      <td>400 - Bad Request</td>
+    </tr>
+    <tr>
+      <td>TypeMismatchException</td>
+      <td>400 - Bad Request</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>以上异常，一般会由Spring自身抛出。</p>
+
+<p>如果需要自定义异常，并将其映射到HTTP状态码上，只需要使用<code class="highlighter-rouge">@ResponseStatus</code>注解自定义的异常类即可。使用时，在需要的地方抛出即可。</p>
+
+<p>[<code class="highlighter-rouge">UserNotFoundException.java</code>]</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.http.HttpStatus</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.ResponseStatus</span><span class="o">;</span>
+
+<span class="nd">@ResponseStatus</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="nc">HttpStatus</span><span class="o">.</span><span class="na">NOT_FOUND</span><span class="o">,</span> <span class="n">reason</span><span class="o">=</span><span class="s">"User Not Found"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserNotFoundException</span> <span class="kd">extends</span> <span class="nc">RuntimeException</span> <span class="o">{</span>
+
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>在引入<code class="highlighter-rouge">@ResponseStatus</code>注解之后，如果控制器方法抛出这个异常的话，响应将会具有<code class="highlighter-rouge">404状态码</code>。</p>
+
+<h2 id="异常处理">异常处理</h2>
+
+<p>为了处理异常情况，可以在控制器里添加一个带<code class="highlighter-rouge">@ExceptionHandler</code>注解的方法，当指定异常抛出时，它会处理。</p>
+
+<p>[<code class="highlighter-rouge">UserController.java</code>]</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.stereotype.Controller</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.ui.ModelMap</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.ExceptionHandler</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.RequestMapping</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.RequestMethod</span><span class="o">;</span>
+
+<span class="nd">@Controller</span>
+<span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">"/user"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserController</span> <span class="o">{</span>
+
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="n">method</span> <span class="o">=</span> <span class="nc">RequestMethod</span><span class="o">.</span><span class="na">GET</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">printHome</span><span class="o">(</span><span class="nc">ModelMap</span> <span class="n">model</span><span class="o">){</span>
+<span class="c1">//        String username = "yww";</span>
+        <span class="nc">String</span> <span class="n">username</span> <span class="o">=</span> <span class="s">"yww_no"</span><span class="o">;</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">username</span> <span class="o">==</span> <span class="s">"yww"</span><span class="o">){</span>
+            <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">username</span><span class="o">);</span>
+        <span class="o">}</span><span class="k">else</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">UserNotFoundException</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="s">"home"</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@ExceptionHandler</span><span class="o">(</span><span class="nc">UserNotFoundException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">handleUserNotFound</span><span class="o">(){</span>
+        <span class="k">return</span> <span class="s">"error/usernotfound"</span><span class="o">;</span>    <span class="c1">// 视图</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>PS:这有一个问题，如果每个控制器都需要使用这个异常处理，则需要每个控制器都写上这个<code class="highlighter-rouge">@ExceptionHandler</code>的方法，或者继承一个父类。Spring提供了一个更好的解决方式，<code class="highlighter-rouge">控制器通知</code>用于处理所有控制器中的<code class="highlighter-rouge">异常</code>,<code class="highlighter-rouge">初始化</code>,<code class="highlighter-rouge">模型属性</code>。（如下）</p>
+
+<h1 id="控制器通知">控制器通知</h1>
+
+<p>控制器通知（controller advice）是任意带有<code class="highlighter-rouge">@ControllerAdvice</code>注解的类，这个类会包含一个或多个如下类型的方法：</p>
+<ul>
+  <li><code class="highlighter-rouge">@ExceptionHandler</code>标注的方法。</li>
+  <li><code class="highlighter-rouge">@InitBinder</code>标注的方法。</li>
+  <li><code class="highlighter-rouge">@ModelAttribute</code>标注的方法。</li>
+</ul>
+
+<blockquote>
+  <p>由此可见，控制器通知不仅可以作为异常的集中处理，还有其它2种功能使用。</p>
+</blockquote>
+
+<p>在带有<code class="highlighter-rouge">@ControllerAdvice</code>注解的类中，以上所述的方法会运用到整个应用程序所有控制器带有<code class="highlighter-rouge">@RequestMapping</code>注解的方法上。</p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">@ControllerAdvice</code>本身已经使用了<code class="highlighter-rouge">@Component</code>。</p>
+</blockquote>
+
+<p>[<code class="highlighter-rouge">UserNotFoundHandler.java</code>]</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.ControllerAdvice</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.ExceptionHandler</span><span class="o">;</span>
+
+<span class="nd">@ControllerAdvice</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserNotFoundHandler</span> <span class="o">{</span>
+
+    <span class="nd">@ExceptionHandler</span><span class="o">(</span><span class="nc">UserNotFoundException</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">handleUserNotFound</span><span class="o">(){</span>
+        <span class="k">return</span> <span class="s">"error/usernotfound"</span><span class="o">;</span>    <span class="c1">// 视图</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h1 id="跨重定向请求传递数据">跨重定向请求传递数据</h1>
+
+<p>在处理完POST请求后，最佳实践是执行一下重定向。（避免用户点击刷新或返回，导致客户端重新执行危险的POST请求。）</p>
+
+<p>一般来说，当一个处理器方法完成后，该方法所指定的模型数据将会复制到请求中，作为请求中的属性，请求会转发（forward）到视图上进行渲染。因为控制器方法和视图所处理的是同一个请求，所以在转发过程中属性能够得以保存。</p>
+
+<p>但是，当控制器的结果是重定向的话，原始的请求就结束了，并且会发起一个新的GET请求。原始请求中所带的模型数据也就消亡了。</p>
+
+<p>于是，对于重定向来说，模型不能用来传递数据。可以使用其它方案：</p>
+<ul>
+  <li>使用URL模板以路径变量或查询参数的形式传递数据。</li>
+  <li>通过flash属性发送数据。</li>
+</ul>
+
+<h2 id="url传递数据">url传递数据</h2>
+
+<p>最简单的就是用过拼接字符串。但当构建URL或SQL查询时，使用字符串连接很危险。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="k">return</span> <span class="s">"redirect:/user/"</span> <span class="o">+</span> <span class="s">"username"</span><span class="o">;</span>
+</code></pre></div></div>
+
+<p>使用占位符解决，<code class="highlighter-rouge">{username}</code>作为占位符填充到URL模板中，而模型中的<code class="highlighter-rouge">id</code>属性没有匹配到URL中的占位符，所以它会自动以查询参数的形式附加到重定向URL上。</p>
+
+<p>[<code class="highlighter-rouge">UserRedirectUrlController.java</code>]</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.stereotype.Controller</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.ui.Model</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.RequestMapping</span><span class="o">;</span>
+
+<span class="nd">@Controller</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserRedirectUrlController</span> <span class="o">{</span>
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">"/user_re_url"</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">getUser</span><span class="o">(</span><span class="nc">Model</span> <span class="n">model</span><span class="o">){</span>
+        <span class="nc">String</span> <span class="n">username</span> <span class="o">=</span> <span class="s">"yww"</span><span class="o">;</span>
+        <span class="kt">int</span> <span class="n">id</span> <span class="o">=</span> <span class="mi">1001</span><span class="o">;</span>
+        <span class="n">model</span><span class="o">.</span><span class="na">addAttribute</span><span class="o">(</span><span class="s">"username"</span><span class="o">,</span> <span class="n">username</span><span class="o">);</span>
+        <span class="n">model</span><span class="o">.</span><span class="na">addAttribute</span><span class="o">(</span><span class="s">"id"</span><span class="o">,</span> <span class="n">id</span><span class="o">);</span>
+
+        <span class="k">return</span> <span class="s">"redirect:/user/{username}"</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="flash属性传递数据">flash属性传递数据</h2>
+
+<p>使用路径重定向传递数据，只能发送字符串和数字这样简单的数据，如果需要发送如对象的数据，需要使用<code class="highlighter-rouge">flash</code>。</p>
+
+<p>这将会把数据放到会话中，再重定向后取出，我们再负责清除掉。Spring提供了通过<code class="highlighter-rouge">RedirectAttributes</code>设置<code class="highlighter-rouge">flash</code>属性的方法。它是<code class="highlighter-rouge">Model</code>的子接口。</p>
+
+<p>[<code class="highlighter-rouge">UserRedirectFlashController.java</code>]</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.stereotype.Controller</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.RequestMapping</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.servlet.mvc.support.RedirectAttributes</span><span class="o">;</span>
+
+<span class="nd">@Controller</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserRedirectFlashController</span> <span class="o">{</span>
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">"/user_re_flash"</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">postUser</span><span class="o">(</span><span class="nc">RedirectAttributes</span> <span class="n">model</span><span class="o">){</span>
+        <span class="nc">String</span> <span class="n">username</span> <span class="o">=</span> <span class="s">"yww"</span><span class="o">;</span>
+        <span class="nc">User</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">User</span><span class="o">();</span>
+        <span class="n">user</span><span class="o">.</span><span class="na">username</span> <span class="o">=</span> <span class="s">"yww"</span><span class="o">;</span>
+        <span class="n">user</span><span class="o">.</span><span class="na">id</span> <span class="o">=</span> <span class="mi">1001</span><span class="o">;</span>
+
+        <span class="n">model</span><span class="o">.</span><span class="na">addAttribute</span><span class="o">(</span><span class="s">"username"</span><span class="o">,</span> <span class="n">username</span><span class="o">);</span>
+        <span class="n">model</span><span class="o">.</span><span class="na">addFlashAttribute</span><span class="o">(</span><span class="s">"user"</span><span class="o">,</span> <span class="n">user</span><span class="o">);</span>
+
+        <span class="k">return</span> <span class="s">"redirect:/user/{username}"</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>下一个请求的控制器如何取得flash的数据。</p>
+
+<p>[<code class="highlighter-rouge">ShowUserController.java</code>]</p>
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.yww</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.springframework.stereotype.Controller</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.bind.annotation.RequestMapping</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.web.servlet.mvc.support.RedirectAttributes</span><span class="o">;</span>
+
+<span class="nd">@Controller</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">UserRedirectFlashController</span> <span class="o">{</span>
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">"/user_re_flash"</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">postUser</span><span class="o">(</span><span class="nc">RedirectAttributes</span> <span class="n">model</span><span class="o">){</span>
+        <span class="nc">String</span> <span class="n">username</span> <span class="o">=</span> <span class="s">"yww"</span><span class="o">;</span>
+        <span class="nc">User</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">User</span><span class="o">();</span>
+        <span class="n">user</span><span class="o">.</span><span class="na">username</span> <span class="o">=</span> <span class="s">"yww"</span><span class="o">;</span>
+        <span class="n">user</span><span class="o">.</span><span class="na">id</span> <span class="o">=</span> <span class="mi">1001</span><span class="o">;</span>
+
+        <span class="n">model</span><span class="o">.</span><span class="na">addAttribute</span><span class="o">(</span><span class="s">"username"</span><span class="o">,</span> <span class="n">username</span><span class="o">);</span>
+        <span class="n">model</span><span class="o">.</span><span class="na">addFlashAttribute</span><span class="o">(</span><span class="s">"user"</span><span class="o">,</span> <span class="n">user</span><span class="o">);</span>
+
+        <span class="k">return</span> <span class="s">"redirect:/user/{username}"</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+:ET

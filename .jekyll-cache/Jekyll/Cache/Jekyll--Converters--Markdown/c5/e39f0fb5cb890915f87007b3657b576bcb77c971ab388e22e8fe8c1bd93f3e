@@ -1,0 +1,148 @@
+I"�#<h1 id="软件安装">软件安装</h1>
+<p>下载arduino：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt <span class="nb">install </span>arduino
+</code></pre></div></div>
+
+<p>安装rosserial：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt <span class="nb">install </span>ros-melodic-rosserial ros-melodic-rosserial-server ros-melodic-rosserial-arduino ros-melodic-rosserial-python
+</code></pre></div></div>
+
+<p>为了在Arduino中使用它,需要创建一个用于Arduino的rosserial库：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd</span> ~/Arduino/libraries/
+<span class="nb">rm</span> <span class="nt">-rf</span> ros_lib
+rosrun rosserial_arduino make_libraries.py <span class="nb">.</span>
+</code></pre></div></div>
+
+<h1 id="arduino">arduino</h1>
+<h2 id="subscriber">subscriber</h2>
+<p>arduino接受发布在/led_out的数据，控制pin8引脚的电平开关。</p>
+<h3 id="硬件">硬件</h3>
+<p>使用的是arduino pro mini 328p版，发现168p版本存储不够。</p>
+
+<p><img src="/imgs/电子/arduino/arduino-rosserial/1.png" alt="ros_sub" /></p>
+
+<blockquote>
+  <p>DTR用于在上传程序时自动RESET板子，否则需要在上传时手动按一下板子上的RESET按键（时机需要自己把握，比较麻烦）。</p>
+</blockquote>
+
+<h3 id="代码">代码</h3>
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;ros.h&gt;
+#include &lt;std_msgs/Byte.h&gt;
+</span>
+<span class="kt">void</span> <span class="nf">process</span><span class="p">(</span><span class="k">const</span> <span class="n">std_msgs</span><span class="o">::</span><span class="n">Byte</span><span class="o">&amp;</span> <span class="n">led_msg</span><span class="p">){</span>
+  <span class="n">digitalWrite</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">led_msg</span><span class="p">.</span><span class="n">data</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">ros</span><span class="o">::</span><span class="n">NodeHandle</span> <span class="n">nh</span><span class="p">;</span>
+<span class="n">ros</span><span class="o">::</span><span class="n">Subscriber</span><span class="o">&lt;</span><span class="n">std_msgs</span><span class="o">::</span><span class="n">Byte</span><span class="o">&gt;</span> <span class="n">sub</span><span class="p">(</span><span class="s">"led_out"</span><span class="p">,</span> <span class="n">process</span><span class="p">);</span>
+
+<span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{</span>
+  <span class="c1">// put your setup code here, to run once:</span>
+  <span class="n">pinMode</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+
+  <span class="n">nh</span><span class="p">.</span><span class="n">initNode</span><span class="p">();</span>
+  <span class="n">nh</span><span class="p">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">sub</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span> <span class="p">{</span>
+  <span class="c1">// put your main code here, to run repeatedly:</span>
+  <span class="n">nh</span><span class="p">.</span><span class="n">spinOnce</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>arduino上传程序需要/dev/ttyUSB0的权限。</p>
+  <div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo chmod </span>777 /dev/ttyUSB0
+</code></pre></div>  </div>
+</blockquote>
+
+<h3 id="测试">测试</h3>
+<ul>
+  <li>启动ros服务</li>
+  <li>启动rosserial服务</li>
+  <li>查看msg数据</li>
+  <li>发送数据</li>
+</ul>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>roscore
+
+rosrun rosserial_python serial_node.py _port:<span class="o">=</span>/dev/ttyUSB0
+
+rostopic <span class="nb">echo</span> /led_out
+
+rostopic pub <span class="nt">-1</span> /led_out std_msgs/Byte 1
+</code></pre></div></div>
+
+<p>发送数字1打开小灯（非1即可），发送数字0关闭。</p>
+
+<blockquote>
+  <p><code class="highlighter-rouge">rosserial_python</code>可通过_port指定设备，通过_baud指定波特率（书中是115200并不能成功连接，改为57600后成功，后改为不设置可以自动设置）。
+rostopic pub <topic-name> <topic-type> [data...]
+`rostopic pub`中-1是执行一次。</topic-type></topic-name></p>
+</blockquote>
+
+<p><a href="http://wiki.ros.org/rosserial/">rosserial</a>
+<a href="http://wiki.ros.org/rostopic">rostopic</a></p>
+
+<h2 id="publisher">publisher</h2>
+<p>用引线将VCC/GND输入pin9，将pin8输出电平值。</p>
+
+<p>arduino发送pin9引脚的值到/led_out。</p>
+
+<h3 id="硬件-1">硬件</h3>
+<p><img src="/imgs/电子/arduino/arduino-rosserial/2.png" alt="ros_pub" /></p>
+
+<h3 id="代码-1">代码</h3>
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;ros.h&gt;
+#include &lt;std_msgs/Byte.h&gt;
+</span>
+<span class="n">ros</span><span class="o">::</span><span class="n">NodeHandle</span> <span class="n">nh</span><span class="p">;</span>
+<span class="n">std_msgs</span><span class="o">::</span><span class="n">Byte</span> <span class="n">led_msg</span><span class="p">;</span>
+<span class="n">ros</span><span class="o">::</span><span class="n">Publisher</span> <span class="nf">pub</span><span class="p">(</span><span class="s">"led_out"</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">led_msg</span><span class="p">);</span>
+
+<span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span> <span class="p">{</span>
+  <span class="c1">// put your setup code here, to run once:</span>
+  <span class="n">nh</span><span class="p">.</span><span class="n">initNode</span><span class="p">();</span>
+  <span class="n">nh</span><span class="p">.</span><span class="n">advertise</span><span class="p">(</span><span class="n">pub</span><span class="p">);</span>
+
+  <span class="n">pinMode</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span>
+  <span class="n">pinMode</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="n">INPUT</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span> <span class="p">{</span>
+  <span class="c1">// put your main code here, to run repeatedly:</span>
+  <span class="kt">uint8_t</span> <span class="n">reading</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">static</span> <span class="kt">uint32_t</span> <span class="n">pre_time</span><span class="p">;</span>
+
+  <span class="n">reading</span> <span class="o">=</span> <span class="n">digitalRead</span><span class="p">(</span><span class="mi">9</span><span class="p">);</span>
+  <span class="n">digitalWrite</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">reading</span><span class="p">);</span>
+  
+  <span class="k">if</span><span class="p">(</span><span class="n">millis</span><span class="p">()</span> <span class="o">-</span> <span class="n">pre_time</span> <span class="o">&gt;=</span> <span class="mi">50</span><span class="p">){</span>
+    <span class="n">led_msg</span><span class="p">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">reading</span><span class="p">;</span>
+    <span class="n">pub</span><span class="p">.</span><span class="n">publish</span><span class="p">(</span><span class="o">&amp;</span><span class="n">led_msg</span><span class="p">);</span>
+    <span class="n">pre_time</span> <span class="o">=</span> <span class="n">millis</span><span class="p">();</span>
+  <span class="p">}</span>
+
+  <span class="n">nh</span><span class="p">.</span><span class="n">spinOnce</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="测试-1">测试</h3>
+<ul>
+  <li>启动ros服务</li>
+  <li>启动rosserial服务</li>
+  <li>查看msg数据</li>
+  <li>输入电平到输入引脚</li>
+</ul>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>roscore
+
+rosrun rosserial_python serial_node.py _port:<span class="o">=</span>/dev/ttyUSB0
+
+rostopic <span class="nb">echo</span> /led_out
+</code></pre></div></div>
+
+<p>将引脚VCC/GND引到pin9。</p>
+
+<p>在pc，<code class="highlighter-rouge">rostopic echo</code>命令的终端可以看到来自板子的/led_out数据。</p>
+:ET

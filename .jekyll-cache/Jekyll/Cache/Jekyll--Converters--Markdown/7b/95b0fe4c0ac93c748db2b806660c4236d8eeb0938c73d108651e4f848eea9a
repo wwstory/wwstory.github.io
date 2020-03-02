@@ -1,0 +1,117 @@
+I"J)<h1 id="准备">准备</h1>
+<blockquote>
+  <ol>
+    <li>需要有支持CUDA的Nvidia显卡
+ linux查看显卡信息：lspci | grep -i vga
+ 使用nvidia显卡可以这样查看：lspci | grep -i nvidia
+ 上一个命令可以得到类似”<strong>03.00.0</strong>“的显卡代号，查看详细信息：lspic -v -s 03.00.0
+ 查看显卡使用情况（nvidia专用）：nvidia-smi
+ 持续周期性输出使用情况（1秒1次）：watch -n 1 nvidia-smi</li>
+    <li>需要安装pycuda（linux安装：apt install python3-pycuda）</li>
+  </ol>
+</blockquote>
+
+<h1 id="基本使用">基本使用</h1>
+<h2 id="1底层操作">1.底层操作</h2>
+<blockquote>
+  <ol>
+    <li>准备工作: sudo apt install python3-pycuda</li>
+    <li>在cpu使用的内存中创建矩阵</li>
+    <li>将矩阵从cpu使用的内存移动到gpu的显存中</li>
+    <li>编辑c语言代码，让gpu计算</li>
+    <li>将矩阵从gpu显存移动到cpu使用的内存中</li>
+  </ol>
+</blockquote>
+
+<p><strong>内核与线程层级</strong>：
+CUDA程序的一个最重要元素就是内核（kernel），它代表可以并行执行的代码
+每个内核的执行均有叫做线程（thread）的计算单元完成，与cpu的线程不同，gpu线程更加轻量，上下文切换不会影响性能
+为了确定运行一个内核所需的线程数机器逻辑组织形式，CUDA定义了一个二层结构。在最高一层，定义了所谓的区块网格（grid of blocks），这个网格代表了线程区块所在的二维结构，而这些线程区块则是三维的（简单来说，一个cuda结构包含多个blocks，每个blocks包含多个thread）（在下面还会对每个线程区块细分操作）</p>
+
+<p>一个线程区块会被指派给一个流式多处理器(SM)，然后这些线程被进一步划分为被称为warp的线程组，其大小有GPU的架构决定
+为了充分发挥SM本身的并发性，同一组内的线程必须执行相同的指令，否则会出现线程分歧（divergence of thread）</p>
+
+<p>示例：
+用gpu将矩阵每个元素x2</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pycuda.driver</span> <span class="k">as</span> <span class="n">cuda</span>
+<span class="kn">import</span> <span class="nn">pycuda.autoinit</span>  <span class="c1"># init GPU
+</span><span class="kn">from</span> <span class="nn">pycuda.compiler</span> <span class="kn">import</span> <span class="n">SourceModule</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="c1"># 1.cpu create matrix
+</span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>	<span class="c1"># matrix:m*n
+</span><span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>	<span class="c1"># nvidia only support float calculate
+</span>
+<span class="c1"># 2.move to gpu from cpu
+</span><span class="n">a_gpu</span> <span class="o">=</span> <span class="n">cuda</span><span class="o">.</span><span class="n">mem_alloc</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">nbytes</span><span class="p">)</span>	<span class="c1"># alloc memory of gpu, this is 1 dim
+</span><span class="n">cuda</span><span class="o">.</span><span class="n">memcpy_htod</span><span class="p">(</span><span class="n">a_gpu</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>		<span class="c1"># copy cpu memory to gpu memory
+</span>
+<span class="c1"># 3.gpu calculate
+# create module of gpu calculate by c
+</span><span class="n">mod</span> <span class="o">=</span> <span class="n">SourceModule</span><span class="p">(</span><span class="s">'''
+	__global__ void doubleMatrix(float *a)
+	{
+		int idx = threadIdx.x + threadIdx.y * 5;	// (x,y,z), gpu -&gt; sm -&gt; warp
+		a[idx] *= 2;
+	}
+'''</span><span class="p">)</span>
+
+<span class="n">func</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">get_function</span><span class="p">(</span><span class="s">'doubleMatrix'</span><span class="p">)</span>	<span class="c1"># get function from module
+</span><span class="n">func</span><span class="p">(</span><span class="n">a_gpu</span><span class="p">,</span> <span class="n">block</span> <span class="o">=</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>		<span class="c1"># set var and thread number from (x,y,z) orient to function
+</span>
+<span class="c1"># 4.move to cpu from gpu
+</span><span class="n">a_doubled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>		<span class="c1"># create memory of cpu
+</span><span class="n">cuda</span><span class="o">.</span><span class="n">memcpy_dtoh</span><span class="p">(</span><span class="n">a_doubled</span><span class="p">,</span> <span class="n">a_gpu</span><span class="p">)</span>	<span class="c1"># copy gpu memory to cpu memory
+</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'original matrix'</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'double matrix'</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">a_doubled</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><strong>注1</strong>：<strong>import pycuda.autoinit</strong> 语句自动根据GPU可用性和数量选择要使用的GPU，这将创建一个接下来的代码运行中所需的GPU上下文（只需导入即可完成）</p>
+
+<p><strong>注</strong>: astype(numpy.float32)：将矩阵中的项转换为单精度模式，因为许多Nvidia显卡只支持单精度</p>
+
+<p><strong>注3</strong>：在调用gpu的c函数时，通过block参数设定，分配线程的方式，（5, 5, 1）是对应这gpu的(x, y, x)的分配
+在c函数中，threadIdx是一个结构体，它有三个字段<code class="highlighter-rouge">x</code>、<code class="highlighter-rouge">y</code>、<code class="highlighter-rouge">z</code>，每个线程中的这个变量都不同（结合线程层级理解），故用此索引数组，由于动态分配的gpu内存是一维数组，所以需要在c函数内，使用<code class="highlighter-rouge">threadIdx.y</code>乘以矩阵每行的元素个数转换
+更多详情：自行搜索cuda的线程区块划分</p>
+
+<p><strong>注4</strong>：gpu执行的c函数中 __global__ 关键字表示该函数是一个内核函数，必须从主机上调用才能在gpu设备上生成线程层级
+<del>涉及到pycuda内存，为了最大限度地利用可用资源，在支持CUDA的GPU显卡中，有4类内存：
+<code class="highlighter-rouge">寄存器(registers)</code>：每个线程将被分配一个寄存器，每个线程只能访问自身的寄存器，即使同属于一个线程区块
+<code class="highlighter-rouge">共享存储器(shared memory)</code>：在共享存储器中，每个线程区块都有一个其内部线程共享的内存，这部分内存速度极快
+<code class="highlighter-rouge">常数存储器(constant memory)</code>：一个网格中的所有线程一直都可以访问这部分内存，但只能在读取时访问。常数存储器中的数据在应用持续期间一直存在
+<code class="highlighter-rouge">全局存储器(global memory)</code>，：所有网格中的线程（也包含所有内核）都可访问全局存储器</del>
+更多详情：自行搜索PyCUDA内存模型</p>
+
+<h2 id="2python封装控制">2.python封装控制</h2>
+<p>用gpuarray调用内核，它可以直接将数据保存在计算设备(gpu)中，并在该设备中进行计算</p>
+
+<p>示例：
+用gpu将矩阵每个元素x2</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pycuda.autoinit</span>
+<span class="kn">import</span> <span class="nn">pycuda.gpuarray</span> <span class="k">as</span> <span class="n">gpuarray</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">x_gpu</span> <span class="o">=</span> <span class="n">gpuarray</span><span class="o">.</span><span class="n">to_gpu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="n">x_doubled</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">x_gpu</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">'x:'</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'x_doubled:'</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">x_doubled</span><span class="p">)</span>
+</code></pre></div></div>
+
+<hr />
+<h1 id="其它">其它</h1>
+<p>还有其它的库可以方便对cuda编程，如NumbaPro是一个Python编译器，提供了基于CUDA的API编程接口，可以编写CUDA持续，它专门设计用来执行与数组相关的计算任务，和广泛使用的numpy库类似
+NumbaPro: 对GPU编程的库，提供许多的数值计算库，GPU加速库</p>
+
+<hr />
+<p>1.参考书籍：《Python并行编程手册》</p>
+:ET

@@ -1,0 +1,43 @@
+I"�	<h1 id="远程节点">远程节点</h1>
+
+<p>为了远程接入roscore，只需要简单配置环境变量。</p>
+
+<p><strong>master：</strong></p>
+
+<p><code class="highlighter-rouge">ROS_HOSTNAME</code>设置为执行roscore主节点的ip：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">ROS_HOSTNAME</span><span class="o">=</span>192.168.0.100
+<span class="nb">export </span><span class="nv">ROS_MASTER_URI</span><span class="o">=</span>http://<span class="k">${</span><span class="nv">ROS_HOSTNAME</span><span class="k">}</span>:11311
+</code></pre></div></div>
+
+<p><strong>other computer：</strong></p>
+
+<p>仅接受master的数据：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">ROS_MASTER_URI</span><span class="o">=</span>http://192.168.0.100:11311
+</code></pre></div></div>
+<p>如果需要发送数据到master，需要指定自身的ip：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">ROS_MASTER_URI</span><span class="o">=</span>http://192.168.0.100:11311
+<span class="nb">export </span><span class="nv">ROS_HOSTNAME</span><span class="o">=</span>192.168.0.101
+</code></pre></div></div>
+
+<h1 id="远程摄像头">远程摄像头</h1>
+<p><strong>master：</strong></p>
+
+<p>按照上述远程节点的方式配置后，在master上执行：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>roscore
+rosrun uvc_camera uvc_camera_node
+</code></pre></div></div>
+
+<p><strong>other computer：</strong></p>
+
+<p>安装uvc摄像头相关库：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo </span>apt <span class="nb">install </span>ros-melodic-uvc-camera
+</code></pre></div></div>
+<p>插入uvc摄像头，赋予读取设备权限：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sudo chmod </span>777 /dev/ttyUSB0
+</code></pre></div></div>
+<p>在其它计算机上执行：</p>
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code>rosrun image_view image_view image:<span class="o">=</span>/image_raw
+</code></pre></div></div>
+<p>或使用rqt可视化。</p>
+
+:ET

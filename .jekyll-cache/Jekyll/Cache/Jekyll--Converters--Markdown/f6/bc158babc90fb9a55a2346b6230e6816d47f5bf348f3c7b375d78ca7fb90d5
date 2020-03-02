@@ -1,0 +1,55 @@
+I"�<h1 id="用途">用途</h1>
+
+<p>SpEL的特性：</p>
+<ul>
+  <li>使用bean的<code class="highlighter-rouge">ID</code>来引用bean。</li>
+  <li>调用方法和访问对象的属性。</li>
+  <li>进行运算。</li>
+  <li>正则表达式匹配。</li>
+  <li>集合操作。</li>
+</ul>
+
+<p>可用来在依赖注入以外的地方。例如：<code class="highlighter-rouge">Spring Security</code>支持使用SpEL表达式定义安全限制规则。</p>
+
+<h1 id="运算符">运算符</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>运算符类型</th>
+      <th>运算符</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>算术运算</td>
+      <td>+  -  *  /  %  ^</td>
+    </tr>
+    <tr>
+      <td>比较运算</td>
+      <td>&lt;  &gt;  ==  &lt;=  &gt;=  lt  gt  eq  le  ge</td>
+    </tr>
+    <tr>
+      <td>逻辑运算</td>
+      <td>and  or  not  <code class="highlighter-rouge">|</code></td>
+    </tr>
+    <tr>
+      <td>条件运算</td>
+      <td>?:</td>
+    </tr>
+    <tr>
+      <td>正则表达式</td>
+      <td>matches</td>
+    </tr>
+    <tr>
+      <td>查询运算</td>
+      <td>.?[]  .^[]  .$[]</td>
+    </tr>
+    <tr>
+      <td>投影运算</td>
+      <td>.![]</td>
+    </tr>
+  </tbody>
+</table>
+
+:ET
