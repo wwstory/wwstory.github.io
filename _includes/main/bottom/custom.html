@@ -1,20 +1,3 @@
 <!-- start custom main bottom snippet -->
-<!-- Gitalk 评论 start  -->
-<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
-<script src="https://unpkg.com/gitalk@latest/dist/gitalk.min.js"></script>
-<div id="gitalk-container"></div>
-<script type="text/javascript">
-    var title = location.pathname.substr(0, 50);//截取路径的前50个字符作为标识符
-    var gitalk = new Gitalk({
-    // gitalk的主要参数
-        clientID: `{{site.comments.gitalk.clientID}} `,
-        clientSecret: `{{site.comments.gitalk.clientSecret}}`,
-        repo: `{{site.comments.gitalk.repository}}`,
-        owner: '{{site.comments.gitalk.owner}}',
-        admin: ['{{site.comments.gitalk.admin}}'],
-        id: '{{page.title}}',
-    });
-    gitalk.render('gitalk-container');
-</script>
-<!-- Gitalk end -->
+
 <!-- end custom main bottom snippet -->
