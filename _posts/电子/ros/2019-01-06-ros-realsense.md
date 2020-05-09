@@ -8,6 +8,8 @@ tags:
     - 'ros'
 ---
 
+# 安装
+
 安装ros：
 http://wiki.ros.org/melodic/Installation/Ubuntu
 
@@ -24,7 +26,8 @@ https://github.com/ros-perception/vision_opencv/issues/209
 https://github.com/IntelRealSense/realsense-ros
 
 
-# ref
+---
+
 - 安装realsense sdk：https://www.intelrealsense.com/developers/
 - 在ros使用：https://github.com/IntelRealSense/realsense-ros#installation-instructions
 - 错误处理[CMake Error. Could not find."ddynamic_reconfigure"]：
