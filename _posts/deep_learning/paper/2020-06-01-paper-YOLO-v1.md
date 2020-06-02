@@ -62,13 +62,33 @@ $$\begin{array}{l}
 \quad+\sum_{i=0}^{S^{2}} \mathbb{1}_{i}^{\text {obj }} \sum_{c \in \text { classes }}\left(p_{i}(c)-\hat{p}_{i}(c)\right)^{2}
 \end{array}$$
 
+> 对于损失函数的细节解释：
+> - 第1行和第2行是定位损失，第3行是对是否含对象的置信度损失，第4行是不含对象的置信度损失，第5行是分类损失。
+> - $\lambda_{\text {coord}}$: 4xB维度的localization error和20维的classification error同等重要显然是不合理，通过这个系数调整权重。
+> - $\mathbb{1}_{i j}^{\text {obj}}$: 挑选第i个单元格中，第j个bbox负责预测。
+> - $\sqrt{w} , \sqrt{h}$: 调整大小box对偏差的敏感性。（相同像素的偏差下，小box显然比大box更不能忍受）
+> - $\lambda_{\text {noobj}}$: 一张图中，大部分单元格可能都不包含object，导致样本不平衡。在训练优化模型时，梯度跨越大，不稳定。通过该系数调整权值平衡。
+> - $\mathbb{1}_{i}^{\text {obj}}$:挑选有object中心落入单元格i中，则该单元格负责预测该类别。
+
+
+**ps**:预测的输出是一个SxSx(Bx5+20)=7x7x30（当是VOC数据集时）的矩阵。
+
+- 7x7是划分的单元格，我们要求的是`ground truth box`的中心落入那个单元格，那个单元负责该对象的预测。输出的x,y是与单元格的相对位置。
+- 30是由(x,y,w,h,confidence)*2 + classes组成的，取B=2是指，每个单元格输出2个预测的bbox。
+
+『预测输出的矩阵构成』
+
+![输出构成](/imgs/deep_learning/paper/paper-YOLO-v1/6.png)
+
 ## 测试
 
 - 运行网络。得到7x7x30的结果。
 - 将每个网格预测的2个bbox的confidence得分 * 分类的概率。（7x7x2 = 98个值）（不存在IOU的值）
 - 设置阈值过滤，nms去重。
 
-![test](/imgs/deep_learning/paper/paper-YOLO-v1/6.png)
+『test的步骤』
+
+![test](/imgs/deep_learning/paper/paper-YOLO-v1/7.png)
 
 # 细节
 
@@ -84,6 +104,8 @@ $$\begin{array}{l}
 - 9.定位损失↑，分类损失↓。
 - 10.大盒和小盒偏移相同的像素，对于大盒影响不大，而对小盒有明显偏差。使用平方根做损失，可以提高小盒的损失。
 
+『y=x^(1/2)函数图像，展示对不同尺寸的box，在相同的偏移下的损失量』
+
 ![y=x^(1/2)](/imgs/deep_learning/paper/paper-YOLO-v1/5.png)
 
 - 11.每个单元格预测B个边界盒（VOC数据集中，取B=2），不同边界盒能得到更多尺寸，比例，类别。
@@ -91,18 +113,18 @@ $$\begin{array}{l}
 
 ## 附图理解
 
-『很容易被误导成单元格只预测这个一块小区域再组合的，中上表示所有单元格预测的所有bbox，中下表示每个颜色代表不同类别』
+『中上表示所有单元格预测的所有bbox，中下表示每个颜色代表不同类别。（很容易被误导成单元格只预测这个一块小区域再组合的。）』
 
 ![预测的bbox和类别](/imgs/deep_learning/paper/paper-YOLO-v1/3.png)
 
-『实际每个单元格是如何预测的』
+『每个单元格是如何预测的』
 
 ![每个单元格的预测方式](/imgs/deep_learning/paper/paper-YOLO-v1/4.png)
 
 # more
 ## note
 
-误区：
+**误区：**
 
 划分为7x7的网格，总觉得采用类似SSD的方式，每个网格预测包含一块区域，然后由这个网格这部分涉及到的神经元去运算。就会联想到，这么一小块网格在定位时由于只有一小部分图像信息，连定位都是问题。 
 
