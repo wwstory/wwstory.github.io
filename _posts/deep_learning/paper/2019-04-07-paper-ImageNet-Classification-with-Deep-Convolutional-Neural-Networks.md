@@ -72,5 +72,9 @@ mathjax: true
 ## ref
 
 - 可视化理解卷积网络论文：Visualizing and Understanding Convolutional Networks
-- 卷积过滤器的可视化理解：https://zhuanlan.zhihu.com/p/56112920
+- [卷积过滤器的可视化理解][101]
+
+---
+
+[101]: https://zhuanlan.zhihu.com/p/56112920
 

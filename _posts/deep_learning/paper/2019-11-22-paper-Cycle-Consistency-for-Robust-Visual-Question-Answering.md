@@ -95,4 +95,9 @@ $$
 
 
 ## ref
-- 理解：https://blog.csdn.net/xiasli123/article/details/102887043
+
+[ref 1][101]
+
+---
+
+[101]: https://blog.csdn.net/xiasli123/article/details/102887043

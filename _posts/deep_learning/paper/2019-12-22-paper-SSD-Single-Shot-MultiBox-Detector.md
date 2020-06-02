@@ -173,6 +173,13 @@ $$
 本文主要与yolo比较，创新点主要在使用卷积中的多层特征图做定位和分类，采用卷积做分类。
 
 ## ref
-- https://zhuanlan.zhihu.com/p/31427288
-- https://zhuanlan.zhihu.com/p/33544892
-- https://www.zhihu.com/question/58200555
+
+- [ref 1][101]
+- [ref 2][102]
+- [ref 3][103]
+
+---
+
+[101]: https://zhuanlan.zhihu.com/p/31427288
+[102]: https://zhuanlan.zhihu.com/p/33544892
+[103]: https://www.zhihu.com/question/58200555

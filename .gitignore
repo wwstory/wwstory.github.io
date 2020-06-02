@@ -10,6 +10,7 @@
 *.log.*
 
 /.vscode/
+/.history/
 
 node_modules/
 .sass-cache/
@@ -23,5 +24,6 @@ package-lock.json
 Gemfile.lock
 
 _site/
+/_drafts/
 .jekyll-metadata
 .jekyll-cache/
