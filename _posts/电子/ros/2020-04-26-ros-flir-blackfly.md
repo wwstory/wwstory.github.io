@@ -78,21 +78,21 @@ rqt_image_view
 
 # 错误处理
 
-`Camera not detected`: 
+1. `Camera not detected`: 
 
 [spinnaker sdk][6]
 
 > - 原因：使用spinnaker sdk 2.0版本会出现的问题，因为对s/n获取方式变了，导致spinnaker_sdk_camera_driver对s/n获取失败。
 > - 解决：`git checkout dev`切换到目前后并到的dev中。 （[探讨问题][3] -> [解决部分问题][4]）
 
-`frame id was zero`： 
+2. `frame id was zero`： 
 
 目前只找到注释`camera.cpp`第59行（master分支）的临时方法。（或设置为`==1`，因为输出发现该值为1）
 
 
-`NEW_BUFFER_DATA`:
+3. `NEW_BUFFER_DATA`:
 
-增大UDP缓存区（25Mb）。（有改善，并不稳定）[解决方案][9]
+增大UDP缓存区（25Mb）。[解决方案][9]
 
 ```sh
 sudo sysctl -w net.core.rmem_max=26214400
@@ -101,7 +101,7 @@ sudo sysctl -w net.core.rmem_default=26214400
 
 将`acquisition.launch`中的`binning`参数设置为2或4（有时只允许设置为2），降低分辨率可以保持一定稳定。[全彩高分辨率问题(供电问题？)][7]
 
-`图像上下翻转`：
+4. `图像上下翻转`：
 
 > 在切换到spinnaker sdk 2.0以后，图像不再颠倒。
 
