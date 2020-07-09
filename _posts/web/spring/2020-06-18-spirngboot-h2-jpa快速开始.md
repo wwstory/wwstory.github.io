@@ -9,6 +9,7 @@ tags:
 # spring boot连接h2
 
 [Accessing Data with JPA][1]
+[Accessing JPA Data with REST][2]
 
 ## 示例 - jpa连接h2
 
@@ -238,3 +239,4 @@ public class DemoApplication {
 ---
 
 [1]: https://spring.io/guides/gs/accessing-data-jpa/
+[2]: https://spring.io/guides/gs/accessing-data-rest/
