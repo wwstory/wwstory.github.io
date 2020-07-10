@@ -52,7 +52,7 @@ mathjax: true
 
 发现softmax不是必要的，就将`softmax`层替换为`1x1 conv`+`logistic`。
 
-训练期间，使用`binary cross-entropy loss`做损失。
+训练期间，使用二分类交叉熵损失（`binary cross-entropy loss`）做损失。
 
 **原因？**
 
