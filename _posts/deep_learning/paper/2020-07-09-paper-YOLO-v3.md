@@ -18,7 +18,7 @@ mathjax: true
 
 『mAP、耗时』
 
-![net](/imgs/deep_learning/paper/paper-YOLO-v3/1.png)
+![mAP](/imgs/deep_learning/paper/paper-YOLO-v3/1.png)
 
 # 网络
 
@@ -32,7 +32,7 @@ mathjax: true
 
 『基于residual的Darknet-53 与 ResNet比较』
 
-![net](/imgs/deep_learning/paper/paper-YOLO-v3/4.png)
+![backbone](/imgs/deep_learning/paper/paper-YOLO-v3/4.png)
 
 > Darknet-53 采用了residual的结构，但去掉了许多认为没有效率的层。
 
@@ -44,7 +44,7 @@ mathjax: true
 
 『Bounding Box Prediction』
 
-![net](/imgs/deep_learning/paper/paper-YOLO-v3/2.png)
+![bounding box](/imgs/deep_learning/paper/paper-YOLO-v3/2.png)
 
 ## 2.Class Prediction
 
@@ -87,7 +87,7 @@ yolo v3采用`FPN`结构来提高不同scale的精度。
 
 『Pyramid』
 
-![net](/imgs/deep_learning/paper/paper-YOLO-v3/5.png)
+![fpn](/imgs/deep_learning/paper/paper-YOLO-v3/5.png)
 
 `FPN`中，当前`feature map`会对后面层的`feature map`进行**上采样**，并利用。**将低级特征和高级特征结合起来**。
 
