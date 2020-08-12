@@ -20,7 +20,9 @@ sudo apt install ros-melodic-rosserial ros-melodic-rosserial-server ros-melodic-
 
 为了在Arduino中使用它,需要创建一个用于Arduino的rosserial库：
 ```sh
-cd ~/Arduino/libraries/
+# old:
+# cd ~/Arduino/libraries/
+cd ~/sketchbook/libraries
 rm -rf ros_lib
 rosrun rosserial_arduino make_libraries.py .
 ```
